@@ -1,95 +1,67 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
+// Carregar variáveis de ambiente
 dotenv.config();
+
+// Importar rotas
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
+const billsRoutes = require('./routes/bills');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true
+}));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Rota de teste
+// Rotas públicas
 app.get('/', (req, res) => {
-  res.json({ message: '🐶 Tobby API - Servidor rodando!' });
-});
-
-// ===== ROTAS DA API =====
-
-// Auth routes
-app.post('/api/auth/register', (req, res) => {
-  // TODO: Implementar registro
-  res.status(201).json({ 
-    token: 'fake-token-123',
-    user: { id: 1, name: req.body.name, email: req.body.email }
+  res.json({ 
+    message: '🐶 Tobby API - Servidor rodando!',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      user: '/api/user',
+      bills: '/api/bills'
+    }
   });
 });
 
-app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
-  
-  // Demo user
-  if (email === 'demo@tobby.com' && password === '123456') {
-    return res.json({
-      token: 'demo-token-123',
-      user: { id: 1, name: 'Usuário Demo', email: 'demo@tobby.com', salary: 5000 }
-    });
-  }
-  
-  res.status(401).json({ error: 'Credenciais inválidas' });
-});
-
-// User routes
-app.get('/api/user/profile', (req, res) => {
-  res.json({ id: 1, name: 'Usuário Demo', email: 'demo@tobby.com', salary: 5000 });
-});
-
-app.put('/api/user/salary', (req, res) => {
-  res.json({ salary: req.body.salary, message: 'Salário atualizado' });
-});
-
-// Bills routes
-app.get('/api/bills', (req, res) => {
-  const bills = [
-    { id: 1, name: 'Aluguel', value: 1200, due_day: 5, category: 'moradia', status: 'pending' },
-    { id: 2, name: 'Luz', value: 150, due_day: 10, category: 'utilidades', status: 'paid' },
-    { id: 3, name: 'Internet', value: 89.90, due_day: 15, category: 'utilidades', status: 'pending' }
-  ];
-  res.json({ data: bills });
-});
-
-app.get('/api/bills/dashboard/summary', (req, res) => {
-  res.json({
-    salary: 5000,
-    totalBills: 2500,
-    paidBills: 800,
-    pendingBills: 1700,
-    lateBills: 0,
-    freeBalance: 2500,
-    percentageCommitted: 50
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date(),
+    uptime: process.uptime()
   });
 });
 
-app.post('/api/bills', (req, res) => {
-  const newBill = { id: Date.now(), ...req.body };
-  res.status(201).json(newBill);
+// Rotas da API
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
+app.use('/api/bills', billsRoutes);
+
+// Tratamento de rotas não encontradas
+app.use('*', (req, res) => {
+  res.status(404).json({ error: 'Rota não encontrada' });
 });
 
-app.put('/api/bills/:id', (req, res) => {
-  res.json({ id: req.params.id, ...req.body });
-});
-
-app.delete('/api/bills/:id', (req, res) => {
-  res.json({ message: 'Conta deletada' });
-});
-
-app.patch('/api/bills/:id/status', (req, res) => {
-  res.json({ id: req.params.id, status: req.body.status });
+// Middleware de erro global
+app.use((err, req, res, next) => {
+  console.error('Erro:', err);
+  res.status(500).json({ error: 'Erro interno do servidor' });
 });
 
 // Iniciar servidor
 app.listen(port, () => {
   console.log(`🚀 Servidor Tobby rodando na porta ${port}`);
+  console.log(`📍 Health check: http://localhost:${port}/health`);
+  console.log(`🔗 API: http://localhost:${port}/api/auth`);
 });
