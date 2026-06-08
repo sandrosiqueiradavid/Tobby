@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#0C0F1A">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tobey">
+<meta name="apple-mobile-web-app-title" content="Tobby">
 <link rel="manifest" href="manifest.json">
-<title>Tobey 🐶 — Organizador Financeiro</title>
+<title>Tobby 🐶 — Organizador Financeiro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
@@ -194,7 +194,7 @@ select:focus{border-color:var(--green)}
 <div id="login" class="screen active">
   <div class="login-logo">
     <div class="logo-mark">🐶</div>
-    <div class="logo-title">Tobey</div>
+    <div class="logo-title">Tobby</div>
     <div class="logo-tagline">Seu organizador financeiro</div>
   </div>
   <div class="auth-card">
@@ -220,7 +220,7 @@ select:focus{border-color:var(--green)}
 <div id="register" class="screen" style="flex-direction:column;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse 80% 60% at 50% 0%,#1F1540 0%,var(--bg) 70%)">
   <div class="login-logo">
     <div class="logo-mark" style="background:linear-gradient(135deg,#9D74FF,#4A9EFF)">🐶</div>
-    <div class="logo-title">Tobey</div>
+    <div class="logo-title">Tobby</div>
     <div class="logo-tagline">Criar nova conta</div>
   </div>
   <div class="auth-card">
@@ -240,7 +240,7 @@ select:focus{border-color:var(--green)}
   <div class="topbar">
     <div class="topbar-left">
       <div class="topbar-logo">🐶</div>
-      <div class="topbar-name">Tobey</div>
+      <div class="topbar-name">Tobby</div>
     </div>
     <div class="topbar-right">
       <div class="icon-btn" onclick="showToast('Sem novas notificações 🎉')">🔔<div class="notif-dot" id="notif-dot"></div></div>
@@ -310,7 +310,7 @@ select:focus{border-color:var(--green)}
   <div id="tab-ai" class="content" style="display:none">
     <div class="ai-header">
       <div class="ai-orb">🤖</div>
-      <div class="ai-title">Assistente Tobey IA</div>
+      <div class="ai-title">Assistente Tobby IA</div>
       <div class="ai-sub">Análise inteligente das suas finanças</div>
     </div>
     <div class="section-hd" style="margin-bottom:.75rem">Insights automáticos</div>
@@ -319,9 +319,9 @@ select:focus{border-color:var(--green)}
     </div>
     <div class="section-hd" style="margin-top:.75rem;margin-bottom:.75rem">Conversar com a IA</div>
     <div class="chat-msgs" id="chat-msgs">
-      <div class="msg msg-ai"><span class="msg-ai-label">✦ TOBEY IA</span>Olá! Sou o assistente financeiro do Tobey. Posso analisar suas contas, sugerir investimentos e ajudar a quitar dívidas. Como posso te ajudar hoje?</div>
+      <div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby. Posso analisar suas contas, sugerir investimentos e ajudar a quitar dívidas. Como posso te ajudar hoje?</div>
     </div>
-    <div class="typing" id="typing">Tobey IA está digitando...</div>
+    <div class="typing" id="typing">Tobby IA está digitando...</div>
     <div class="chat-bar">
       <input class="chat-input" id="chat-input" placeholder="Pergunte sobre suas finanças..." onkeydown="if(event.key==='Enter')sendMsg()">
       <button class="chat-send" onclick="sendMsg()">→</button>
@@ -372,7 +372,7 @@ select:focus{border-color:var(--green)}
       <div class="menu-item" onclick="showToast('Em breve 🔒')"><div class="menu-icon" style="background:var(--amber-dim)">🔒</div><div class="menu-label">Segurança e senha</div><div class="menu-chevron">›</div></div>
       <div class="menu-item" onclick="showToast('Em breve 💬')"><div class="menu-icon" style="background:var(--red-dim)">💬</div><div class="menu-label">Suporte</div><div class="menu-chevron">›</div></div>
     </div>
-    <div style="text-align:center;font-size:11px;color:var(--hint);margin-bottom:.75rem">Tobey v1.0 • Fase 1</div>
+    <div style="text-align:center;font-size:11px;color:var(--hint);margin-bottom:.75rem">Tobby v1.0 • Fase 1</div>
     <button class="btn-danger" onclick="doLogout()">Sair da conta</button>
   </div>
 
@@ -432,8 +432,8 @@ select:focus{border-color:var(--green)}
 <script>
 // ===== STATE =====
 let state = {
-  users: JSON.parse(localStorage.getItem('tobey_users')||'[]'),
-  currentUser: JSON.parse(localStorage.getItem('tobey_current')||'null'),
+  users: JSON.parse(localStorage.getItem('tobby_users')||'[]'),
+  currentUser: JSON.parse(localStorage.getItem('tobby_current')||'null'),
   bills: [],
   txMonth: { y: new Date().getFullYear(), m: new Date().getMonth() }
 }
@@ -448,12 +448,12 @@ const CATS = {
 
 function getUserData(){
   if(!state.currentUser) return {bills:[],salary:0}
-  const d = localStorage.getItem('tobey_data_'+state.currentUser.email)
+  const d = localStorage.getItem('tobby_data_'+state.currentUser.email)
   return d ? JSON.parse(d) : {bills:[],salary:state.currentUser.salary||0}
 }
 function saveUserData(data){
   if(!state.currentUser) return
-  localStorage.setItem('tobey_data_'+state.currentUser.email, JSON.stringify(data))
+  localStorage.setItem('tobby_data_'+state.currentUser.email, JSON.stringify(data))
 }
 
 // ===== AUTH =====
@@ -461,13 +461,13 @@ function doLogin(){
   const email = document.getElementById('login-email').value.trim()
   const pwd = document.getElementById('login-pwd').value
   const user = state.users.find(u=>u.email===email && u.pwd===pwd)
-  // Demo: accept demo@tobey.com / 123456 always
-  if(!user && !(email==='demo@tobey.com' && pwd==='123456')){
+  // Demo: accept demo@tobby.com / 123456 always
+  if(!user && !(email==='demo@tobby.com' && pwd==='123456')){
     document.getElementById('login-err').style.display='block'; return
   }
-  const u = user || {name:'Demo User',email:'demo@tobey.com',salary:8500}
+  const u = user || {name:'Demo User',email:'demo@tobby.com',salary:8500}
   state.currentUser = u
-  localStorage.setItem('tobey_current', JSON.stringify(u))
+  localStorage.setItem('tobby_current', JSON.stringify(u))
   document.getElementById('login-err').style.display='none'
   enterApp()
 }
@@ -481,15 +481,15 @@ function doRegister(){
   if(state.users.find(u=>u.email===email)){showToast('E-mail já cadastrado'); return}
   const user = {name,email,pwd,salary}
   state.users.push(user)
-  localStorage.setItem('tobey_users', JSON.stringify(state.users))
+  localStorage.setItem('tobby_users', JSON.stringify(state.users))
   state.currentUser = user
-  localStorage.setItem('tobey_current', JSON.stringify(user))
+  localStorage.setItem('tobby_current', JSON.stringify(user))
   enterApp()
 }
 
 function doLogout(){
   state.currentUser = null
-  localStorage.removeItem('tobey_current')
+  localStorage.removeItem('tobby_current')
   showScreen('login')
 }
 
@@ -757,7 +757,7 @@ function renderInsights(){
 }
 
 // ===== CHAT IA =====
-const aiPersonality = `Você é o Tobey IA, assistente financeiro pessoal e amigável do app Tobey (nomeado em homenagem ao cachorro Tobey Maguire). Responda sempre em português brasileiro, de forma direta e prática. Use emojis moderadamente. Foque em dicas reais de finanças pessoais: quitação de dívidas, investimentos acessíveis (Tesouro Direto, CDB, Renda Variável), controle de gastos e organização financeira. Seja como um amigo que entende de finanças. Máximo 3 parágrafos curtos.`
+const aiPersonality = `Você é o Tobby IA, assistente financeiro pessoal e amigável do app Tobby (nomeado em homenagem ao cachorro Tobby Maguire). Responda sempre em português brasileiro, de forma direta e prática. Use emojis moderadamente. Foque em dicas reais de finanças pessoais: quitação de dívidas, investimentos acessíveis (Tesouro Direto, CDB, Renda Variável), controle de gastos e organização financeira. Seja como um amigo que entende de finanças. Máximo 3 parágrafos curtos.`
 
 async function sendMsg(){
   const input = document.getElementById('chat-input')
@@ -786,11 +786,11 @@ async function sendMsg(){
     const data = await res.json()
     const reply = data.content?.[0]?.text || 'Desculpe, não consegui processar. Tente novamente.'
     document.getElementById('typing').style.display='none'
-    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBEY IA</span>${reply}</div>`
+    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>${reply}</div>`
     msgs.scrollTop = msgs.scrollHeight
   } catch(e) {
     document.getElementById('typing').style.display='none'
-    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBEY IA</span>⚠️ Erro de conexão. Verifique sua internet e tente novamente.</div>`
+    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Erro de conexão. Verifique sua internet e tente novamente.</div>`
   }
 }
 
@@ -804,7 +804,7 @@ function editSalary(){
   if(isNaN(val)||val<0){showToast('Valor inválido'); return}
   d.salary = val
   saveUserData(d)
-  if(state.currentUser){ state.currentUser.salary=val; localStorage.setItem('tobey_current',JSON.stringify(state.currentUser)) }
+  if(state.currentUser){ state.currentUser.salary=val; localStorage.setItem('tobby_current',JSON.stringify(state.currentUser)) }
   renderHome()
   showToast('Salário atualizado 💰')
 }
