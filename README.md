@@ -20,5 +20,6 @@ App de finanças pessoais PWA (Progressive Web App), nomeado em homenagem ao Tob
 - Fase 2: Backend Node.js + PostgreSQL + JWT real
 - Fase 3: IA avançada com Claude API integrada
 
+
 ## Deploy
 Hospedado via GitHub Pages: https://sandrosiqueiradavid.github.io/Tobby
