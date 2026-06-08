@@ -1,0 +1,159 @@
+const pool = require('../db/pool');
+
+const billsController = {
+  // Listar todas as contas do usuário
+  async getBills(req, res) {
+    try {
+      const { status, sort = 'due_day', limit = 50, offset = 0 } = req.query;
+      
+      let query = 'SELECT * FROM bills WHERE user_id = $1';
+      const params = [req.userId];
+      let paramIndex = 2;
+      
+      if (status) {
+        query += ` AND status = $${paramIndex}`;
+        params.push(status);
+        paramIndex++;
+      }
+      
+      // Ordenação
+      const validSorts = ['due_day', 'value', 'created_at', 'status'];
+      const sortField = validSorts.includes(sort) ? sort : 'due_day';
+      query += ` ORDER BY ${sortField}`;
+      
+      // Paginação
+      query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+      params.push(limit, offset);
+      
+      const result = await pool.query(query, params);
+      
+      res.json({ data: result.rows, total: result.rows.length });
+    } catch (error) {
+      console.error('Erro ao buscar contas:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+  
+  // Obter uma conta específica
+  async getBill(req, res) {
+    try {
+      const { id } = req.params;
+      
+      const result = await pool.query(
+        'SELECT * FROM bills WHERE id = $1 AND user_id = $2',
+        [id, req.userId]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Conta não encontrada' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Erro ao buscar conta:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+  
+  // Criar nova conta
+  async createBill(req, res) {
+    try {
+      const { name, value, due_day, category = 'outros', status = 'pending' } = req.body;
+      
+      if (!name || !value || !due_day) {
+        return res.status(400).json({ error: 'Nome, valor e dia de vencimento são obrigatórios' });
+      }
+      
+      const result = await pool.query(
+        `INSERT INTO bills (user_id, name, value, due_day, category, status) 
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+        [req.userId, name, value, due_day, category, status]
+      );
+      
+      res.status(201).json(result.rows[0]);
+    } catch (error) {
+      console.error('Erro ao criar conta:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+  
+  // Atualizar conta
+  async updateBill(req, res) {
+    try {
+      const { id } = req.params;
+      const { name, value, due_day, category, status } = req.body;
+      
+      const result = await pool.query(
+        `UPDATE bills SET 
+          name = COALESCE($1, name),
+          value = COALESCE($2, value),
+          due_day = COALESCE($3, due_day),
+          category = COALESCE($4, category),
+          status = COALESCE($5, status),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $6 AND user_id = $7 RETURNING *`,
+        [name, value, due_day, category, status, id, req.userId]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Conta não encontrada' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Erro ao atualizar conta:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+  
+  // Deletar conta
+  async deleteBill(req, res) {
+    try {
+      const { id } = req.params;
+      
+      const result = await pool.query(
+        'DELETE FROM bills WHERE id = $1 AND user_id = $2 RETURNING id',
+        [id, req.userId]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Conta não encontrada' });
+      }
+      
+      res.json({ message: 'Conta deletada com sucesso' });
+    } catch (error) {
+      console.error('Erro ao deletar conta:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+  
+  // Atualizar status da conta
+  async updateBillStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      const validStatus = ['pending', 'paid', 'late'];
+      if (!validStatus.includes(status)) {
+        return res.status(400).json({ error: 'Status inválido' });
+      }
+      
+      const result = await pool.query(
+        `UPDATE bills SET status = $1, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $2 AND user_id = $3 RETURNING *`,
+        [status, id, req.userId]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Conta não encontrada' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Erro ao atualizar status:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  }
+};
+
+module.exports = billsController;
