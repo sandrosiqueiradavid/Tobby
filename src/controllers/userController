@@ -1,0 +1,45 @@
+const pool = require('../db/pool');
+
+const userController = {
+  // Obter perfil do usuário
+  async getProfile(req, res) {
+    try {
+      const result = await pool.query(
+        'SELECT id, name, email, salary, created_at FROM users WHERE id = $1',
+        [req.userId]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Usuário não encontrado' });
+      }
+      
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Erro ao buscar perfil:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  },
+  
+  // Atualizar salário
+  async updateSalary(req, res) {
+    try {
+      const { salary } = req.body;
+      
+      if (salary === undefined || salary < 0) {
+        return res.status(400).json({ error: 'Salário inválido' });
+      }
+      
+      await pool.query(
+        'UPDATE users SET salary = $1 WHERE id = $2',
+        [salary, req.userId]
+      );
+      
+      res.json({ salary, message: 'Salário atualizado com sucesso' });
+    } catch (error) {
+      console.error('Erro ao atualizar salário:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  }
+};
+
+module.exports = userController;
