@@ -1,0 +1,46 @@
+const pool = require('../db/pool');
+
+const dashboardController = {
+  async getSummary(req, res) {
+    try {
+      // Buscar salário do usuário
+      const userResult = await pool.query(
+        'SELECT salary FROM users WHERE id = $1',
+        [req.userId]
+      );
+      
+      const salary = userResult.rows[0]?.salary || 0;
+      
+      // Buscar totais de contas
+      const billsResult = await pool.query(
+        `SELECT 
+          COALESCE(SUM(value), 0) as total,
+          COALESCE(SUM(CASE WHEN status = 'paid' THEN value ELSE 0 END), 0) as paid,
+          COALESCE(SUM(CASE WHEN status = 'pending' THEN value ELSE 0 END), 0) as pending,
+          COALESCE(SUM(CASE WHEN status = 'late' THEN value ELSE 0 END), 0) as late
+         FROM bills 
+         WHERE user_id = $1`,
+        [req.userId]
+      );
+      
+      const totals = billsResult.rows[0];
+      const freeBalance = salary - totals.total;
+      const percentageCommitted = salary > 0 ? (totals.total / salary) * 100 : 0;
+      
+      res.json({
+        salary: parseFloat(salary),
+        totalBills: parseFloat(totals.total),
+        paidBills: parseFloat(totals.paid),
+        pendingBills: parseFloat(totals.pending),
+        lateBills: parseFloat(totals.late),
+        freeBalance: parseFloat(freeBalance),
+        percentageCommitted: Math.round(percentageCommitted)
+      });
+    } catch (error) {
+      console.error('Erro ao gerar dashboard:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  }
+};
+
+module.exports = dashboardController;
