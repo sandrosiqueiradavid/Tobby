@@ -1,9 +1,12 @@
 /**
  * 🐶 Tobby API Client
  * Gerencia todas as requisições para o backend
+ * 
+ * Backend: https://tobby-api.onrender.com
  */
 
-const API_BASE = 'http://localhost:3000/api'; // Mude para produção
+// ✅ ALTERADO: URL do backend em produção no Render
+const API_BASE = 'https://tobby-api.onrender.com/api';
 
 class TobbyAPI {
   constructor() {
