@@ -1,67 +1,44 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const path = require('path');
+require('dotenv').config()
+const express = require('express')
+const cors = require('cors')
 
-// Carregar variáveis de ambiente
-dotenv.config();
+const app = express()
+const PORT = process.env.PORT || 3000
 
-// Importar rotas
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/user');
-const billsRoutes = require('./routes/bills');
-
-const app = express();
-const port = process.env.PORT || 3000;
-
-// Middlewares
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
+  origin: process.env.FRONTEND_URL || '*',
   credentials: true
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+}))
+app.use(express.json())
 
-// Rotas públicas
-app.get('/', (req, res) => {
-  res.json({ 
-    message: '🐶 Tobby API - Servidor rodando!',
-    version: '1.0.0',
-    endpoints: {
-      auth: '/api/auth',
-      user: '/api/user',
-      bills: '/api/bills'
-    }
-  });
-});
+// Rotas
+app.use('/api/auth', require('./routes/auth'))
+app.use('/api/user', require('./routes/user'))
+app.use('/api/bills', require('./routes/bills'))
 
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date(),
-    uptime: process.uptime()
-  });
-});
+// Health check
+app.get('/', (req, res) => res.json({
+  status: 'ok',
+  app: '🐶 Tobby API v2.0',
+  supabase: !!process.env.SUPABASE_URL
+}))
 
-// Rotas da API
-app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
-app.use('/api/bills', billsRoutes);
+app.get('/health', (req, res) => res.json({
+  status: 'OK',
+  timestamp: new Date(),
+  uptime: Math.floor(process.uptime()) + 's'
+}))
 
-// Tratamento de rotas não encontradas
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Rota não encontrada' });
-});
+// 404
+app.use('*', (req, res) => res.status(404).json({ error: 'Rota não encontrada' }))
 
-// Middleware de erro global
+// Erro global
 app.use((err, req, res, next) => {
-  console.error('Erro:', err);
-  res.status(500).json({ error: 'Erro interno do servidor' });
-});
+  console.error(err)
+  res.status(500).json({ error: 'Erro interno do servidor' })
+})
 
-// Iniciar servidor
-app.listen(port, () => {
-  console.log(`🚀 Servidor Tobby rodando na porta ${port}`);
-  console.log(`📍 Health check: http://localhost:${port}/health`);
-  console.log(`🔗 API: http://localhost:${port}/api/auth`);
-});
+app.listen(PORT, () => {
+  console.log(`🐶 Tobby API rodando na porta ${PORT}`)
+  console.log(`📍 Health: http://localhost:${PORT}/health`)
+})
