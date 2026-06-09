@@ -1,11 +1,10 @@
-const express = require('express');
-const userController = require('../controllers/userController');
-const authMiddleware = require('../middleware/auth');
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
+const userController = require('../controllers/userController')
+const auth = require('../middleware/auth')
 
-router.use(authMiddleware); // Todas as rotas precisam de autenticação
+router.use(auth)
+router.get('/profile', userController.getProfile)
+router.put('/salary', userController.updateSalary)
 
-router.get('/profile', userController.getProfile);
-router.put('/salary', userController.updateSalary);
-
-module.exports = router;
+module.exports = router
