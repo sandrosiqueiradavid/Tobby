@@ -1,4 +1,4 @@
-// 🐶 Tobby API Client v2.1
+// 🐶 Tobby API Client v3.0
 const API_BASE = 'https://tobby-api.onrender.com/api';
 
 class TobbyAPI {
@@ -32,10 +32,9 @@ class TobbyAPI {
 
       const data = await response.json();
 
-      // Só redireciona para login se for rota protegida (não login/register)
       if (response.status === 401 && !endpoint.includes('/auth/')) {
         this.clearToken();
-        if (typeof showAuth === 'function') showAuth();
+        if (typeof window.showAuth === 'function') window.showAuth();
         throw new Error('Sessão expirada, faça login novamente');
       }
 
@@ -110,7 +109,7 @@ class TobbyAPI {
     return this.request('/bills/dashboard/summary');
   }
 
-  // ===== RECUPERAÇÃO DE SENHA =====
+  // Recuperação de senha
   async forgotPassword(email) {
     const response = await fetch(`${API_BASE}/auth/forgot-password`, {
       method: 'POST',
