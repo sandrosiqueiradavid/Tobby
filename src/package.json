@@ -1,18 +1,18 @@
 {
   "name": "tobby-backend",
-  "version": "1.0.0",
-  "description": "Backend completo do Tobby - Organizador Financeiro",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "Tobby Financial App - Backend com Supabase",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "@supabase/supabase-js": "^2.39.0",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "pg": "^8.11.3",
-    "bcryptjs": "^2.4.3",
+    "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
