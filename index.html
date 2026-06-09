@@ -1,671 +1,863 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#4F46E5">
-    <title>Tobby - Organizador Financeiro</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0C0F1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tobby">
+<link rel="manifest" href="manifest.json">
+<title>Tobby 🐶 — Organizador Financeiro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0C0F1A;--surface:#131726;--card:#1A1F35;--card2:#1E2440;
+  --border:#2A3050;--border2:#3A4570;
+  --text:#F0F4FF;--muted:#8892B0;--hint:#4A5580;
+  --green:#22D07A;--green-dim:#0F3D25;--green-border:#1A6040;
+  --blue:#4A9EFF;--blue-dim:#0D2040;
+  --amber:#F5A623;--amber-dim:#3D2A0A;
+  --red:#FF5F6D;--red-dim:#3D0F14;
+  --purple:#9D74FF;--purple-dim:#1F1540;
+  --r:12px;--r2:8px;
+}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;max-width:480px;margin:0 auto}
+.hidden{display:none!important}
+.screen{display:none;min-height:100vh;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+/* ---- LOADING ---- */
+#loading{flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+.spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--muted)}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+/* ---- AUTH ---- */
+#auth{flex-direction:column;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse 80% 60% at 50% 0%,#0D2040 0%,var(--bg) 70%)}
+.auth-logo{display:flex;flex-direction:column;align-items:center;margin-bottom:2rem}
+.logo-mark{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,#22D07A,#4A9EFF);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:.75rem;box-shadow:0 0 40px #22D07A33}
+.logo-title{font-family:'DM Serif Display',serif;font-size:32px}
+.logo-sub{font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:2px;text-transform:uppercase}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.75rem;width:100%;max-width:400px}
+.auth-card h2{font-size:18px;font-weight:600;margin-bottom:4px}
+.auth-card p{font-size:13px;color:var(--muted);margin-bottom:1.5rem}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.8px;text-transform:uppercase;font-weight:600}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border .2s}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.field select option{background:var(--surface)}
+.btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,#22D07A,#1BAD65);border:none;border-radius:var(--r2);color:#061A0F;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;transition:opacity .15s,transform .1s}
+.btn-primary:hover{opacity:.9}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:var(--r2);color:var(--muted);font-family:inherit;font-size:14px;cursor:pointer;transition:all .2s;margin-top:.5rem}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.auth-switch{text-align:center;margin-top:1rem;font-size:13px;color:var(--muted)}
+.auth-switch span{color:var(--green);cursor:pointer;font-weight:600}
+.err-msg{font-size:12px;color:var(--red);margin-top:6px;display:none;padding:8px;background:var(--red-dim);border-radius:6px}
 
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-        }
+/* ---- APP SHELL ---- */
+#app{flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#22D07A,#4A9EFF);display:flex;align-items:center;justify-content:center;font-size:15px}
+.topbar-name{font-family:'DM Serif Display',serif;font-size:17px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.icon-btn{width:34px;height:34px;border-radius:8px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:background .2s}
+.icon-btn:hover{background:var(--card2)}
+.avatar-btn{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#9D74FF,#4A9EFF);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:pointer;border:2px solid #9D74FF33}
 
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-            color: #4F46E5;
-        }
+.content{flex:1;padding:1.25rem;overflow-y:auto;padding-bottom:5.5rem}
+.bottomnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:.5rem .25rem calc(.5rem + env(safe-area-inset-bottom));z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:.45rem .25rem;border-radius:var(--r2);cursor:pointer;transition:background .2s,color .2s;color:var(--hint);font-size:10px;font-weight:600}
+.nav-item.active{color:var(--green);background:var(--green-dim)}
+.nav-icon{font-size:20px;line-height:1}
 
-        .logo span {
-            color: #F59E0B;
-        }
+/* ---- SHARED ---- */
+.section-hd{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:.75rem;display:flex;align-items:center;justify-content:space-between}
+.section-hd a{color:var(--green);font-size:11px;cursor:pointer;font-weight:600}
+.chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+.chip-green{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.chip-amber{background:var(--amber-dim);color:var(--amber)}
+.chip-red{background:var(--red-dim);color:var(--red)}
+.progress-bar{height:5px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;border-radius:99px;transition:width .6s ease}
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+/* ---- DASHBOARD ---- */
+.greeting-sub{font-size:13px;color:var(--muted);margin-bottom:2px}
+.greeting-name{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:1.25rem}
+.greeting-name em{font-style:italic;color:var(--green)}
+.balance-card{background:linear-gradient(135deg,#0F3D25 0%,#0D2040 100%);border:1px solid #22D07A22;border-radius:20px;padding:1.5rem;margin-bottom:1rem;position:relative;overflow:hidden}
+.balance-card::before{content:'';position:absolute;top:-50px;right:-50px;width:160px;height:160px;border-radius:50%;background:#22D07A06}
+.balance-label{font-size:11px;color:#22D07A77;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.35rem;font-weight:600}
+.balance-value{font-family:'DM Serif Display',serif;font-size:36px;margin-bottom:1rem;line-height:1}
+.balance-row{display:flex;gap:1.25rem;flex-wrap:wrap}
+.balance-item{font-size:11px;color:var(--muted);font-weight:500}
+.balance-item strong{display:block;font-size:13px;font-weight:700;color:var(--text);margin-top:2px}
+.balance-item.up strong{color:var(--green)}
+.balance-item.down strong{color:var(--red)}
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem}
+.stat-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:.65rem;font-size:18px}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:2px}
+.stat-val{font-size:18px;font-weight:700}
+.stat-sub{font-size:11px;color:var(--hint);margin-top:2px}
 
-        .user-name {
-            font-weight: 600;
-            color: #333;
-        }
+/* ---- BILLS ---- */
+.bill-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:.9rem;margin-bottom:.55rem;display:flex;align-items:center;gap:.85rem;transition:background .2s}
+.bill-item:hover{background:var(--card2)}
+.bill-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.bill-info{flex:1;min-width:0}
+.bill-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bill-meta{font-size:12px;color:var(--muted);margin-top:1px}
+.bill-right{text-align:right;flex-shrink:0}
+.bill-val{font-size:14px;font-weight:700}
+.bill-actions{display:flex;flex-direction:column;gap:4px;margin-left:.25rem}
+.bill-action{font-size:17px;cursor:pointer;line-height:1;padding:2px}
 
-        .btn-logout {
-            background: #EF4444;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
+/* ---- MODAL ---- */
+.modal-overlay{position:fixed;inset:0;background:#00000088;z-index:200;display:flex;align-items:flex-end;justify-content:center;max-width:480px;left:50%;transform:translateX(-50%);animation:fadeIn .2s ease}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-height:90vh;overflow-y:auto;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:99px;margin:0 auto 1.25rem}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:1.25rem}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
 
-        /* Cards do Dashboard */
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
+/* ---- AI ---- */
+.ai-header{text-align:center;padding:1rem 0 1.25rem}
+.ai-orb{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#9D74FF,#4A9EFF,#22D07A);margin:0 auto .85rem;display:flex;align-items:center;justify-content:center;font-size:26px;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 20px #9D74FF33}50%{box-shadow:0 0 45px #9D74FF66}}
+.ai-title{font-family:'DM Serif Display',serif;font-size:20px}
+.ai-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.insight-card{background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:.7rem}
+.insight-head{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.5rem}
+.insight-emoji{font-size:20px;flex-shrink:0;line-height:1.2}
+.insight-title{font-size:13px;font-weight:700}
+.insight-body{font-size:12px;color:var(--muted);line-height:1.6}
+.insight-action{font-size:12px;color:var(--green);font-weight:600;margin-top:.4rem;cursor:pointer;display:inline-block}
+.chat-msgs{display:flex;flex-direction:column;gap:.7rem;margin-bottom:.85rem;max-height:300px;overflow-y:auto}
+.msg{max-width:86%;padding:.8rem .95rem;border-radius:16px;font-size:13px;line-height:1.55}
+.msg-ai{background:var(--card);border:1px solid var(--border);align-self:flex-start;border-radius:4px 16px 16px 16px}
+.msg-ai-label{color:var(--green);display:block;margin-bottom:3px;font-size:11px;font-weight:700;letter-spacing:.5px}
+.msg-user{background:var(--green-dim);border:1px solid var(--green-border);align-self:flex-end;border-radius:16px 16px 4px 16px}
+.chat-bar{display:flex;gap:.6rem;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:.65rem}
+.chat-input{flex:1;background:transparent;border:none;outline:none;font-family:inherit;font-size:13px;color:var(--text)}
+.chat-input::placeholder{color:var(--hint)}
+.chat-send{background:var(--green);border:none;border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0}
+.typing-ind{font-size:12px;color:var(--muted);padding:.4rem 0;font-style:italic;display:none}
 
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
+/* ---- EXTRATO ---- */
+.month-sel{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:.75rem 1rem;margin-bottom:1.25rem}
+.month-label{font-size:15px;font-weight:600}
+.marrow{width:28px;height:28px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;transition:background .2s}
+.marrow:hover{background:var(--card2)}
+.tx-group-label{font-size:11px;color:var(--hint);letter-spacing:.8px;text-transform:uppercase;margin:1rem 0 .35rem;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.tx-item{display:flex;align-items:center;gap:.8rem;padding:.65rem 0;border-bottom:1px solid #2A305022}
+.tx-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.tx-info{flex:1;min-width:0}
+.tx-name{font-size:13px;font-weight:600}
+.tx-cat{font-size:11px;color:var(--hint);margin-top:1px}
+.tx-amt{font-size:13px;font-weight:700;white-space:nowrap}
+.tx-amt.in{color:var(--green)}
+.tx-amt.out{color:var(--red)}
+.summary-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:1.25rem}
+.sum-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:.8rem;text-align:center}
+.sum-label{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;font-weight:600}
+.sum-val{font-size:15px;font-weight:700;margin-top:3px}
 
-        .card:hover {
-            transform: translateY(-5px);
-        }
+/* ---- PROFILE ---- */
+.profile-hero{text-align:center;padding:1.25rem 0 1.5rem}
+.profile-av{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#9D74FF,#4A9EFF);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;margin:0 auto .85rem;border:3px solid #9D74FF44}
+.profile-name{font-family:'DM Serif Display',serif;font-size:22px}
+.profile-email{font-size:13px;color:var(--muted);margin-top:3px}
+.salary-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:1rem}
+.salary-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem}
+.salary-lbl{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.salary-edit{font-size:12px;color:var(--green);cursor:pointer;font-weight:600}
+.salary-val{font-family:'DM Serif Display',serif;font-size:24px;color:var(--green)}
+.menu-group{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem}
+.menu-item{display:flex;align-items:center;gap:.85rem;padding:.9rem 1rem;cursor:pointer;transition:background .2s;border-bottom:1px solid var(--border)}
+.menu-item:last-child{border-bottom:none}
+.menu-item:hover{background:var(--card2)}
+.menu-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.menu-label{flex:1;font-size:14px;font-weight:500}
+.menu-chev{color:var(--hint);font-size:16px}
+.btn-danger{width:100%;padding:13px;background:var(--red-dim);border:1px solid #FF5F6D33;border-radius:var(--r);color:var(--red);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:.25rem}
 
-        .card-title {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .card-value {
-            font-size: 28px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .card-value.positive {
-            color: #10B981;
-        }
-
-        .card-value.negative {
-            color: #EF4444;
-        }
-
-        .card-sub {
-            font-size: 12px;
-            color: #888;
-            margin-top: 8px;
-        }
-
-        /* Formulários */
-        .form-section {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .form-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #555;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .btn-primary {
-            background: #4F46E5;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 16px;
-            transition: background 0.2s;
-        }
-
-        .btn-primary:hover {
-            background: #4338CA;
-        }
-
-        /* Tabela de contas */
-        .bills-table {
-            background: white;
-            border-radius: 20px;
-            overflow-x: auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background: #F9FAFB;
-            font-weight: 600;
-            color: #555;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            background: #FEF3C7;
-            color: #D97706;
-        }
-
-        .status-paid {
-            background: #D1FAE5;
-            color: #059669;
-        }
-
-        .status-late {
-            background: #FEE2E2;
-            color: #DC2626;
-        }
-
-        .btn-delete {
-            background: #EF4444;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        /* Login e Registro */
-        .auth-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .auth-card {
-            background: white;
-            padding: 40px;
-            border-radius: 30px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .auth-title {
-            font-size: 32px;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .auth-subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .toggle-auth {
-            text-align: center;
-            margin-top: 20px;
-            color: #4F46E5;
-            cursor: pointer;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            th, td {
-                padding: 10px;
-                font-size: 14px;
-            }
-        }
-    </style>
+/* ---- TOAST ---- */
+.toast{position:fixed;bottom:5.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);border:1px solid var(--border2);border-radius:var(--r);padding:.65rem 1.1rem;font-size:13px;z-index:300;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
 </head>
 <body>
-    <div class="container">
-        <!-- Loading -->
-        <div id="loading" class="loading">
-            <h2>🐶 Carregando Tobby...</h2>
-        </div>
 
-        <!-- Conteúdo principal (escondido até login) -->
-        <div id="app-content" class="hidden">
-            <div class="header">
-                <div class="logo">Tobby<span>🐶</span></div>
-                <div class="user-info">
-                    <span class="user-name" id="userName"></span>
-                    <button class="btn-logout" onclick="logout()">Sair</button>
-                </div>
-            </div>
+<!-- LOADING -->
+<div id="loading" class="screen active">
+  <div class="spinner"></div>
+  <div class="loading-text">Carregando Tobby...</div>
+</div>
 
-            <!-- Dashboard Cards -->
-            <div class="dashboard">
-                <div class="card">
-                    <div class="card-title">💰 Salário Mensal</div>
-                    <div class="card-value" id="salary">R$ 0,00</div>
-                    <div class="card-sub">Clique para editar</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">📋 Total de Contas</div>
-                    <div class="card-value" id="totalBills">R$ 0,00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">✅ Contas Pagas</div>
-                    <div class="card-value positive" id="paidBills">R$ 0,00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">⏳ Contas Pendentes</div>
-                    <div class="card-value negative" id="pendingBills">R$ 0,00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">⚠️ Contas Atrasadas</div>
-                    <div class="card-value negative" id="lateBills">R$ 0,00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">💸 Saldo Livre</div>
-                    <div class="card-value" id="freeBalance">R$ 0,00</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">📊 Comprometimento</div>
-                    <div class="card-value" id="percentage">0%</div>
-                    <div class="card-sub">do salário</div>
-                </div>
-            </div>
+<!-- AUTH -->
+<div id="auth" class="screen">
+  <div class="auth-logo">
+    <div class="logo-mark">🐶</div>
+    <div class="logo-title">Tobby</div>
+    <div class="logo-sub">Organizador Financeiro</div>
+  </div>
 
-            <!-- Formulário de Nova Conta -->
-            <div class="form-section">
-                <div class="form-title">➕ Adicionar Nova Conta</div>
-                <div class="form-group">
-                    <label>Nome da conta</label>
-                    <input type="text" id="billName" placeholder="Ex: Aluguel, Luz, Internet...">
-                </div>
-                <div class="form-group">
-                    <label>Valor (R$)</label>
-                    <input type="number" id="billValue" step="0.01" placeholder="0,00">
-                </div>
-                <div class="form-group">
-                    <label>Dia de vencimento</label>
-                    <input type="number" id="billDueDay" min="1" max="31" placeholder="1 a 31">
-                </div>
-                <div class="form-group">
-                    <label>Categoria</label>
-                    <select id="billCategory">
-                        <option value="moradia">Moradia</option>
-                        <option value="utilidades">Utilidades</option>
-                        <option value="alimentacao">Alimentação</option>
-                        <option value="transporte">Transporte</option>
-                        <option value="saude">Saúde</option>
-                        <option value="educacao">Educação</option>
-                        <option value="lazer">Lazer</option>
-                        <option value="outros">Outros</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select id="billStatus">
-                        <option value="pending">Pendente</option>
-                        <option value="paid">Pago</option>
-                        <option value="late">Atrasado</option>
-                    </select>
-                </div>
-                <button class="btn-primary" onclick="addBill()">Adicionar Conta</button>
-            </div>
+  <!-- Login -->
+  <div class="auth-card" id="login-card">
+    <h2>Bem-vindo de volta</h2>
+    <p>Entre para organizar suas finanças</p>
+    <div class="field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com"></div>
+    <div class="field"><label>Senha</label><input type="password" id="login-pwd" placeholder="••••••••"></div>
+    <div class="err-msg" id="login-err">E-mail ou senha inválidos</div>
+    <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar →</button>
+    <div class="auth-switch">Não tem conta? <span onclick="showRegister()">Criar agora</span></div>
+  </div>
 
-            <!-- Lista de Contas -->
-            <div class="form-section">
-                <div class="form-title">📋 Minhas Contas</div>
-                <div class="bills-table">
-                    <table id="billsTable">
-                        <thead>
-                            <tr><th>Conta</th><th>Valor</th><th>Dia</th><th>Categoria</th><th>Status</th><th>Ações</th></tr>
-                        </thead>
-                        <tbody id="billsList">
-                            <tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+  <!-- Register -->
+  <div class="auth-card hidden" id="register-card">
+    <h2>Criar conta grátis</h2>
+    <p>Comece a organizar suas finanças hoje</p>
+    <div class="field"><label>Nome completo</label><input type="text" id="reg-name" placeholder="Seu nome"></div>
+    <div class="field"><label>E-mail</label><input type="email" id="reg-email" placeholder="seu@email.com"></div>
+    <div class="field"><label>Senha</label><input type="password" id="reg-pwd" placeholder="Mínimo 6 caracteres"></div>
+    <div class="field"><label>Salário mensal (R$)</label><input type="number" id="reg-salary" placeholder="Ex: 5000" step="0.01"></div>
+    <div class="err-msg" id="reg-err"></div>
+    <button class="btn-primary" id="reg-btn" onclick="doRegister()" style="background:linear-gradient(135deg,#9D74FF,#6B4FCC);color:#fff">Criar conta →</button>
+    <div class="auth-switch">Já tem conta? <span onclick="showLogin()">Entrar</span></div>
+  </div>
+</div>
 
-        <!-- Tela de Login/Registro -->
-        <div id="auth-container" class="auth-container">
-            <div class="auth-card">
-                <div class="auth-title">🐶 Tobby</div>
-                <div class="auth-subtitle">Organizador Financeiro</div>
-                
-                <!-- Login Form -->
-                <div id="login-form">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="loginEmail" placeholder="seu@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Senha</label>
-                        <input type="password" id="loginPassword" placeholder="********">
-                    </div>
-                    <button class="btn-primary" style="width: 100%;" onclick="doLogin()">Entrar</button>
-                    <div class="toggle-auth" onclick="showRegister()">Não tem conta? Cadastre-se</div>
-                </div>
-
-                <!-- Registro Form (escondido inicialmente) -->
-                <div id="register-form" class="hidden">
-                    <div class="form-group">
-                        <label>Nome</label>
-                        <input type="text" id="regName" placeholder="Seu nome">
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="regEmail" placeholder="seu@email.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Senha</label>
-                        <input type="password" id="regPassword" placeholder="********">
-                    </div>
-                    <div class="form-group">
-                        <label>Salário Mensal (R$)</label>
-                        <input type="number" id="regSalary" step="0.01" placeholder="0,00">
-                    </div>
-                    <button class="btn-primary" style="width: 100%;" onclick="doRegister()">Cadastrar</button>
-                    <div class="toggle-auth" onclick="showLogin()">Já tem conta? Faça login</div>
-                </div>
-            </div>
-        </div>
+<!-- APP -->
+<div id="app" class="screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-logo">🐶</div>
+      <div class="topbar-name">Tobby</div>
     </div>
+    <div class="topbar-right">
+      <div class="icon-btn" onclick="showToast('Sem novas notificações 🎉')">🔔</div>
+      <div class="avatar-btn" id="top-avatar" onclick="navTo('profile')">--</div>
+    </div>
+  </div>
 
-    <!-- Scripts -->
-    <script src="api.js"></script>
-    <script>
-        // ===== FUNÇÃO DE FORMATAÇÃO BRASILEIRA =====
-        // Converte número para formato R$ 8.500,00
-        function formatMoneyBR(value) {
-            if (value === undefined || value === null) return 'R$ 0,00';
-            return new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(value);
-        }
+  <!-- HOME -->
+  <div id="tab-home" class="content">
+    <div class="greeting-sub" id="home-month"></div>
+    <div class="greeting-name">Olá, <em id="home-name">--</em> 👋</div>
+    <div class="balance-card">
+      <div class="balance-label">Saldo disponível</div>
+      <div class="balance-value" id="bal-free">R$ 0,00</div>
+      <div class="balance-row">
+        <div class="balance-item up"><span>Salário</span><strong id="bal-in">R$ 0,00</strong></div>
+        <div class="balance-item down"><span>Contas pagas</span><strong id="bal-out">R$ 0,00</strong></div>
+        <div class="balance-item"><span>Comprometido</span><strong id="bal-pct">0%</strong></div>
+      </div>
+    </div>
+    <div class="cards-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--green-dim)">✅</div>
+        <div class="stat-label">Contas pagas</div>
+        <div class="stat-val" id="stat-paid" style="color:var(--green)">0</div>
+        <div class="progress-bar"><div class="progress-fill" id="prog-paid" style="background:var(--green);width:0%"></div></div>
+        <div class="stat-sub" id="stat-paid-pct">0% do total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--amber-dim)">⏳</div>
+        <div class="stat-label">Pendentes</div>
+        <div class="stat-val" id="stat-pend" style="color:var(--amber)">0</div>
+        <div class="stat-sub">A vencer</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--red-dim)">🔴</div>
+        <div class="stat-label">Atrasadas</div>
+        <div class="stat-val" id="stat-late" style="color:var(--red)">0</div>
+        <div class="stat-sub">Atenção!</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--blue-dim)">📦</div>
+        <div class="stat-label">Total contas</div>
+        <div class="stat-val" id="stat-total" style="color:var(--blue)">0</div>
+        <div class="stat-sub">Cadastradas</div>
+      </div>
+    </div>
+    <div class="section-hd">Próximas contas <a onclick="navTo('bills')">Ver todas →</a></div>
+    <div id="home-bills-list"><div style="text-align:center;padding:2rem;color:var(--hint);font-size:13px">Carregando...</div></div>
+  </div>
 
-        // Converte número para formato 8.500,00 (sem símbolo)
-        function formatNumberBR(value) {
-            if (value === undefined || value === null) return '0,00';
-            return new Intl.NumberFormat('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(value);
-        }
+  <!-- CONTAS -->
+  <div id="tab-bills" class="content" style="display:none">
+    <div class="greeting-sub">Gerenciar</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:1.25rem">Contas</div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem;overflow-x:auto;padding-bottom:2px" id="bills-filters">
+      <button class="chip chip-green" onclick="filterBills(this,'all')">Todas</button>
+      <button class="chip" style="background:var(--card);border:1px solid var(--border);color:var(--muted);cursor:pointer" onclick="filterBills(this,'pending')">Pendentes</button>
+      <button class="chip" style="background:var(--card);border:1px solid var(--border);color:var(--muted);cursor:pointer" onclick="filterBills(this,'paid')">Pagas</button>
+      <button class="chip" style="background:var(--card);border:1px solid var(--border);color:var(--muted);cursor:pointer" onclick="filterBills(this,'late')">Atrasadas</button>
+    </div>
+    <div id="bills-list-main"><div style="text-align:center;padding:2rem;color:var(--hint);font-size:13px">Carregando...</div></div>
+    <button class="btn-primary" style="margin-top:.75rem" onclick="openModal()">+ Adicionar conta</button>
+  </div>
 
-        // Converte string brasileira (8.500,50) para número (8500.50)
-        function parseMoneyBR(value) {
-            if (!value) return 0;
-            const cleaned = value.toString().replace(/[^0-9,-]/g, '');
-            const number = parseFloat(cleaned.replace('.', '').replace(',', '.'));
-            return isNaN(number) ? 0 : number;
-        }
+  <!-- IA -->
+  <div id="tab-ai" class="content" style="display:none">
+    <div class="ai-header">
+      <div class="ai-orb">🤖</div>
+      <div class="ai-title">Assistente Tobby IA</div>
+      <div class="ai-sub">Análise inteligente das suas finanças</div>
+    </div>
+    <div class="section-hd" style="margin-bottom:.75rem">Insights automáticos</div>
+    <div id="insights-list"><div style="text-align:center;padding:1.5rem;color:var(--hint);font-size:13px">Carregando análise...</div></div>
+    <div class="section-hd" style="margin-top:.75rem;margin-bottom:.75rem">Conversar com a IA</div>
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Posso analisar suas contas, sugerir investimentos e ajudar a quitar dívidas. Como posso te ajudar?</div>
+    </div>
+    <div class="typing-ind" id="typing-ind">Tobby IA está digitando...</div>
+    <div class="chat-bar">
+      <input class="chat-input" id="chat-input" placeholder="Pergunte sobre suas finanças..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="chat-send" onclick="sendMsg()">→</button>
+    </div>
+  </div>
 
-        // ===== VARIÁVEIS GLOBAIS =====
-        let currentUser = null;
+  <!-- EXTRATO -->
+  <div id="tab-tx" class="content" style="display:none">
+    <div class="greeting-sub">Histórico</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:1.25rem">Extrato</div>
+    <div class="month-sel">
+      <span class="month-label" id="tx-month-label">Junho 2026</span>
+      <div style="display:flex;gap:.5rem">
+        <div class="marrow" onclick="changeMonth(-1)">‹</div>
+        <div class="marrow" onclick="changeMonth(1)">›</div>
+      </div>
+    </div>
+    <div class="summary-row">
+      <div class="sum-card"><div class="sum-label">Entradas</div><div class="sum-val" id="tx-in" style="color:var(--green)">R$ 0</div></div>
+      <div class="sum-card"><div class="sum-label">Saídas</div><div class="sum-val" id="tx-out" style="color:var(--red)">R$ 0</div></div>
+      <div class="sum-card"><div class="sum-label">Saldo</div><div class="sum-val" id="tx-bal">R$ 0</div></div>
+    </div>
+    <div id="tx-list"></div>
+  </div>
 
-        // ===== FUNÇÕES DE AUTENTICAÇÃO =====
-        async function doLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                alert('Preencha email e senha');
-                return;
-            }
-            
-            try {
-                const user = await api.login(email, password);
-                currentUser = user;
-                showApp();
-                loadDashboard();
-                loadBills();
-            } catch (error) {
-                alert('Erro ao fazer login: ' + error.message);
-            }
-        }
+  <!-- PERFIL -->
+  <div id="tab-profile" class="content" style="display:none">
+    <div class="profile-hero">
+      <div class="profile-av" id="prof-av">--</div>
+      <div class="profile-name" id="prof-name">--</div>
+      <div class="profile-email" id="prof-email">--</div>
+      <div style="margin-top:.7rem"><span class="chip chip-green">✓ Conta ativa</span></div>
+    </div>
+    <div class="salary-box">
+      <div class="salary-row">
+        <div class="salary-lbl">Salário mensal</div>
+        <span class="salary-edit" onclick="editSalary()">✏️ Editar</span>
+      </div>
+      <div class="salary-val" id="prof-salary">R$ 0,00</div>
+    </div>
+    <div class="section-hd" style="margin-bottom:.6rem">Configurações</div>
+    <div class="menu-group">
+      <div class="menu-item" onclick="editSalary()"><div class="menu-icon" style="background:var(--blue-dim)">💰</div><div class="menu-label">Salário e receitas</div><div class="menu-chev">›</div></div>
+      <div class="menu-item" onclick="showToast('Em breve 🔔')"><div class="menu-icon" style="background:var(--purple-dim)">🔔</div><div class="menu-label">Notificações</div><div class="menu-chev">›</div></div>
+      <div class="menu-item" onclick="showToast('Em breve 🎯')"><div class="menu-icon" style="background:var(--green-dim)">🎯</div><div class="menu-label">Metas financeiras</div><div class="menu-chev">›</div></div>
+    </div>
+    <div class="menu-group">
+      <div class="menu-item" onclick="showToast('Em breve 🔒')"><div class="menu-icon" style="background:var(--amber-dim)">🔒</div><div class="menu-label">Segurança e senha</div><div class="menu-chev">›</div></div>
+      <div class="menu-item" onclick="showToast('Em breve 💬')"><div class="menu-icon" style="background:var(--red-dim)">💬</div><div class="menu-label">Suporte</div><div class="menu-chev">›</div></div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--hint);margin-bottom:.75rem">Tobby v2.0 • Fase 2 completa 🐶</div>
+    <button class="btn-danger" onclick="doLogout()">Sair da conta</button>
+  </div>
 
-        async function doRegister() {
-            const name = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const salary = parseMoneyBR(document.getElementById('regSalary').value);
-            
-            if (!name || !email || !password) {
-                alert('Preencha todos os campos');
-                return;
-            }
-            
-            try {
-                const user = await api.register(name, email, password, salary);
-                currentUser = user;
-                showApp();
-                loadDashboard();
-                loadBills();
-            } catch (error) {
-                alert('Erro ao cadastrar: ' + error.message);
-            }
-        }
+  <nav class="bottomnav">
+    <div class="nav-item active" id="nav-home" onclick="navTo('home')"><div class="nav-icon">🏠</div>Início</div>
+    <div class="nav-item" id="nav-bills" onclick="navTo('bills')"><div class="nav-icon">📋</div>Contas</div>
+    <div class="nav-item" id="nav-ai" onclick="navTo('ai')"><div class="nav-icon">🤖</div>IA</div>
+    <div class="nav-item" id="nav-tx" onclick="navTo('tx')"><div class="nav-icon">📊</div>Extrato</div>
+    <div class="nav-item" id="nav-profile" onclick="navTo('profile')"><div class="nav-icon">👤</div>Perfil</div>
+  </nav>
+</div>
 
-        function logout() {
-            api.clearToken();
-            currentUser = null;
-            showAuth();
-        }
+<!-- MODAL -->
+<div id="modal" style="display:none">
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3 id="modal-title">Nova Conta</h3>
+      <div class="field"><label>Nome da conta</label><input type="text" id="f-name" placeholder="Ex: Aluguel, Energia..."></div>
+      <div class="field-row">
+        <div class="field"><label>Valor (R$)</label><input type="number" id="f-val" placeholder="0,00" step="0.01"></div>
+        <div class="field"><label>Dia vencimento</label><input type="number" id="f-day" placeholder="1-31" min="1" max="31"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Categoria</label>
+          <select id="f-cat">
+            <option value="moradia">🏠 Moradia</option>
+            <option value="alimentacao">🍽️ Alimentação</option>
+            <option value="saude">🏥 Saúde</option>
+            <option value="transporte">🚗 Transporte</option>
+            <option value="lazer">🎮 Lazer</option>
+            <option value="educacao">📚 Educação</option>
+            <option value="tecnologia">💻 Tecnologia</option>
+            <option value="financeiro">💳 Financeiro</option>
+            <option value="outros">📦 Outros</option>
+          </select>
+        </div>
+        <div class="field"><label>Status</label>
+          <select id="f-status">
+            <option value="pending">Pendente</option>
+            <option value="paid">Pago</option>
+            <option value="late">Atrasado</option>
+          </select>
+        </div>
+      </div>
+      <input type="hidden" id="f-id">
+      <button class="btn-primary" onclick="saveBill()" style="margin-top:.5rem" id="modal-save-btn">Salvar conta</button>
+      <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-        function showApp() {
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('auth-container').classList.add('hidden');
-            document.getElementById('app-content').classList.remove('hidden');
-            document.getElementById('userName').innerText = currentUser?.name || 'Usuário';
-        }
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
-        function showAuth() {
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('auth-container').classList.remove('hidden');
-            document.getElementById('app-content').classList.add('hidden');
-        }
+<script src="api.js"></script>
+<script>
+// ===== CONSTANTS =====
+const CATS = {
+  moradia:{e:'🏠',bg:'#3D0F14'},alimentacao:{e:'🍽️',bg:'#3D2A0A'},
+  saude:{e:'🏥',bg:'#0D2040'},transporte:{e:'🚗',bg:'#1F1540'},
+  lazer:{e:'🎮',bg:'#0F3D25'},educacao:{e:'📚',bg:'#1F1540'},
+  tecnologia:{e:'💻',bg:'#0D2040'},financeiro:{e:'💳',bg:'#3D0F14'},
+  outros:{e:'📦',bg:'#2A3050'},utilidades:{e:'⚡',bg:'#0D2040'}
+}
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
 
-        function showRegister() {
-            document.getElementById('login-form').classList.add('hidden');
-            document.getElementById('register-form').classList.remove('hidden');
-        }
+// ===== STATE =====
+let currentUser = null
+let allBills = []
+let currentFilter = 'all'
+let txMonth = { y: new Date().getFullYear(), m: new Date().getMonth() }
 
-        function showLogin() {
-            document.getElementById('register-form').classList.add('hidden');
-            document.getElementById('login-form').classList.remove('hidden');
-        }
+// ===== FORMAT =====
+function fmt(v) {
+  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)
+}
 
-        // ===== DASHBOARD =====
-        async function loadDashboard() {
-            try {
-                const data = await api.getDashboard();
-                
-                // Aplicar formatação brasileira
-                document.getElementById('salary').innerHTML = formatMoneyBR(data.salary);
-                document.getElementById('totalBills').innerHTML = formatMoneyBR(data.totalBills);
-                document.getElementById('paidBills').innerHTML = formatMoneyBR(data.paidBills);
-                document.getElementById('pendingBills').innerHTML = formatMoneyBR(data.pendingBills);
-                document.getElementById('lateBills').innerHTML = formatMoneyBR(data.lateBills);
-                document.getElementById('freeBalance').innerHTML = formatMoneyBR(data.freeBalance);
-                document.getElementById('percentage').innerHTML = data.percentageCommitted + '%';
-            } catch (error) {
-                console.error('Erro ao carregar dashboard:', error);
-            }
-        }
+// ===== SCREENS =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'))
+  document.getElementById(id).classList.add('active')
+}
 
-        // ===== CONTAS =====
-        async function loadBills() {
-            try {
-                const result = await api.getBills();
-                const bills = result.data || result;
-                renderBillsTable(bills);
-            } catch (error) {
-                console.error('Erro ao carregar contas:', error);
-            }
-        }
+// ===== AUTH =====
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim()
+  const pwd = document.getElementById('login-pwd').value
+  if (!email || !pwd) { showToast('Preencha e-mail e senha'); return }
+  const btn = document.getElementById('login-btn')
+  btn.disabled = true; btn.textContent = 'Entrando...'
+  try {
+    currentUser = await api.login(email, pwd)
+    document.getElementById('login-err').style.display = 'none'
+    enterApp()
+  } catch(e) {
+    document.getElementById('login-err').style.display = 'block'
+    document.getElementById('login-err').textContent = e.message || 'E-mail ou senha inválidos'
+  } finally {
+    btn.disabled = false; btn.textContent = 'Entrar →'
+  }
+}
 
-        function renderBillsTable(bills) {
-            const tbody = document.getElementById('billsList');
-            
-            if (!bills || bills.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhuma conta cadastrada</td></tr>';
-                return;
-            }
-            
-            tbody.innerHTML = bills.map(bill => `
-                <tr>
-                    <td>${escapeHtml(bill.name)}</td>
-                    <td>${formatMoneyBR(bill.value)}</td>
-                    <td>Dia ${bill.due_day}</td>
-                    <td>${bill.category}</td>
-                    <td>${getStatusBadge(bill.status)}</td>
-                    <td>
-                        <button class="btn-delete" onclick="deleteBill(${bill.id})">🗑️</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
+async function doRegister() {
+  const name = document.getElementById('reg-name').value.trim()
+  const email = document.getElementById('reg-email').value.trim()
+  const pwd = document.getElementById('reg-pwd').value
+  const salary = parseFloat(document.getElementById('reg-salary').value) || 0
+  if (!name||!email||!pwd) { showToast('Preencha todos os campos'); return }
+  const btn = document.getElementById('reg-btn')
+  btn.disabled = true; btn.textContent = 'Criando conta...'
+  try {
+    currentUser = await api.register(name, email, pwd, salary)
+    document.getElementById('reg-err').style.display = 'none'
+    enterApp()
+  } catch(e) {
+    const err = document.getElementById('reg-err')
+    err.style.display = 'block'; err.textContent = e.message || 'Erro ao criar conta'
+  } finally {
+    btn.disabled = false; btn.textContent = 'Criar conta →'
+  }
+}
 
-        function getStatusBadge(status) {
-            const statusMap = {
-                'pending': '<span class="status-badge status-pending">⏳ Pendente</span>',
-                'paid': '<span class="status-badge status-paid">✅ Pago</span>',
-                'late': '<span class="status-badge status-late">⚠️ Atrasado</span>'
-            };
-            return statusMap[status] || statusMap.pending;
-        }
+function doLogout() {
+  api.clearToken()
+  currentUser = null
+  allBills = []
+  showScreen('auth')
+}
 
-        async function addBill() {
-            const name = document.getElementById('billName').value;
-            const value = parseMoneyBR(document.getElementById('billValue').value);
-            const due_day = parseInt(document.getElementById('billDueDay').value);
-            const category = document.getElementById('billCategory').value;
-            const status = document.getElementById('billStatus').value;
-            
-            if (!name || !value || !due_day) {
-                alert('Preencha nome, valor e dia de vencimento');
-                return;
-            }
-            
-            try {
-                await api.createBill(name, value, due_day, category, status);
-                
-                // Limpar formulário
-                document.getElementById('billName').value = '';
-                document.getElementById('billValue').value = '';
-                document.getElementById('billDueDay').value = '';
-                
-                // Recarregar dados
-                await loadDashboard();
-                await loadBills();
-                
-                alert('Conta adicionada com sucesso!');
-            } catch (error) {
-                alert('Erro ao adicionar conta: ' + error.message);
-            }
-        }
+function showRegister() {
+  document.getElementById('login-card').classList.add('hidden')
+  document.getElementById('register-card').classList.remove('hidden')
+}
 
-        async function deleteBill(id) {
-            if (!confirm('Tem certeza que deseja excluir esta conta?')) return;
-            
-            try {
-                await api.deleteBill(id);
-                await loadDashboard();
-                await loadBills();
-                alert('Conta excluída com sucesso!');
-            } catch (error) {
-                alert('Erro ao excluir conta: ' + error.message);
-            }
-        }
+function showLogin() {
+  document.getElementById('register-card').classList.add('hidden')
+  document.getElementById('login-card').classList.remove('hidden')
+}
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+// ===== APP ENTRY =====
+function enterApp() {
+  showScreen('app')
+  updateUserUI()
+  navTo('home')
+}
 
-        // ===== VERIFICAR SESSÃO AO CARREGAR =====
-        document.addEventListener('DOMContentLoaded', () => {
-            // Verificar se já está logado
-            if (api.token) {
-                currentUser = { name: localStorage.getItem('userName') || 'Usuário' };
-                showApp();
-                loadDashboard();
-                loadBills();
-            } else {
-                showAuth();
-            }
-            document.getElementById('loading').classList.add('hidden');
-        });
-    </script>
+function updateUserUI() {
+  if (!currentUser) return
+  const initials = currentUser.name.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase()
+  document.getElementById('top-avatar').textContent = initials
+  document.getElementById('prof-av').textContent = initials
+  document.getElementById('prof-name').textContent = currentUser.name
+  document.getElementById('prof-email').textContent = currentUser.email
+  document.getElementById('prof-salary').textContent = fmt(currentUser.salary)
+  document.getElementById('home-name').textContent = currentUser.name.split(' ')[0]
+  const now = new Date()
+  document.getElementById('home-month').textContent = MONTHS[now.getMonth()] + ' ' + now.getFullYear()
+}
+
+// ===== NAV =====
+const TABS = ['home','bills','ai','tx','profile']
+function navTo(tab) {
+  TABS.forEach(t => {
+    const el = document.getElementById('tab-'+t)
+    const nav = document.getElementById('nav-'+t)
+    if(el) el.style.display = t===tab ? 'block' : 'none'
+    if(nav) nav.classList.toggle('active', t===tab)
+  })
+  if(tab==='home') loadHome()
+  if(tab==='bills') loadBillsTab()
+  if(tab==='ai') loadInsights()
+  if(tab==='tx') renderTx()
+  if(tab==='profile') loadProfile()
+}
+
+// ===== HOME =====
+async function loadHome() {
+  try {
+    const [dash, billsRes] = await Promise.all([api.getDashboard(), api.getBills()])
+    allBills = billsRes || []
+    document.getElementById('bal-free').textContent = fmt(dash.freeBalance)
+    document.getElementById('bal-in').textContent = fmt(dash.salary)
+    document.getElementById('bal-out').textContent = fmt(dash.totalPaid)
+    document.getElementById('bal-pct').textContent = dash.percentageCommitted + '%'
+    document.getElementById('stat-paid').textContent = dash.paidBills
+    document.getElementById('stat-pend').textContent = dash.pendingBills
+    document.getElementById('stat-late').textContent = dash.lateBills
+    document.getElementById('stat-total').textContent = dash.totalBills
+    const pp = dash.totalBills > 0 ? Math.round((dash.paidBills/dash.totalBills)*100) : 0
+    document.getElementById('prog-paid').style.width = pp+'%'
+    document.getElementById('stat-paid-pct').textContent = pp+'% do total'
+    currentUser.salary = dash.salary
+    document.getElementById('prof-salary').textContent = fmt(dash.salary)
+    renderHomeBills(allBills)
+  } catch(e) {
+    console.error('loadHome error:', e)
+  }
+}
+
+function renderHomeBills(bills) {
+  const today = new Date().getDate()
+  const upcoming = bills.filter(b => b.status==='pending' || b.status==='late')
+    .sort((a,b) => a.due_day - b.due_day).slice(0,4)
+  const el = document.getElementById('home-bills-list')
+  if (!upcoming.length) {
+    el.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--hint);font-size:13px">Sem contas pendentes 🎉<br><span style="color:var(--green);cursor:pointer" onclick="navTo(\'bills\')">+ Adicionar conta</span></div>'
+    return
+  }
+  el.innerHTML = upcoming.map(b => {
+    const cat = CATS[b.category] || CATS.outros
+    const isLate = b.due_day < today && b.status !== 'paid'
+    return `<div class="bill-item" onclick="navTo('bills')">
+      <div class="bill-icon" style="background:${cat.bg}">${cat.e}</div>
+      <div class="bill-info"><div class="bill-name">${b.name}</div><div class="bill-meta">${isLate?'Atrasada':'Vence dia '+b.due_day} · ${b.category}</div></div>
+      <div class="bill-right">
+        <div class="bill-val">${fmt(b.value)}</div>
+        <div style="margin-top:3px">${isLate?'<span class="chip chip-red">Atrasado</span>':'<span class="chip chip-amber">Pendente</span>'}</div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+// ===== BILLS TAB =====
+async function loadBillsTab() {
+  try {
+    allBills = await api.getBills() || []
+    renderBills(currentFilter)
+  } catch(e) { showToast('Erro ao carregar contas') }
+}
+
+function filterBills(el, filter) {
+  currentFilter = filter
+  document.querySelectorAll('#bills-filters .chip').forEach(c => {
+    c.className = 'chip'
+    c.style.cssText = 'background:var(--card);border:1px solid var(--border);color:var(--muted);cursor:pointer'
+  })
+  el.className = 'chip chip-green'
+  el.style.cssText = ''
+  renderBills(filter)
+}
+
+function renderBills(filter) {
+  const today = new Date().getDate()
+  let bills = [...allBills]
+  if (filter==='pending') bills = bills.filter(b => b.status==='pending')
+  else if (filter==='paid') bills = bills.filter(b => b.status==='paid')
+  else if (filter==='late') bills = bills.filter(b => b.status==='late' || (b.status==='pending' && b.due_day<today))
+  const el = document.getElementById('bills-list-main')
+  if (!bills.length) { el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--hint);font-size:13px">Nenhuma conta encontrada</div>'; return }
+  el.innerHTML = bills.map(b => {
+    const cat = CATS[b.category] || CATS.outros
+    const isLate = b.status==='pending' && b.due_day < today
+    const chip = b.status==='paid' ? '<span class="chip chip-green">Pago</span>' :
+      isLate ? '<span class="chip chip-red">Atrasado</span>' : '<span class="chip chip-amber">Pendente</span>'
+    return `<div class="bill-item">
+      <div class="bill-icon" style="background:${cat.bg}">${cat.e}</div>
+      <div class="bill-info"><div class="bill-name">${b.name}</div><div class="bill-meta">Vence dia ${b.due_day} · ${b.category}</div></div>
+      <div class="bill-right"><div class="bill-val">${fmt(b.value)}</div><div style="margin-top:3px">${chip}</div></div>
+      <div class="bill-actions">
+        <div class="bill-action" onclick="toggleStatus('${b.id}','${b.status}')" title="Alternar status">${b.status==='paid'?'↩️':'✅'}</div>
+        <div class="bill-action" onclick="openModal('${b.id}')" title="Editar">✏️</div>
+        <div class="bill-action" onclick="deleteBill('${b.id}')" title="Remover">🗑️</div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+// ===== BILL ACTIONS =====
+function openModal(id) {
+  if (id) {
+    const b = allBills.find(x => x.id==id)
+    if (!b) return
+    document.getElementById('modal-title').textContent = 'Editar Conta'
+    document.getElementById('f-id').value = b.id
+    document.getElementById('f-name').value = b.name
+    document.getElementById('f-val').value = b.value
+    document.getElementById('f-day').value = b.due_day
+    document.getElementById('f-cat').value = b.category
+    document.getElementById('f-status').value = b.status
+  } else {
+    document.getElementById('modal-title').textContent = 'Nova Conta'
+    document.getElementById('f-id').value = ''
+    document.getElementById('f-name').value = ''
+    document.getElementById('f-val').value = ''
+    document.getElementById('f-day').value = ''
+    document.getElementById('f-cat').value = 'outros'
+    document.getElementById('f-status').value = 'pending'
+  }
+  document.getElementById('modal').style.display = 'block'
+}
+
+function closeModal() { document.getElementById('modal').style.display = 'none' }
+
+async function saveBill() {
+  const name = document.getElementById('f-name').value.trim()
+  const value = parseFloat(document.getElementById('f-val').value)
+  const due_day = parseInt(document.getElementById('f-day').value)
+  if (!name||!value||!due_day) { showToast('Preencha todos os campos'); return }
+  const category = document.getElementById('f-cat').value
+  const status = document.getElementById('f-status').value
+  const eid = document.getElementById('f-id').value
+  const btn = document.getElementById('modal-save-btn')
+  btn.disabled = true; btn.textContent = 'Salvando...'
+  try {
+    if (eid) await api.updateBill(eid, name, value, due_day, category, status)
+    else await api.createBill(name, value, due_day, category, status)
+    closeModal()
+    allBills = await api.getBills() || []
+    renderBills(currentFilter)
+    await loadHome()
+    showToast('Conta salva com sucesso 🐶')
+  } catch(e) { showToast(e.message || 'Erro ao salvar') }
+  finally { btn.disabled = false; btn.textContent = 'Salvar conta' }
+}
+
+async function deleteBill(id) {
+  if (!confirm('Remover esta conta?')) return
+  try {
+    await api.deleteBill(id)
+    allBills = await api.getBills() || []
+    renderBills(currentFilter)
+    await loadHome()
+    showToast('Conta removida')
+  } catch(e) { showToast('Erro ao remover') }
+}
+
+async function toggleStatus(id, currentStatus) {
+  const newStatus = currentStatus === 'paid' ? 'pending' : 'paid'
+  try {
+    await api.updateBillStatus(id, newStatus)
+    allBills = await api.getBills() || []
+    renderBills(currentFilter)
+    await loadHome()
+    showToast(newStatus==='paid' ? '✅ Marcada como paga' : '↩️ Marcada como pendente')
+  } catch(e) { showToast('Erro ao atualizar') }
+}
+
+// ===== EXTRATO =====
+function changeMonth(dir) {
+  txMonth.m += dir
+  if (txMonth.m < 0) { txMonth.m = 11; txMonth.y-- }
+  if (txMonth.m > 11) { txMonth.m = 0; txMonth.y++ }
+  renderTx()
+}
+
+function renderTx() {
+  document.getElementById('tx-month-label').textContent = MONTHS[txMonth.m] + ' ' + txMonth.y
+  const salary = currentUser?.salary || 0
+  const paid = allBills.filter(b => b.status === 'paid')
+  const totalOut = paid.reduce((s,b) => s + parseFloat(b.value), 0)
+  const bal = salary - totalOut
+  document.getElementById('tx-in').textContent = fmt(salary)
+  document.getElementById('tx-out').textContent = fmt(totalOut)
+  const balEl = document.getElementById('tx-bal')
+  balEl.textContent = fmt(Math.abs(bal))
+  balEl.style.color = bal >= 0 ? 'var(--green)' : 'var(--red)'
+  let html = ''
+  if (salary > 0) {
+    html += `<div class="tx-group-label">Receitas</div>
+    <div class="tx-item"><div class="tx-icon" style="background:var(--green-dim)">💰</div>
+    <div class="tx-info"><div class="tx-name">Salário</div><div class="tx-cat">Receita mensal</div></div>
+    <div class="tx-amt in">+ ${fmt(salary)}</div></div>`
+  }
+  if (paid.length) {
+    html += '<div class="tx-group-label">Contas pagas</div>'
+    html += paid.map(b => {
+      const c = CATS[b.category] || CATS.outros
+      return `<div class="tx-item">
+        <div class="tx-icon" style="background:${c.bg}">${c.e}</div>
+        <div class="tx-info"><div class="tx-name">${b.name}</div><div class="tx-cat">${b.category} · Dia ${b.due_day}</div></div>
+        <div class="tx-amt out">- ${fmt(b.value)}</div>
+      </div>`
+    }).join('')
+  }
+  if (!html) html = '<div style="text-align:center;padding:2rem;color:var(--hint);font-size:13px">Nenhum lançamento</div>'
+  document.getElementById('tx-list').innerHTML = html
+}
+
+// ===== INSIGHTS =====
+function loadInsights() {
+  const bills = allBills
+  const salary = currentUser?.salary || 0
+  const today = new Date().getDate()
+  const paid = bills.filter(b => b.status==='paid')
+  const late = bills.filter(b => b.status==='late' || (b.status==='pending' && b.due_day<today))
+  const totalCommitted = bills.reduce((s,b) => s+parseFloat(b.value), 0)
+  const totalOut = paid.reduce((s,b) => s+parseFloat(b.value), 0)
+  const free = salary - totalOut
+  const pct = salary > 0 ? Math.round((totalCommitted/salary)*100) : 0
+  const el = document.getElementById('insights-list')
+  if (!bills.length) { el.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--hint);font-size:13px">Cadastre contas para receber análises 🐶</div>'; return }
+  let cards = []
+  if (late.length > 0) cards.push({e:'⚠️',t:`${late.length} conta(s) atrasada(s)!`,b:`Você tem ${late.length} conta(s) em atraso: ${late.map(x=>x.name).join(', ')}. Regularize para evitar juros.`,a:'Ver contas →',ac:"navTo('bills')",red:true})
+  if (pct > 70) cards.push({e:'📊',t:'Comprometimento alto: '+pct+'%',b:`Suas contas comprometem ${pct}% do salário. O ideal é abaixo de 50%. Revise assinaturas e gastos fixos.`,a:'Ver contas →',ac:"navTo('bills')"})
+  if (free > 500) cards.push({e:'💰',t:`${fmt(free)} disponíveis para investir`,b:`Você tem ${fmt(free)} livres. Aplicar no Tesouro Selic (~10,5%/ano) gera renda com liquidez diária e risco zero.`,a:'Saiba mais →',ac:"sendPrompt('Como investir meu dinheiro no Tesouro Direto?')"})
+  if (pct > 0 && pct <= 50) cards.push({e:'✅',t:'Finanças saudáveis! '+pct+'% comprometido',b:`Parabéns! Seu comprometimento de ${pct}% está dentro do ideal. Reserve parte do saldo para emergências.`,a:'Ver extrato →',ac:"navTo('tx')"})
+  if (!cards.length) cards.push({e:'🐶',t:'Continue cadastrando suas contas',b:'Quanto mais dados você inserir, melhores serão as análises personalizadas.',a:'Adicionar conta →',ac:"navTo('bills')"})
+  el.innerHTML = cards.map(c => `<div class="insight-card"${c.red?' style="border-color:#FF5F6D44"':''}>
+    <div class="insight-head"><div class="insight-emoji">${c.e}</div><div class="insight-title">${c.t}</div></div>
+    <div class="insight-body">${c.b}</div>
+    <div class="insight-action" onclick="${c.ac}">${c.a}</div>
+  </div>`).join('')
+}
+
+function sendPrompt(text) {
+  navTo('ai')
+  document.getElementById('chat-input').value = text
+  sendMsg()
+}
+
+// ===== AI CHAT =====
+const AI_SYSTEM = `Você é o Tobby IA, assistente financeiro do app Tobby (nomeado em homenagem ao cachorro Tobby Maguire). Responda sempre em português brasileiro, de forma direta e prática. Use emojis moderadamente. Foque em dicas reais de finanças pessoais: quitação de dívidas, investimentos acessíveis (Tesouro Direto, CDB, Renda Variável), controle de gastos e organização financeira. Seja como um amigo que entende de finanças. Máximo 3 parágrafos curtos.`
+
+async function sendMsg() {
+  const input = document.getElementById('chat-input')
+  const q = input.value.trim()
+  if (!q) return
+  input.value = ''
+  const msgs = document.getElementById('chat-msgs')
+  msgs.innerHTML += `<div class="msg msg-user">${q}</div>`
+  msgs.scrollTop = msgs.scrollHeight
+  document.getElementById('typing-ind').style.display = 'block'
+  const salary = currentUser?.salary || 0
+  const ctx = `Contexto: salário R$${salary}, ${allBills.length} contas, total R$${allBills.reduce((s,b)=>s+parseFloat(b.value),0).toFixed(2)}. Pergunta: ${q}`
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:AI_SYSTEM,messages:[{role:'user',content:ctx}]})
+    })
+    const data = await res.json()
+    const reply = data.content?.[0]?.text || 'Desculpe, tente novamente.'
+    document.getElementById('typing-ind').style.display = 'none'
+    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>${reply}</div>`
+    msgs.scrollTop = msgs.scrollHeight
+  } catch(e) {
+    document.getElementById('typing-ind').style.display = 'none'
+    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Erro de conexão. Tente novamente.</div>`
+  }
+}
+
+// ===== PROFILE =====
+async function loadProfile() {
+  try {
+    const profile = await api.getProfile()
+    currentUser = { ...currentUser, ...profile }
+    document.getElementById('prof-salary').textContent = fmt(profile.salary)
+    updateUserUI()
+  } catch(e) {}
+}
+
+async function editSalary() {
+  const cur = currentUser?.salary || 0
+  const novo = prompt('Informe seu salário mensal (R$):', cur)
+  if (novo === null) return
+  const val = parseFloat(novo)
+  if (isNaN(val) || val < 0) { showToast('Valor inválido'); return }
+  try {
+    const updated = await api.updateSalary(val)
+    currentUser.salary = updated.salary
+    document.getElementById('prof-salary').textContent = fmt(updated.salary)
+    await loadHome()
+    showToast('Salário atualizado 💰')
+  } catch(e) { showToast('Erro ao atualizar salário') }
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.classList.add('show')
+  setTimeout(() => t.classList.remove('show'), 2800)
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', async () => {
+  if (api.token) {
+    try {
+      currentUser = await api.getProfile()
+      enterApp()
+    } catch(e) {
+      api.clearToken()
+      showScreen('auth')
+    }
+  } else {
+    showScreen('auth')
+  }
+})
+</script>
 </body>
 </html>
