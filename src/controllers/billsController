@@ -1,201 +1,140 @@
-const pool = require('../db/pool');
+const supabase = require('../db/supabase')
 
 const billsController = {
-  // Listar todas as contas do usuário
   async getBills(req, res) {
     try {
-      const { status, sort = 'due_day', limit = 50, offset = 0 } = req.query;
-      
-      let query = 'SELECT * FROM bills WHERE user_id = $1';
-      const params = [req.userId];
-      let paramIndex = 2;
-      
-      if (status) {
-        query += ` AND status = $${paramIndex}`;
-        params.push(status);
-        paramIndex++;
-      }
-      
-      // Ordenação
-      const validSorts = ['due_day', 'value', 'created_at', 'status'];
-      const sortField = validSorts.includes(sort) ? sort : 'due_day';
-      query += ` ORDER BY ${sortField}`;
-      
-      // Paginação
-      query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-      params.push(limit, offset);
-      
-      const result = await pool.query(query, params);
-      
-      res.json({ data: result.rows, total: result.rows.length });
-    } catch (error) {
-      console.error('Erro ao buscar contas:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      const { status } = req.query
+      let query = supabase
+        .from('bills')
+        .select('*')
+        .eq('user_id', req.userId)
+        .order('due_day', { ascending: true })
+
+      if (status) query = query.eq('status', status)
+
+      const { data, error } = await query
+      if (error) throw error
+      res.json({ data })
+    } catch (err) {
+      res.status(500).json({ error: 'Erro ao listar contas' })
     }
   },
-  
-  // Obter uma conta específica
+
   async getBill(req, res) {
     try {
-      const { id } = req.params;
-      
-      const result = await pool.query(
-        'SELECT * FROM bills WHERE id = $1 AND user_id = $2',
-        [id, req.userId]
-      );
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Conta não encontrada' });
-      }
-      
-      res.json(result.rows[0]);
-    } catch (error) {
-      console.error('Erro ao buscar conta:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      const { data, error } = await supabase
+        .from('bills')
+        .select('*')
+        .eq('id', req.params.id)
+        .eq('user_id', req.userId)
+        .single()
+      if (error) return res.status(404).json({ error: 'Conta não encontrada' })
+      res.json(data)
+    } catch (err) {
+      res.status(500).json({ error: 'Erro ao buscar conta' })
     }
   },
-  
-  // Criar nova conta
+
   async createBill(req, res) {
     try {
-      const { name, value, due_day, category = 'outros', status = 'pending' } = req.body;
-      
-      if (!name || !value || !due_day) {
-        return res.status(400).json({ error: 'Nome, valor e dia de vencimento são obrigatórios' });
-      }
-      
-      const result = await pool.query(
-        `INSERT INTO bills (user_id, name, value, due_day, category, status) 
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [req.userId, name, value, due_day, category, status]
-      );
-      
-      res.status(201).json(result.rows[0]);
-    } catch (error) {
-      console.error('Erro ao criar conta:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      const { name, value, due_day, category = 'outros', status = 'pending' } = req.body
+      if (!name || !value || !due_day)
+        return res.status(400).json({ error: 'Nome, valor e dia de vencimento são obrigatórios' })
+
+      const { data, error } = await supabase
+        .from('bills')
+        .insert({ user_id: req.userId, name, value, due_day, category, status })
+        .select()
+        .single()
+      if (error) throw error
+      res.status(201).json(data)
+    } catch (err) {
+      res.status(500).json({ error: 'Erro ao criar conta' })
     }
   },
-  
-  // Atualizar conta
+
   async updateBill(req, res) {
     try {
-      const { id } = req.params;
-      const { name, value, due_day, category, status } = req.body;
-      
-      const result = await pool.query(
-        `UPDATE bills SET 
-          name = COALESCE($1, name),
-          value = COALESCE($2, value),
-          due_day = COALESCE($3, due_day),
-          category = COALESCE($4, category),
-          status = COALESCE($5, status),
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $6 AND user_id = $7 RETURNING *`,
-        [name, value, due_day, category, status, id, req.userId]
-      );
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Conta não encontrada' });
-      }
-      
-      res.json(result.rows[0]);
-    } catch (error) {
-      console.error('Erro ao atualizar conta:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      const { name, value, due_day, category, status } = req.body
+      const { data, error } = await supabase
+        .from('bills')
+        .update({ name, value, due_day, category, status, updated_at: new Date() })
+        .eq('id', req.params.id)
+        .eq('user_id', req.userId)
+        .select()
+        .single()
+      if (error) return res.status(404).json({ error: 'Conta não encontrada' })
+      res.json(data)
+    } catch (err) {
+      res.status(500).json({ error: 'Erro ao atualizar conta' })
     }
   },
-  
-  // Deletar conta
+
   async deleteBill(req, res) {
     try {
-      const { id } = req.params;
-      
-      const result = await pool.query(
-        'DELETE FROM bills WHERE id = $1 AND user_id = $2 RETURNING id',
-        [id, req.userId]
-      );
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Conta não encontrada' });
-      }
-      
-      res.json({ message: 'Conta deletada com sucesso' });
-    } catch (error) {
-      console.error('Erro ao deletar conta:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      const { error } = await supabase
+        .from('bills')
+        .delete()
+        .eq('id', req.params.id)
+        .eq('user_id', req.userId)
+      if (error) throw error
+      res.json({ success: true })
+    } catch (err) {
+      res.status(500).json({ error: 'Erro ao deletar conta' })
     }
   },
-  
-  // Atualizar status da conta
+
   async updateBillStatus(req, res) {
     try {
-      const { id } = req.params;
-      const { status } = req.body;
-      
-      const validStatus = ['pending', 'paid', 'late'];
-      if (!validStatus.includes(status)) {
-        return res.status(400).json({ error: 'Status inválido' });
-      }
-      
-      const result = await pool.query(
-        `UPDATE bills SET status = $1, updated_at = CURRENT_TIMESTAMP 
-         WHERE id = $2 AND user_id = $3 RETURNING *`,
-        [status, id, req.userId]
-      );
-      
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: 'Conta não encontrada' });
-      }
-      
-      res.json(result.rows[0]);
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      const { status } = req.body
+      if (!['pending', 'paid', 'late'].includes(status))
+        return res.status(400).json({ error: 'Status inválido' })
+
+      const { data, error } = await supabase
+        .from('bills')
+        .update({ status, updated_at: new Date() })
+        .eq('id', req.params.id)
+        .eq('user_id', req.userId)
+        .select()
+        .single()
+      if (error) return res.status(404).json({ error: 'Conta não encontrada' })
+      res.json(data)
+    } catch (err) {
+      res.status(500).json({ error: 'Erro ao atualizar status' })
     }
   },
 
-  // ✅ FUNÇÃO PARA O DASHBOARD (ADICIONADA)
-  async getSummary(req, res) {
+  async getDashboardSummary(req, res) {
     try {
-      // Buscar salário do usuário
-      const userResult = await pool.query(
-        'SELECT salary FROM users WHERE id = $1',
-        [req.userId]
-      );
-      
-      const salary = userResult.rows[0]?.salary || 0;
-      
-      // Buscar totais de contas
-      const billsResult = await pool.query(
-        `SELECT 
-          COALESCE(SUM(value), 0) as total,
-          COALESCE(SUM(CASE WHEN status = 'paid' THEN value ELSE 0 END), 0) as paid,
-          COALESCE(SUM(CASE WHEN status = 'pending' THEN value ELSE 0 END), 0) as pending,
-          COALESCE(SUM(CASE WHEN status = 'late' THEN value ELSE 0 END), 0) as late
-         FROM bills 
-         WHERE user_id = $1`,
-        [req.userId]
-      );
-      
-      const totals = billsResult.rows[0];
-      const freeBalance = salary - totals.total;
-      const percentageCommitted = salary > 0 ? (totals.total / salary) * 100 : 0;
-      
+      const { data: user } = await supabase
+        .from('users').select('salary').eq('id', req.userId).single()
+      const { data: bills } = await supabase
+        .from('bills').select('*').eq('user_id', req.userId)
+
+      const salary = user?.salary || 0
+      const today = new Date().getDate()
+      const allBills = bills || []
+
+      const paid = allBills.filter(b => b.status === 'paid')
+      const pending = allBills.filter(b => b.status === 'pending' && b.due_day >= today)
+      const late = allBills.filter(b => b.status === 'late' || (b.status === 'pending' && b.due_day < today))
+      const totalOut = paid.reduce((s, b) => s + parseFloat(b.value), 0)
+      const totalCommitted = allBills.reduce((s, b) => s + parseFloat(b.value), 0)
+
       res.json({
-        salary: parseFloat(salary),
-        totalBills: parseFloat(totals.total),
-        paidBills: parseFloat(totals.paid),
-        pendingBills: parseFloat(totals.pending),
-        lateBills: parseFloat(totals.late),
-        freeBalance: parseFloat(freeBalance),
-        percentageCommitted: Math.round(percentageCommitted)
-      });
-    } catch (error) {
-      console.error('Erro ao gerar dashboard:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+        salary,
+        totalBills: allBills.length,
+        paidBills: paid.length,
+        pendingBills: pending.length,
+        lateBills: late.length,
+        totalPaid: totalOut,
+        freeBalance: Math.max(0, salary - totalOut),
+        percentageCommitted: salary > 0 ? Math.round((totalCommitted / salary) * 100) : 0
+      })
+    } catch (err) {
+      res.status(500).json({ error: 'Erro ao gerar resumo' })
     }
   }
-};
+}
 
-module.exports = billsController;
+module.exports = billsController
