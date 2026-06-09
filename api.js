@@ -1,4 +1,4 @@
-// 🐶 Tobby API Client v2.0
+// 🐶 Tobby API Client v2.1
 const API_BASE = 'https://tobby-api.onrender.com/api';
 
 class TobbyAPI {
@@ -30,13 +30,15 @@ class TobbyAPI {
         headers: this.getHeaders()
       });
 
-      if (response.status === 401) {
+      const data = await response.json();
+
+      // Só redireciona para login se for rota protegida (não login/register)
+      if (response.status === 401 && !endpoint.includes('/auth/')) {
         this.clearToken();
         showAuth();
         throw new Error('Sessão expirada, faça login novamente');
       }
 
-      const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Erro na requisição');
       return data;
     } catch (err) {
