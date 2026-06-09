@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const supabase = require('../db/supabase');
 
 const authController = {
+  // Registrar novo usuário
   async register(req, res) {
     try {
       const { name, email, password, salary = 0 } = req.body;
@@ -33,6 +34,7 @@ const authController = {
     }
   },
 
+  // Login
   async login(req, res) {
     try {
       const { email, password } = req.body;
@@ -64,6 +66,9 @@ const authController = {
     }
   },
 
+  // ===== RECUPERAÇÃO DE SENHA =====
+
+  // Solicitar redefinição de senha
   async forgotPassword(req, res) {
     try {
       const { email } = req.body;
@@ -78,8 +83,8 @@ const authController = {
         .single();
 
       if (error || !user) {
-        return res.json({ 
-          message: 'Se o e-mail existir, você receberá as instruções de recuperação' 
+        return res.json({
+          message: 'Se o e-mail existir, você receberá as instruções de recuperação'
         });
       }
 
@@ -96,8 +101,8 @@ const authController = {
 
       console.log(`🔐 Token de redefinição para ${email}: ${resetToken}`);
 
-      res.json({ 
-        message: 'Se o e-mail existir, você receberá as instruções de recuperação' 
+      res.json({
+        message: 'Se o e-mail existir, você receberá as instruções de recuperação'
       });
     } catch (err) {
       console.error('Forgot password error:', err);
@@ -105,6 +110,7 @@ const authController = {
     }
   },
 
+  // Redefinir senha com token
   async resetPassword(req, res) {
     try {
       const { token, newPassword } = req.body;
@@ -142,7 +148,7 @@ const authController = {
 
       await supabase
         .from('users')
-        .update({ 
+        .update({
           password: hashedPassword,
           reset_token: null,
           reset_expires: null
