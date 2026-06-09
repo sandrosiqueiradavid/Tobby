@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const supabase = require('../db/supabase');
 
 const authController = {
-  // Registrar novo usuário
   async register(req, res) {
     try {
       const { name, email, password, salary = 0 } = req.body;
@@ -34,7 +33,6 @@ const authController = {
     }
   },
 
-  // Login
   async login(req, res) {
     try {
       const { email, password } = req.body;
@@ -66,9 +64,6 @@ const authController = {
     }
   },
 
-  // ===== RECUPERAÇÃO DE SENHA =====
-
-  // Solicitar redefinição de senha
   async forgotPassword(req, res) {
     try {
       const { email } = req.body;
@@ -99,7 +94,6 @@ const authController = {
         .update({ reset_token: resetToken, reset_expires: new Date(Date.now() + 3600000) })
         .eq('id', user.id);
 
-      // Em desenvolvimento, mostra o token no console
       console.log(`🔐 Token de redefinição para ${email}: ${resetToken}`);
 
       res.json({ 
@@ -111,7 +105,6 @@ const authController = {
     }
   },
 
-  // Redefinir senha com token
   async resetPassword(req, res) {
     try {
       const { token, newPassword } = req.body;
