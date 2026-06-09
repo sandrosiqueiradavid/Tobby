@@ -1,92 +1,63 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const pool = require('../db/pool');
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const supabase = require('../db/supabase')
 
 const authController = {
-  // Registrar novo usuário
   async register(req, res) {
     try {
-      const { name, email, password, salary = 0 } = req.body;
-      
-      // Validar campos obrigatórios
-      if (!name || !email || !password) {
-        return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
-      }
-      
-      // Verificar se usuário já existe
-      const userExists = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-      if (userExists.rows.length > 0) {
-        return res.status(400).json({ error: 'Email já cadastrado' });
-      }
-      
-      // Hash da senha
-      const hashedPassword = await bcrypt.hash(password, 10);
-      
-      // Criar usuário
-      const result = await pool.query(
-        'INSERT INTO users (name, email, password, salary) VALUES ($1, $2, $3, $4) RETURNING id, name, email, salary',
-        [name, email, hashedPassword, salary]
-      );
-      
-      const user = result.rows[0];
-      
-      // Gerar token JWT
-      const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-      
-      res.status(201).json({ token, user });
-    } catch (error) {
-      console.error('Erro no registro:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      const { name, email, password, salary = 0 } = req.body
+      if (!name || !email || !password)
+        return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios' })
+
+      const { data: existing } = await supabase
+        .from('users').select('id').eq('email', email).single()
+      if (existing)
+        return res.status(400).json({ error: 'E-mail já cadastrado' })
+
+      const hash = await bcrypt.hash(password, 10)
+      const { data: user, error } = await supabase
+        .from('users')
+        .insert({ name, email, password: hash, salary })
+        .select('id, name, email, salary')
+        .single()
+
+      if (error) throw error
+
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' })
+      res.status(201).json({ token, user })
+    } catch (err) {
+      console.error('Register error:', err)
+      res.status(500).json({ error: 'Erro ao criar conta' })
     }
   },
-  
-  // Login
+
   async login(req, res) {
     try {
-      const { email, password } = req.body;
-      
-      if (!email || !password) {
-        return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-      }
-      
-      // Buscar usuário
-      const result = await pool.query(
-        'SELECT id, name, email, password, salary FROM users WHERE email = $1',
-        [email]
-      );
-      
-      if (result.rows.length === 0) {
-        return res.status(401).json({ error: 'Email ou senha inválidos' });
-      }
-      
-      const user = result.rows[0];
-      
-      // Verificar senha
-      const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
-        return res.status(401).json({ error: 'Email ou senha inválidos' });
-      }
-      
-      // Remover senha do objeto
-      delete user.password;
-      
-      // Gerar token
-      const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-      
-      res.json({ token, user });
-    } catch (error) {
-      console.error('Erro no login:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      const { email, password } = req.body
+      if (!email || !password)
+        return res.status(400).json({ error: 'E-mail e senha são obrigatórios' })
+
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('id, name, email, password, salary')
+        .eq('email', email)
+        .single()
+
+      if (error || !user)
+        return res.status(401).json({ error: 'E-mail ou senha inválidos' })
+
+      const valid = await bcrypt.compare(password, user.password)
+      if (!valid)
+        return res.status(401).json({ error: 'E-mail ou senha inválidos' })
+
+      delete user.password
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' })
+      res.json({ token, user })
+    } catch (err) {
+      console.error('Login error:', err)
+      res.status(500).json({ error: 'Erro ao fazer login' })
     }
   }
-};
+}
 
-module.exports = authController;
+module.exports = authController
