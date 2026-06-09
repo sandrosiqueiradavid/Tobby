@@ -1,0 +1,109 @@
+// Adicione estas funções ao authController existente
+
+  // Solicitar redefinição de senha (enviar token por email)
+  async forgotPassword(req, res) {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ error: 'E-mail é obrigatório' });
+      }
+
+      // Buscar usuário pelo email
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('id, email, name')
+        .eq('email', email)
+        .single();
+
+      if (error || !user) {
+        // Por segurança, não informamos que o email não existe
+        return res.json({ 
+          message: 'Se o e-mail existir, você receberá as instruções de recuperação' 
+        });
+      }
+
+      // Gerar token de redefinição (válido por 1 hora)
+      const resetToken = jwt.sign(
+        { userId: user.id, purpose: 'password-reset' },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      // Salvar token no banco (opcional - para revogar)
+      await supabase
+        .from('users')
+        .update({ reset_token: resetToken, reset_expires: new Date(Date.now() + 3600000) })
+        .eq('id', user.id);
+
+      // Em produção, enviar email real
+      console.log(`🔐 Token de redefinição para ${email}: ${resetToken}`);
+      console.log(`🔗 Link: ${process.env.FRONTEND_URL || 'https://sandrosiqueiradavid.github.io/Tobby'}/reset-password.html?token=${resetToken}`);
+
+      // Simulação de email (remova em produção e adicione envio real)
+      res.json({ 
+        message: 'Se o e-mail existir, você receberá as instruções de recuperação',
+        // Apenas para desenvolvimento - remova em produção!
+        dev_token: process.env.NODE_ENV === 'development' ? resetToken : undefined
+      });
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      res.status(500).json({ error: 'Erro ao processar solicitação' });
+    }
+  },
+
+  // Redefinir senha com token
+  async resetPassword(req, res) {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ error: 'Token e nova senha são obrigatórios' });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'A senha deve ter no mínimo 6 caracteres' });
+      }
+
+      // Verificar token
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (err) {
+        return res.status(400).json({ error: 'Token inválido ou expirado' });
+      }
+
+      if (decoded.purpose !== 'password-reset') {
+        return res.status(400).json({ error: 'Token inválido' });
+      }
+
+      // Buscar usuário
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', decoded.userId)
+        .single();
+
+      if (error || !user) {
+        return res.status(404).json({ error: 'Usuário não encontrado' });
+      }
+
+      // Hash da nova senha
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Atualizar senha e limpar token
+      await supabase
+        .from('users')
+        .update({ 
+          password: hashedPassword,
+          reset_token: null,
+          reset_expires: null,
+          updated_at: new Date()
+        })
+        .eq('id', user.id);
+
+      res.json({ message: 'Senha redefinida com sucesso! Faça login com sua nova senha.' });
+    } catch (err) {
+      console.error('Reset password error:', err);
+      res.status(500).json({ error: 'Erro ao redefinir senha' });
+    }
+  }
