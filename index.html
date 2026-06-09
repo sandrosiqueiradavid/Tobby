@@ -49,6 +49,8 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border .2s}
 .field input:focus,.field select:focus{border-color:var(--green)}
 .field select option{background:var(--surface)}
+.forgot-link{text-align:right;margin-bottom:1rem;font-size:12px}
+.forgot-link span{color:var(--green);cursor:pointer}
 .btn-primary{width:100%;padding:13px;background:linear-gradient(135deg,#22D07A,#1BAD65);border:none;border-radius:var(--r2);color:#061A0F;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;transition:opacity .15s,transform .1s}
 .btn-primary:hover{opacity:.9}
 .btn-primary:active{transform:scale(.98)}
@@ -58,6 +60,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .auth-switch{text-align:center;margin-top:1rem;font-size:13px;color:var(--muted)}
 .auth-switch span{color:var(--green);cursor:pointer;font-weight:600}
 .err-msg{font-size:12px;color:var(--red);margin-top:6px;display:none;padding:8px;background:var(--red-dim);border-radius:6px}
+.success-msg{font-size:12px;margin-top:6px;padding:8px;border-radius:6px;text-align:center;background:var(--green-dim);color:var(--green);display:none}
 
 /* ---- APP SHELL ---- */
 #app{flex-direction:column}
@@ -214,6 +217,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <p>Entre para organizar suas finanças</p>
     <div class="field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com"></div>
     <div class="field"><label>Senha</label><input type="password" id="login-pwd" placeholder="••••••••"></div>
+    <div class="forgot-link"><span onclick="showForgotPassword()">Esqueci minha senha?</span></div>
     <div class="err-msg" id="login-err">E-mail ou senha inválidos</div>
     <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar →</button>
     <div class="auth-switch">Não tem conta? <span onclick="showRegister()">Criar agora</span></div>
@@ -230,6 +234,28 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
     <div class="err-msg" id="reg-err"></div>
     <button class="btn-primary" id="reg-btn" onclick="doRegister()" style="background:linear-gradient(135deg,#9D74FF,#6B4FCC);color:#fff">Criar conta →</button>
     <div class="auth-switch">Já tem conta? <span onclick="showLogin()">Entrar</span></div>
+  </div>
+
+  <!-- Forgot Password -->
+  <div class="auth-card hidden" id="forgot-card">
+    <h2>Recuperar senha</h2>
+    <p>Digite seu e-mail para receber as instruções</p>
+    <div class="field"><label>E-mail</label><input type="email" id="forgot-email" placeholder="seu@email.com"></div>
+    <div class="err-msg" id="forgot-err"></div>
+    <div class="success-msg" id="forgot-success"></div>
+    <button class="btn-primary" onclick="doForgotPassword()" style="background:linear-gradient(135deg,#9D74FF,#6B4FCC)">Enviar instruções →</button>
+    <button class="btn-ghost" onclick="showLogin()">Voltar ao login</button>
+  </div>
+
+  <!-- Reset Password -->
+  <div class="auth-card hidden" id="reset-card">
+    <h2>Redefinir senha</h2>
+    <p>Digite sua nova senha</p>
+    <div class="field"><label>Nova senha</label><input type="password" id="reset-pwd" placeholder="Mínimo 6 caracteres"></div>
+    <div class="field"><label>Confirmar senha</label><input type="password" id="reset-pwd-confirm" placeholder="Digite novamente"></div>
+    <div class="err-msg" id="reset-err"></div>
+    <button class="btn-primary" onclick="doResetPassword()">Redefinir senha →</button>
+    <button class="btn-ghost" onclick="showLogin()">Voltar ao login</button>
   </div>
 </div>
 
@@ -427,6 +453,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 <script src="api.js"></script>
 <script>
 // ===== CONSTANTS =====
+const API_BASE = 'https://tobby-api.onrender.com/api';
 const CATS = {
   moradia:{e:'🏠',bg:'#3D0F14'},alimentacao:{e:'🍽️',bg:'#3D2A0A'},
   saude:{e:'🏥',bg:'#0D2040'},transporte:{e:'🚗',bg:'#1F1540'},
@@ -441,6 +468,7 @@ let currentUser = null
 let allBills = []
 let currentFilter = 'all'
 let txMonth = { y: new Date().getFullYear(), m: new Date().getMonth() }
+let resetToken = null
 
 // ===== FORMAT =====
 function fmt(v) {
@@ -461,7 +489,16 @@ async function doLogin() {
   const btn = document.getElementById('login-btn')
   btn.disabled = true; btn.textContent = 'Entrando...'
   try {
-    currentUser = await api.login(email, pwd)
+    const response = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pwd })
+    })
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.error || 'Erro no login')
+    
+    localStorage.setItem('token', data.token)
+    currentUser = data.user
     document.getElementById('login-err').style.display = 'none'
     enterApp()
   } catch(e) {
@@ -481,7 +518,16 @@ async function doRegister() {
   const btn = document.getElementById('reg-btn')
   btn.disabled = true; btn.textContent = 'Criando conta...'
   try {
-    currentUser = await api.register(name, email, pwd, salary)
+    const response = await fetch(`${API_BASE}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password: pwd, salary })
+    })
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.error || 'Erro no registro')
+    
+    localStorage.setItem('token', data.token)
+    currentUser = data.user
     document.getElementById('reg-err').style.display = 'none'
     enterApp()
   } catch(e) {
@@ -493,20 +539,180 @@ async function doRegister() {
 }
 
 function doLogout() {
-  api.clearToken()
+  localStorage.removeItem('token')
   currentUser = null
   allBills = []
   showScreen('auth')
+  showLogin()
 }
 
 function showRegister() {
   document.getElementById('login-card').classList.add('hidden')
   document.getElementById('register-card').classList.remove('hidden')
+  document.getElementById('forgot-card').classList.add('hidden')
+  document.getElementById('reset-card').classList.add('hidden')
 }
 
 function showLogin() {
   document.getElementById('register-card').classList.add('hidden')
+  document.getElementById('forgot-card').classList.add('hidden')
+  document.getElementById('reset-card').classList.add('hidden')
   document.getElementById('login-card').classList.remove('hidden')
+  document.getElementById('forgot-email').value = ''
+  document.getElementById('reset-pwd').value = ''
+  document.getElementById('reset-pwd-confirm').value = ''
+  document.getElementById('forgot-err').style.display = 'none'
+  document.getElementById('reset-err').style.display = 'none'
+  document.getElementById('forgot-success').style.display = 'none'
+}
+
+// ===== FORGOT PASSWORD =====
+function showForgotPassword() {
+  document.getElementById('login-card').classList.add('hidden')
+  document.getElementById('register-card').classList.add('hidden')
+  document.getElementById('forgot-card').classList.remove('hidden')
+  document.getElementById('reset-card').classList.add('hidden')
+}
+
+async function doForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim()
+  if (!email) {
+    showError('forgot-err', 'Digite seu e-mail')
+    return
+  }
+  
+  const btn = event.target
+  btn.disabled = true
+  btn.textContent = 'Enviando...'
+  
+  try {
+    const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    })
+    
+    const data = await response.json()
+    
+    if (response.ok) {
+      const successDiv = document.getElementById('forgot-success')
+      successDiv.style.display = 'block'
+      successDiv.innerHTML = '📧 ' + data.message
+      document.getElementById('forgot-err').style.display = 'none'
+      document.getElementById('forgot-email').value = ''
+      
+      if (data.dev_token) {
+        console.log('🔧 Token dev:', data.dev_token)
+      }
+      
+      setTimeout(() => showLogin(), 3000)
+    } else {
+      showError('forgot-err', data.error || 'Erro ao enviar solicitação')
+    }
+  } catch (error) {
+    showError('forgot-err', 'Erro de conexão. Tente novamente.')
+  } finally {
+    btn.disabled = false
+    btn.textContent = 'Enviar instruções →'
+  }
+}
+
+function checkResetToken() {
+  const urlParams = new URLSearchParams(window.location.search)
+  const token = urlParams.get('token')
+  
+  if (token) {
+    resetToken = token
+    document.getElementById('login-card').classList.add('hidden')
+    document.getElementById('register-card').classList.add('hidden')
+    document.getElementById('forgot-card').classList.add('hidden')
+    document.getElementById('reset-card').classList.remove('hidden')
+  }
+}
+
+async function doResetPassword() {
+  const newPassword = document.getElementById('reset-pwd').value
+  const confirmPassword = document.getElementById('reset-pwd-confirm').value
+  
+  if (!newPassword || !confirmPassword) {
+    showError('reset-err', 'Preencha ambos os campos')
+    return
+  }
+  
+  if (newPassword !== confirmPassword) {
+    showError('reset-err', 'As senhas não coincidem')
+    return
+  }
+  
+  if (newPassword.length < 6) {
+    showError('reset-err', 'A senha deve ter no mínimo 6 caracteres')
+    return
+  }
+  
+  const btn = event.target
+  btn.disabled = true
+  btn.textContent = 'Redefinindo...'
+  
+  try {
+    const response = await fetch(`${API_BASE}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: resetToken, newPassword })
+    })
+    
+    const data = await response.json()
+    
+    if (response.ok) {
+      alert('✅ ' + data.message)
+      window.history.replaceState({}, document.title, window.location.pathname)
+      showLogin()
+    } else {
+      showError('reset-err', data.error || 'Erro ao redefinir senha')
+    }
+  } catch (error) {
+    showError('reset-err', 'Erro de conexão. Tente novamente.')
+  } finally {
+    btn.disabled = false
+    btn.textContent = 'Redefinir senha →'
+  }
+}
+
+function showError(elementId, message) {
+  const errDiv = document.getElementById(elementId)
+  errDiv.textContent = message
+  errDiv.style.display = 'block'
+  setTimeout(() => {
+    errDiv.style.display = 'none'
+  }, 5000)
+}
+
+function getToken() {
+  return localStorage.getItem('token')
+}
+
+function getHeaders() {
+  const token = getToken()
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  }
+}
+
+async function apiRequest(endpoint, options = {}) {
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    ...options,
+    headers: getHeaders()
+  })
+  
+  if (response.status === 401) {
+    localStorage.removeItem('token')
+    showScreen('auth')
+    throw new Error('Sessão expirada')
+  }
+  
+  const data = await response.json()
+  if (!response.ok) throw new Error(data.error || 'Erro na requisição')
+  return data
 }
 
 // ===== APP ENTRY =====
@@ -514,6 +720,7 @@ function enterApp() {
   showScreen('app')
   updateUserUI()
   navTo('home')
+  loadHome()
 }
 
 function updateUserUI() {
@@ -548,21 +755,29 @@ function navTo(tab) {
 // ===== HOME =====
 async function loadHome() {
   try {
-    const [dash, billsRes] = await Promise.all([api.getDashboard(), api.getBills()])
-    allBills = billsRes || []
+    const dash = await apiRequest('/bills/dashboard/summary')
+    const bills = await apiRequest('/bills')
+    allBills = bills.data || []
+    
     document.getElementById('bal-free').textContent = fmt(dash.freeBalance)
     document.getElementById('bal-in').textContent = fmt(dash.salary)
-    document.getElementById('bal-out').textContent = fmt(dash.totalPaid)
-    document.getElementById('bal-pct').textContent = dash.percentageCommitted + '%'
-    document.getElementById('stat-paid').textContent = dash.paidBills
-    document.getElementById('stat-pend').textContent = dash.pendingBills
-    document.getElementById('stat-late').textContent = dash.lateBills
-    document.getElementById('stat-total').textContent = dash.totalBills
-    const pp = dash.totalBills > 0 ? Math.round((dash.paidBills/dash.totalBills)*100) : 0
+    document.getElementById('bal-out').textContent = fmt(dash.totalPaid || 0)
+    document.getElementById('bal-pct').textContent = (dash.percentageCommitted || 0) + '%'
+    document.getElementById('stat-paid').textContent = dash.paidBills || 0
+    document.getElementById('stat-pend').textContent = dash.pendingBills || 0
+    document.getElementById('stat-late').textContent = dash.lateBills || 0
+    document.getElementById('stat-total').textContent = dash.totalBills || 0
+    
+    const total = dash.totalBills || 1
+    const pp = Math.round(((dash.paidBills || 0) / total) * 100)
     document.getElementById('prog-paid').style.width = pp+'%'
     document.getElementById('stat-paid-pct').textContent = pp+'% do total'
-    currentUser.salary = dash.salary
-    document.getElementById('prof-salary').textContent = fmt(dash.salary)
+    
+    if (dash.salary !== undefined) {
+      currentUser.salary = dash.salary
+      document.getElementById('prof-salary').textContent = fmt(dash.salary)
+    }
+    
     renderHomeBills(allBills)
   } catch(e) {
     console.error('loadHome error:', e)
@@ -595,7 +810,8 @@ function renderHomeBills(bills) {
 // ===== BILLS TAB =====
 async function loadBillsTab() {
   try {
-    allBills = await api.getBills() || []
+    const response = await apiRequest('/bills')
+    allBills = response.data || []
     renderBills(currentFilter)
   } catch(e) { showToast('Erro ao carregar contas') }
 }
@@ -674,10 +890,20 @@ async function saveBill() {
   const btn = document.getElementById('modal-save-btn')
   btn.disabled = true; btn.textContent = 'Salvando...'
   try {
-    if (eid) await api.updateBill(eid, name, value, due_day, category, status)
-    else await api.createBill(name, value, due_day, category, status)
+    if (eid) {
+      await apiRequest(`/bills/${eid}`, {
+        method: 'PUT',
+        body: JSON.stringify({ name, value, due_day, category, status })
+      })
+    } else {
+      await apiRequest('/bills', {
+        method: 'POST',
+        body: JSON.stringify({ name, value, due_day, category, status })
+      })
+    }
     closeModal()
-    allBills = await api.getBills() || []
+    const response = await apiRequest('/bills')
+    allBills = response.data || []
     renderBills(currentFilter)
     await loadHome()
     showToast('Conta salva com sucesso 🐶')
@@ -688,8 +914,9 @@ async function saveBill() {
 async function deleteBill(id) {
   if (!confirm('Remover esta conta?')) return
   try {
-    await api.deleteBill(id)
-    allBills = await api.getBills() || []
+    await apiRequest(`/bills/${id}`, { method: 'DELETE' })
+    const response = await apiRequest('/bills')
+    allBills = response.data || []
     renderBills(currentFilter)
     await loadHome()
     showToast('Conta removida')
@@ -699,8 +926,12 @@ async function deleteBill(id) {
 async function toggleStatus(id, currentStatus) {
   const newStatus = currentStatus === 'paid' ? 'pending' : 'paid'
   try {
-    await api.updateBillStatus(id, newStatus)
-    allBills = await api.getBills() || []
+    await apiRequest(`/bills/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: newStatus })
+    })
+    const response = await apiRequest('/bills')
+    allBills = response.data || []
     renderBills(currentFilter)
     await loadHome()
     showToast(newStatus==='paid' ? '✅ Marcada como paga' : '↩️ Marcada como pendente')
@@ -814,7 +1045,7 @@ async function sendMsg() {
 // ===== PROFILE =====
 async function loadProfile() {
   try {
-    const profile = await api.getProfile()
+    const profile = await apiRequest('/user/profile')
     currentUser = { ...currentUser, ...profile }
     document.getElementById('prof-salary').textContent = fmt(profile.salary)
     updateUserUI()
@@ -828,7 +1059,10 @@ async function editSalary() {
   const val = parseFloat(novo)
   if (isNaN(val) || val < 0) { showToast('Valor inválido'); return }
   try {
-    const updated = await api.updateSalary(val)
+    const updated = await apiRequest('/user/salary', {
+      method: 'PUT',
+      body: JSON.stringify({ salary: val })
+    })
     currentUser.salary = updated.salary
     document.getElementById('prof-salary').textContent = fmt(updated.salary)
     await loadHome()
@@ -846,17 +1080,23 @@ function showToast(msg) {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
-  if (api.token) {
+  const token = localStorage.getItem('token')
+  if (token) {
     try {
-      currentUser = await api.getProfile()
+      const profile = await apiRequest('/user/profile')
+      currentUser = profile
       enterApp()
     } catch(e) {
-      api.clearToken()
+      localStorage.removeItem('token')
       showScreen('auth')
+      showLogin()
     }
   } else {
     showScreen('auth')
+    showLogin()
+    checkResetToken()
   }
+  document.getElementById('loading').classList.add('hidden')
 })
 </script>
 </body>

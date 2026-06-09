@@ -35,7 +35,7 @@ class TobbyAPI {
       // Só redireciona para login se for rota protegida (não login/register)
       if (response.status === 401 && !endpoint.includes('/auth/')) {
         this.clearToken();
-        showAuth();
+        if (typeof showAuth === 'function') showAuth();
         throw new Error('Sessão expirada, faça login novamente');
       }
 
@@ -108,6 +108,25 @@ class TobbyAPI {
 
   async getDashboard() {
     return this.request('/bills/dashboard/summary');
+  }
+
+  // ===== RECUPERAÇÃO DE SENHA =====
+  async forgotPassword(email) {
+    const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    return response.json();
+  }
+
+  async resetPassword(token, newPassword) {
+    const response = await fetch(`${API_BASE}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword })
+    });
+    return response.json();
   }
 }
 
