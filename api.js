@@ -1,4 +1,5 @@
-const API_BASE = 'http://localhost:3000/api';
+// 🐶 Tobby API Client v2.0
+const API_BASE = 'https://tobby-api.onrender.com/api';
 
 class TobbyAPI {
   constructor() {
@@ -23,17 +24,24 @@ class TobbyAPI {
   }
 
   async request(endpoint, options = {}) {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers: this.getHeaders()
-    });
-    
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Erro na requisição');
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        ...options,
+        headers: this.getHeaders()
+      });
+
+      if (response.status === 401) {
+        this.clearToken();
+        showAuth();
+        throw new Error('Sessão expirada, faça login novamente');
+      }
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Erro na requisição');
+      return data;
+    } catch (err) {
+      throw err;
     }
-    
-    return response.json();
   }
 
   async register(name, email, password, salary) {
@@ -83,6 +91,17 @@ class TobbyAPI {
       method: 'PATCH',
       body: JSON.stringify({ status })
     });
+  }
+
+  async updateSalary(salary) {
+    return this.request('/user/salary', {
+      method: 'PUT',
+      body: JSON.stringify({ salary })
+    });
+  }
+
+  async getProfile() {
+    return this.request('/user/profile');
   }
 
   async getDashboard() {
