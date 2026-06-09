@@ -487,6 +487,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 <script src="api.js"></script>
 <script>
 // ===== CONSTANTS =====
+// API_BASE está definido apenas no api.js - NÃO declarar aqui!
 const CATS = {
   moradia:{e:'🏠',bg:'#3D0F14'},alimentacao:{e:'🍽️',bg:'#3D2A0A'},
   saude:{e:'🏥',bg:'#0D2040'},transporte:{e:'🚗',bg:'#1F1540'},
@@ -502,7 +503,6 @@ let allBills = []
 let currentFilter = 'all'
 let txMonth = { y: new Date().getFullYear(), m: new Date().getMonth() }
 let resetToken = null
-let currentMission = { text: '', progress: 0, completed: false }
 
 // ===== FORMAT =====
 function fmt(v) {
@@ -524,44 +524,37 @@ function updateTobyMood(dashboard) {
   const totalBills = dashboard.totalBills || 1
   const paidRatio = paidBills / totalBills
 
-  let mood = 'neutro'
   let avatar = '🐶'
   let message = ''
   let small = ''
   let badge = ''
 
   if (lateBills > 0) {
-    mood = 'preocupado'
     avatar = '😟'
     message = `Estou preocupado... Você tem ${lateBills} conta(s) atrasada(s).`
     small = 'Vamos resolver isso juntos!'
     badge = '😟 Preocupado'
   } else if (freeBalance < 500 && freeBalance > 0) {
-    mood = 'atento'
     avatar = '🧐'
     message = `Seu saldo livre é ${fmt(freeBalance)}. Vamos com cuidado este mês!`
     small = 'Evite gastos extras por enquanto'
     badge = '🧐 Atento'
   } else if (freeBalance > 2000) {
-    mood = 'feliz'
     avatar = '😊'
     message = `${fmt(freeBalance)} livres! Você está indo muito bem! 🎉`
     small = 'Que tal guardar um pouco para um sonho?'
     badge = '😊 Feliz'
   } else if (pct > 70) {
-    mood = 'preocupado'
     avatar = '😟'
     message = `Suas contas comprometem ${pct}% do salário. Ideal é abaixo de 50%`
     small = 'Quer ajuda para reduzir gastos?'
     badge = '😟 Preocupado'
   } else if (paidRatio === 1 && totalBills > 0) {
-    mood = 'orgulhoso'
     avatar = '🏆'
     message = 'Uau! Todas as contas estão pagas! Você é fera demais!'
     small = 'Orgulhoso de você!'
     badge = '🏆 Orgulhoso'
   } else {
-    mood = 'normal'
     avatar = '🐶'
     message = `Tudo dentro do esperado. Continue assim!`
     small = 'Estou aqui para o que precisar'
@@ -587,11 +580,11 @@ function updateMission(dashboard) {
 
   if (lateBills > 0) {
     missionText = `Pague ${lateBills} conta(s) atrasada(s)`
-    progress = 50 // mock
+    progress = 50
     reward = '🏆 Conquista: "Em dia"'
   } else if (pendingBills > 0) {
     missionText = `Quite ${Math.min(3, pendingBills)} conta(s) pendentes`
-    progress = (paidBills / (paidBills + pendingBills)) * 100
+    progress = totalBills > 0 ? (paidBills / totalBills) * 100 : 0
     reward = '🎯 Continue assim!'
   } else if (totalBills === 0) {
     missionText = 'Adicione sua primeira conta'
@@ -857,7 +850,6 @@ async function loadHome() {
       document.getElementById('prof-salary').textContent = fmt(dash.salary)
     }
     
-    // Atualizar Tobby e Missão
     updateTobyMood(dash)
     updateMission(dash)
     
