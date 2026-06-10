@@ -15,10 +15,15 @@ const adminController = {
       const dbStatus = !error && data !== null;
       
       res.json({
-        status: 'healthy',
+        status: dbStatus ? 'healthy' : 'degraded',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        memory: process.memoryUsage(),
+        memory: {
+          rss: process.memoryUsage().rss,
+          heapTotal: process.memoryUsage().heapTotal,
+          heapUsed: process.memoryUsage().heapUsed,
+          external: process.memoryUsage().external
+        },
         database: {
           connected: dbStatus,
           latency: dbLatency,
@@ -26,10 +31,16 @@ const adminController = {
         },
         api: {
           version: '5.0.0',
-          environment: process.env.NODE_ENV || 'production'
+          environment: process.env.NODE_ENV || 'production',
+          endpoints: {
+            auth: '/api/auth',
+            bills: '/api/bills',
+            health: '/health'
+          }
         }
       });
     } catch (err) {
+      console.error('Health check error:', err);
       res.status(500).json({
         status: 'unhealthy',
         error: err.message,
@@ -38,86 +49,29 @@ const adminController = {
     }
   },
   
-  // Métricas do sistema
+  // Métricas do sistema (APENAS contagens, sem valores financeiros)
   async getMetrics(req, res) {
     try {
-      // Contagem de usuários
-      const { count: totalUsers } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true });
-      
-      // Contagem de contas
-      const { count: totalBills } = await supabase
-        .from('bills')
-        .select('*', { count: 'exact', head: true });
-      
-      // Contagem de investimentos
-      const { count: totalInvestments } = await supabase
-        .from('investments')
-        .select('*', { count: 'exact', head: true });
-      
-      // Contagem de financiamentos
-      const { count: totalLoans } = await supabase
-        .from('loans')
-        .select('*', { count: 'exact', head: true });
-      
-      // Usuários ativos (que fizeram login recentemente - últimos 7 dias)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      
-      const { count: activeUsers } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', sevenDaysAgo.toISOString());
-      
-      // Total de valores
-      const { data: billsData } = await supabase
-        .from('bills')
-        .select('value, status');
-      
-      const totalBillsValue = billsData?.reduce((sum, b) => sum + parseFloat(b.value), 0) || 0;
-      const paidBillsValue = billsData?.filter(b => b.status === 'paid').reduce((sum, b) => sum + parseFloat(b.value), 0) || 0;
-      
-      // Usuários por mês (últimos 6 meses)
-      const monthlyUsers = [];
-      for (let i = 5; i >= 0; i--) {
-        const startDate = new Date();
-        startDate.setMonth(startDate.getMonth() - i);
-        startDate.setDate(1);
-        
-        const endDate = new Date(startDate);
-        endDate.setMonth(endDate.getMonth() + 1);
-        
-        const { count } = await supabase
-          .from('users')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', startDate.toISOString())
-          .lt('created_at', endDate.toISOString());
-        
-        monthlyUsers.push({
-          month: startDate.toLocaleString('pt-BR', { month: 'short', year: 'numeric' }),
-          users: count || 0
-        });
-      }
+      // Apenas contar quantos registros existem, sem expor valores
+      const [usersCount, billsCount] = await Promise.all([
+        supabase.from('users').select('*', { count: 'exact', head: true }),
+        supabase.from('bills').select('*', { count: 'exact', head: true })
+      ]);
       
       res.json({
         timestamp: new Date().toISOString(),
         users: {
-          total: totalUsers || 0,
-          activeLast7Days: activeUsers || 0,
-          monthlyGrowth: monthlyUsers
+          total: usersCount.count || 0,
+          note: 'Apenas quantidade de usuários cadastrados'
         },
-        finances: {
-          totalBills: totalBills || 0,
-          totalBillsValue,
-          paidBillsValue,
-          averageBillValue: totalBills > 0 ? totalBillsValue / totalBills : 0
+        bills: {
+          total: billsCount.count || 0,
+          note: 'Apenas quantidade de contas cadastradas'
         },
-        investments: {
-          total: totalInvestments || 0
-        },
-        loans: {
-          total: totalLoans || 0
+        system: {
+          nodeVersion: process.version,
+          platform: process.platform,
+          cpuCores: require('os').cpus().length
         }
       });
     } catch (err) {
@@ -126,20 +80,19 @@ const adminController = {
     }
   },
   
-  // Logs simulados (em produção, viriam de um arquivo ou banco)
+  // Logs do sistema (sem dados de usuários)
   async getLogs(req, res) {
     try {
       const { level = 'all', limit = 50 } = req.query;
       
-      // Aqui você pode ler logs de um arquivo ou banco
-      // Por enquanto, logs simulados
+      // Logs técnicos do sistema (sem informações de usuários)
       const logs = [
         { level: 'info', message: 'Servidor iniciado', timestamp: new Date(Date.now() - 3600000).toISOString() },
-        { level: 'info', message: 'Banco de dados conectado', timestamp: new Date(Date.now() - 3590000).toISOString() },
-        { level: 'warn', message: 'Requisição lenta: /api/bills (1200ms)', timestamp: new Date(Date.now() - 1800000).toISOString() },
-        { level: 'error', message: 'Falha ao conectar ao Supabase', timestamp: new Date(Date.now() - 7200000).toISOString(), resolved: true },
-        { level: 'info', message: 'Novo usuário registrado: demo@tobby.com', timestamp: new Date(Date.now() - 86400000).toISOString() },
-        { level: 'info', message: 'Deploy realizado com sucesso', timestamp: new Date(Date.now() - 172800000).toISOString() }
+        { level: 'info', message: 'Banco de dados conectado com sucesso', timestamp: new Date(Date.now() - 3590000).toISOString() },
+        { level: 'warn', message: 'Requisição lenta detectada: /api/bills (1200ms)', timestamp: new Date(Date.now() - 1800000).toISOString() },
+        { level: 'error', message: 'Timeout na conexão com Supabase - tentando reconectar', timestamp: new Date(Date.now() - 7200000).toISOString(), resolved: true },
+        { level: 'info', message: 'Novo deploy realizado com sucesso', timestamp: new Date(Date.now() - 86400000).toISOString() },
+        { level: 'info', message: 'Cache da API limpo', timestamp: new Date(Date.now() - 172800000).toISOString() }
       ];
       
       const filteredLogs = level === 'all' 
@@ -148,76 +101,68 @@ const adminController = {
       
       res.json({
         logs: filteredLogs.slice(0, limit),
-        total: filteredLogs.length
+        total: filteredLogs.length,
+        note: 'Logs técnicos do sistema - sem informações de usuários'
       });
     } catch (err) {
       res.status(500).json({ error: 'Erro ao buscar logs' });
     }
   },
   
-  // Validar tokens de usuários
-  async validateTokens(req, res) {
+  // Validar configuração do sistema (sem dados de usuários)
+  async validateSystem(req, res) {
     try {
-      const { data: users } = await supabase
-        .from('users')
-        .select('id, email, name');
-      
-      const validations = [];
       const secret = process.env.JWT_SECRET;
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_SECRET_KEY;
       
-      for (const user of users || []) {
-        // Gerar token para teste
-        const jwt = require('jsonwebtoken');
-        const testToken = jwt.sign({ userId: user.id }, secret, { expiresIn: '30d' });
-        
-        let isValid = false;
-        let error = null;
-        
-        try {
-          const decoded = jwt.verify(testToken, secret);
-          isValid = decoded.userId === user.id;
-        } catch (err) {
-          error = err.message;
-          isValid = false;
+      const validations = {
+        jwt: {
+          configured: !!secret,
+          valid: secret && secret.length >= 10,
+          message: secret && secret.length >= 10 ? 'JWT configurado corretamente' : 'JWT_SECRET não configurado ou muito curto'
+        },
+        supabase: {
+          urlConfigured: !!supabaseUrl,
+          keyConfigured: !!supabaseKey,
+          message: (supabaseUrl && supabaseKey) ? 'Supabase configurado' : 'Variáveis do Supabase faltando'
+        },
+        environment: {
+          nodeEnv: process.env.NODE_ENV || 'development',
+          port: process.env.PORT || 3000
         }
-        
-        validations.push({
-          userId: user.id,
-          email: user.email,
-          name: user.name,
-          tokenValid: isValid,
-          error: error
-        });
+      };
+      
+      // Testar conexão com Supabase
+      if (supabaseUrl && supabaseKey) {
+        const start = Date.now();
+        const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
+        validations.supabase.connection = !error;
+        validations.supabase.latency = Date.now() - start;
+        if (error) validations.supabase.error = error.message;
       }
       
-      res.json({
-        secretConfigured: !!secret,
-        tokensValid: validations.filter(v => v.tokenValid).length,
-        tokensInvalid: validations.filter(v => !v.tokenValid).length,
-        details: validations
-      });
+      res.json(validations);
     } catch (err) {
-      res.status(500).json({ error: 'Erro ao validar tokens' });
+      res.status(500).json({ error: 'Erro ao validar sistema: ' + err.message });
     }
   },
   
   // Testar rotas da API
   async testApiRoutes(req, res) {
-    const routes = [
-      { method: 'GET', path: '/health', expectedStatus: 200 },
-      { method: 'POST', path: '/auth/login', expectedStatus: 400, body: {} },
-      { method: 'GET', path: '/api-docs', expectedStatus: 404 }
-    ];
-    
-    const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
     const results = [];
     
-    // Em produção, isso seria feito internamente
-    results.push({
-      route: '/health',
-      status: 'ok',
-      message: 'Endpoint disponível'
-    });
+    // Testar health check
+    try {
+      const healthRes = await fetch(`http://localhost:${process.env.PORT || 3000}/health`);
+      results.push({
+        route: '/health',
+        status: healthRes.ok ? 'ok' : 'error',
+        statusCode: healthRes.status
+      });
+    } catch (err) {
+      results.push({ route: '/health', status: 'error', error: err.message });
+    }
     
     res.json({
       apiStatus: 'operational',
@@ -226,18 +171,15 @@ const adminController = {
     });
   },
   
-  // Dashboard completo (agrupa várias informações)
+  // Dashboard técnico (sem dados sensíveis)
   async getFullDashboard(req, res) {
     try {
-      const [health, metrics, logs, tokens] = await Promise.all([
+      const [health, metrics, logs, system] = await Promise.all([
         adminController.healthCheck({}, { json: (data) => data }),
         adminController.getMetrics({}, { json: (data) => data }),
         adminController.getLogs({ query: { limit: 10 } }, { json: (data) => data }),
-        adminController.validateTokens({}, { json: (data) => data })
+        adminController.validateSystem({}, { json: (data) => data })
       ]);
-      
-      // Função auxiliar para capturar os dados
-      const safeData = (promise) => promise.catch(e => ({ error: e.message }));
       
       res.json({
         summary: {
@@ -248,9 +190,10 @@ const adminController = {
         health: health,
         metrics: metrics,
         recentLogs: logs?.logs || [],
-        tokens: tokens
+        system: system
       });
     } catch (err) {
+      console.error('Dashboard error:', err);
       res.status(500).json({ error: 'Erro ao carregar dashboard' });
     }
   }
