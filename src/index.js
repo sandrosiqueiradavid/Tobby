@@ -15,11 +15,13 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/user', require('./routes/user'));
 app.use('/api/bills', require('./routes/bills'));
+app.use('/api/hollerith', require('./routes/hollerith'));
+app.use('/api/investment', require('./routes/investment'));
 
 // Health check
 app.get('/', (req, res) => res.json({
   status: 'ok',
-  app: '🐶 Tobby API v2.0',
+  app: '🐶 Tobby API v3.0',
   supabase: !!process.env.SUPABASE_URL
 }));
 

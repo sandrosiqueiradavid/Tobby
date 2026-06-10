@@ -109,7 +109,6 @@ class TobbyAPI {
     return this.request('/bills/dashboard/summary');
   }
 
-  // Recuperação de senha
   async forgotPassword(email) {
     const response = await fetch(`${API_BASE}/auth/forgot-password`, {
       method: 'POST',
@@ -126,6 +125,31 @@ class TobbyAPI {
       body: JSON.stringify({ token, newPassword })
     });
     return response.json();
+  }
+
+  async processHollerith(hollerithText) {
+    return this.request('/hollerith/process', {
+      method: 'POST',
+      body: JSON.stringify({ hollerithText })
+    });
+  }
+
+  async getIncomeReport(year) {
+    const url = year ? `/hollerith/report?year=${year}` : '/hollerith/report';
+    return this.request(url);
+  }
+
+  async getIRDeclaration(year) {
+    const url = year ? `/hollerith/ir-declaration?year=${year}` : '/hollerith/ir-declaration';
+    return this.request(url);
+  }
+
+  async getInvestmentNews() {
+    return this.request('/investment/news');
+  }
+
+  async getRecommendations() {
+    return this.request('/investment/recommendations');
   }
 }
 

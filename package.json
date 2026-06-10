@@ -1,7 +1,7 @@
 {
   "name": "tobby-backend",
-  "version": "2.0.0",
-  "description": "Tobby Financial App - Backend com Supabase",
+  "version": "3.0.0",
+  "description": "Tobby Financial App - Backend Completo",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

@@ -1,10 +1,10 @@
-const express = require('express')
-const router = express.Router()
-const userController = require('../controllers/userController')
-const auth = require('../middleware/auth')
+const express = require('express');
+const router = express.Router();
+const userController = require('../controllers/userController');
+const authMiddleware = require('../middleware/auth');
 
-router.use(auth)
-router.get('/profile', userController.getProfile)
-router.put('/salary', userController.updateSalary)
+router.use(authMiddleware);
+router.get('/profile', userController.getProfile);
+router.put('/salary', userController.updateSalary);
 
-module.exports = router
+module.exports = router;
