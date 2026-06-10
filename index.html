@@ -64,7 +64,7 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== LOADING ===== */
+/* Loading */
 #loading {
   flex-direction: column;
   align-items: center;
@@ -82,7 +82,7 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { font-size: 14px; color: var(--muted); }
 
-/* ===== AUTH ===== */
+/* Auth */
 #auth {
   flex-direction: column;
   align-items: center;
@@ -191,10 +191,9 @@ body {
   display: none;
 }
 
-/* ===== APP SHELL (REDESENHADO) ===== */
+/* App Shell */
 #app { flex-direction: column; }
 
-/* Header */
 .topbar {
   display: flex;
   align-items: center;
@@ -246,7 +245,6 @@ body {
   cursor: pointer;
 }
 
-/* Content */
 .content {
   flex: 1;
   padding: 1.25rem;
@@ -254,7 +252,7 @@ body {
   padding-bottom: 80px;
 }
 
-/* ===== TOBY MOOD (REATIVO) ===== */
+/* Toby Mood */
 .toby-mood {
   background: linear-gradient(135deg, var(--card), var(--card2));
   border-radius: 20px;
@@ -287,7 +285,7 @@ body {
   color: var(--green);
 }
 
-/* ===== MISSION CARD ===== */
+/* Mission Card */
 .mission-card {
   background: linear-gradient(135deg, #1F1540, #0D2040);
   border-radius: 20px;
@@ -319,7 +317,7 @@ body {
 }
 .mission-reward { font-size: 10px; color: var(--muted); margin-top: 8px; }
 
-/* ===== BALANCE CARD (ESTILO MERCADO PAGO) ===== */
+/* Balance Card */
 .balance-card {
   background: linear-gradient(135deg, #0A1A2F, #0D2040);
   border-radius: 24px;
@@ -374,41 +372,7 @@ body {
 .balance-detail-value.income { color: var(--green); }
 .balance-detail-value.expense { color: var(--red); }
 
-/* ===== QUICK ACTIONS (ESTILO MERCADO PAGO) ===== */
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-.quick-action {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 0.75rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid var(--border);
-}
-.quick-action:active { transform: scale(.96); background: var(--card2); }
-.quick-action-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--surface);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 8px;
-  font-size: 20px;
-}
-.quick-action-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-/* ===== STATS GRID ===== */
+/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -441,7 +405,7 @@ body {
   font-weight: 700;
 }
 
-/* ===== SECTION HEADER ===== */
+/* Section Header */
 .section-header {
   display: flex;
   align-items: center;
@@ -458,7 +422,7 @@ body {
   cursor: pointer;
 }
 
-/* ===== BILLS LIST ===== */
+/* Bills List */
 .bill-item {
   background: var(--card);
   border: 1px solid var(--border);
@@ -497,7 +461,7 @@ body {
 .status-pending { background: var(--amber-dim); color: var(--amber); }
 .status-late { background: var(--red-dim); color: var(--red); }
 
-/* ===== BOTTOM NAV ===== */
+/* Bottom Nav */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -530,7 +494,7 @@ body {
 .nav-icon { font-size: 20px; }
 .nav-label { font-size: 10px; font-weight: 600; }
 
-/* ===== MODAL ===== */
+/* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -567,7 +531,7 @@ body {
 .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 1.25rem; }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
-/* ===== CHAT ===== */
+/* Chat */
 .chat-msgs {
   display: flex;
   flex-direction: column;
@@ -640,7 +604,7 @@ body {
   display: none;
 }
 
-/* ===== TOAST ===== */
+/* Toast */
 .toast {
   position: fixed;
   bottom: 80px;
@@ -663,7 +627,6 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Utilidades */
 textarea {
   width: 100%;
   background: var(--surface);
@@ -676,6 +639,18 @@ textarea {
   resize: vertical;
 }
 textarea:focus { outline: none; border-color: var(--green); }
+
+/* Investments, Loans, Assets */
+.investment-item, .loan-item, .asset-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 </style>
 </head>
 <body>
@@ -694,7 +669,6 @@ textarea:focus { outline: none; border-color: var(--green); }
     <div class="logo-sub">Organizador Financeiro</div>
   </div>
 
-  <!-- Login -->
   <div class="auth-card" id="login-card">
     <h2>Bem-vindo de volta</h2>
     <p>Entre para organizar suas finanças</p>
@@ -706,7 +680,6 @@ textarea:focus { outline: none; border-color: var(--green); }
     <div class="auth-switch">Não tem conta? <span onclick="showRegister()">Criar agora</span></div>
   </div>
 
-  <!-- Register -->
   <div class="auth-card hidden" id="register-card">
     <h2>Criar conta grátis</h2>
     <p>Comece a organizar suas finanças hoje</p>
@@ -719,7 +692,6 @@ textarea:focus { outline: none; border-color: var(--green); }
     <div class="auth-switch">Já tem conta? <span onclick="showLogin()">Entrar</span></div>
   </div>
 
-  <!-- Forgot Password -->
   <div class="auth-card hidden" id="forgot-card">
     <h2>Recuperar senha</h2>
     <p>Digite seu e-mail para receber as instruções</p>
@@ -730,7 +702,6 @@ textarea:focus { outline: none; border-color: var(--green); }
     <button class="btn-ghost" onclick="showLogin()">Voltar ao login</button>
   </div>
 
-  <!-- Reset Password -->
   <div class="auth-card hidden" id="reset-card">
     <h2>Redefinir senha</h2>
     <p>Digite sua nova senha</p>
@@ -773,7 +744,6 @@ textarea:focus { outline: none; border-color: var(--green); }
       <div class="mission-reward" id="mission-reward">✨ Complete para ganhar uma conquista</div>
     </div>
 
-    <!-- BALANCE CARD -->
     <div class="balance-card">
       <div class="balance-label">Saldo disponível</div>
       <div class="balance-value" id="bal-free">R$ 0,00</div>
@@ -793,33 +763,11 @@ textarea:focus { outline: none; border-color: var(--green); }
       </div>
     </div>
 
-    <!-- QUICK ACTIONS -->
-    <div class="quick-actions">
-      <div class="quick-action" onclick="openModal()">
-        <div class="quick-action-icon"><i class="fas fa-plus"></i></div>
-        <div class="quick-action-label">Pagar</div>
-      </div>
-      <div class="quick-action" onclick="showToast('Em breve 📤')">
-        <div class="quick-action-icon"><i class="fas fa-arrow-up"></i></div>
-        <div class="quick-action-label">Transferir</div>
-      </div>
-      <div class="quick-action" onclick="showToast('Em breve 📥')">
-        <div class="quick-action-icon"><i class="fas fa-arrow-down"></i></div>
-        <div class="quick-action-label">Receber</div>
-      </div>
-      <div class="quick-action" onclick="showToast('Em breve 🔋')">
-        <div class="quick-action-icon"><i class="fas fa-mobile-alt"></i></div>
-        <div class="quick-action-label">Recarregar</div>
-      </div>
-    </div>
-
-    <!-- STATS GRID -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon" style="background:var(--green-dim)"><i class="fas fa-check-circle" style="color:var(--green)"></i></div>
         <div class="stat-label">Contas pagas</div>
         <div class="stat-value" id="stat-paid" style="color:var(--green)">0</div>
-        <div class="progress-bar" style="height:3px;background:var(--border);border-radius:99px;margin-top:6px"><div class="progress-fill" id="prog-paid" style="background:var(--green);width:0%;height:3px;border-radius:99px"></div></div>
       </div>
       <div class="stat-card">
         <div class="stat-icon" style="background:var(--amber-dim)"><i class="fas fa-clock" style="color:var(--amber)"></i></div>
@@ -869,7 +817,34 @@ textarea:focus { outline: none; border-color: var(--green); }
     <div id="investments-list-container"></div>
   </div>
 
-  <!-- AI -->
+  <!-- FINANCIAMENTOS -->
+  <div id="tab-loans" class="content" style="display:none">
+    <div class="section-header"><h3>Dívidas e Financiamentos</h3></div>
+    <div class="stats-grid" style="margin-bottom:1rem">
+      <div class="stat-card"><div class="stat-icon">💸</div><div class="stat-label">Total de Dívidas</div><div class="stat-value" id="total-debt">R$ 0</div></div>
+      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Prestação Mensal</div><div class="stat-value" id="total-monthly">R$ 0</div></div>
+    </div>
+    <button class="btn-primary" onclick="showAddLoanModal()" style="margin-bottom:1rem;border-radius:30px"><i class="fas fa-plus"></i> Adicionar Financiamento</button>
+    <div id="loans-list-container"></div>
+  </div>
+
+  <!-- PATRIMÔNIO -->
+  <div id="tab-wealth" class="content" style="display:none">
+    <div class="section-header"><h3>Patrimônio Líquido</h3></div>
+    <div class="balance-card" style="text-align:center;margin-bottom:1rem">
+      <div class="balance-label">SEU PATRIMÔNIO</div>
+      <div class="balance-value" id="net-worth">R$ 0</div>
+      <div class="balance-details">
+        <div class="balance-detail"><div class="balance-detail-label">Ativos</div><div class="balance-detail-value income" id="total-assets">R$ 0</div></div>
+        <div class="balance-detail"><div class="balance-detail-label">Passivos</div><div class="balance-detail-value expense" id="total-liabilities">R$ 0</div></div>
+      </div>
+    </div>
+    <div class="section-header"><h3>Seus Bens</h3></div>
+    <button class="btn-primary" onclick="showAddAssetModal()" style="margin-bottom:.5rem;border-radius:30px"><i class="fas fa-plus"></i> Adicionar Bem</button>
+    <div id="assets-list-container"></div>
+  </div>
+
+  <!-- IA -->
   <div id="tab-ai" class="content" style="display:none">
     <div class="ai-header" style="text-align:center;padding:1rem 0">
       <div class="ai-orb" style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#9D74FF,#4A9EFF,#22D07A);margin:0 auto .85rem;display:flex;align-items:center;justify-content:center;font-size:26px">🤖</div>
@@ -915,8 +890,9 @@ textarea:focus { outline: none; border-color: var(--green); }
     <div class="nav-item active" id="nav-home" onclick="navTo('home')"><div class="nav-icon"><i class="fas fa-home"></i></div><div class="nav-label">Início</div></div>
     <div class="nav-item" id="nav-bills" onclick="navTo('bills')"><div class="nav-icon"><i class="fas fa-receipt"></i></div><div class="nav-label">Contas</div></div>
     <div class="nav-item" id="nav-investments" onclick="navTo('investments')"><div class="nav-icon"><i class="fas fa-chart-line"></i></div><div class="nav-label">Investir</div></div>
+    <div class="nav-item" id="nav-loans" onclick="navTo('loans')"><div class="nav-icon"><i class="fas fa-hand-holding-usd"></i></div><div class="nav-label">Dívidas</div></div>
+    <div class="nav-item" id="nav-wealth" onclick="navTo('wealth')"><div class="nav-icon"><i class="fas fa-building"></i></div><div class="nav-label">Patrimônio</div></div>
     <div class="nav-item" id="nav-ai" onclick="navTo('ai')"><div class="nav-icon"><i class="fas fa-robot"></i></div><div class="nav-label">IA</div></div>
-    <div class="nav-item" id="nav-profile" onclick="navTo('profile')"><div class="nav-icon"><i class="fas fa-user"></i></div><div class="nav-label">Perfil</div></div>
   </nav>
 </div>
 
@@ -932,7 +908,7 @@ textarea:focus { outline: none; border-color: var(--green); }
         <div class="field"><label>Dia vencimento</label><input type="number" id="f-day" placeholder="1-31" min="1" max="31"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label>Categoria</label><select id="f-cat"><option value="moradia">🏠 Moradia</option><option value="alimentacao">🍽️ Alimentação</option><option value="saude">🏥 Saúde</option><option value="transporte">🚗 Transporte</option><option value="lazer">🎮 Lazer</option><option value="outros">📦 Outros</option></select></div>
+        <div class="field"><label>Categoria</label><select id="f-cat"><option value="moradia">🏠 Moradia</option><option value="alimentacao">🍽️ Alimentação</option><option value="saude">🏥 Saúde</option><option value="transporte">🚗 Transporte</option><option value="lazer">🎮 Lazer</option><option value="educacao">📚 Educação</option><option value="tecnologia">💻 Tecnologia</option><option value="financeiro">💳 Financeiro</option><option value="outros">📦 Outros</option></select></div>
         <div class="field"><label>Status</label><select id="f-status"><option value="pending">Pendente</option><option value="paid">Pago</option><option value="late">Atrasado</option></select></div>
       </div>
       <input type="hidden" id="f-id">
@@ -948,9 +924,15 @@ textarea:focus { outline: none; border-color: var(--green); }
 <script src="api.js"></script>
 <script>
 // ===== CONSTANTS =====
-const CATS = {moradia:{e:'🏠',bg:'#3D0F14'},alimentacao:{e:'🍽️',bg:'#3D2A0A'},saude:{e:'🏥',bg:'#0D2040'},transporte:{e:'🚗',bg:'#1F1540'},lazer:{e:'🎮',bg:'#0F3D25'},outros:{e:'📦',bg:'#2A3050'}}
+const CATS = {
+  moradia:{e:'🏠',bg:'#3D0F14'},alimentacao:{e:'🍽️',bg:'#3D2A0A'},
+  saude:{e:'🏥',bg:'#0D2040'},transporte:{e:'🚗',bg:'#1F1540'},
+  lazer:{e:'🎮',bg:'#0F3D25'},educacao:{e:'📚',bg:'#1F1540'},
+  tecnologia:{e:'💻',bg:'#0D2040'},financeiro:{e:'💳',bg:'#3D0F14'},
+  outros:{e:'📦',bg:'#2A3050'}
+}
 const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']
-const TABS = ['home','bills','investments','ai','profile']
+const TABS = ['home','bills','investments','loans','wealth','ai','profile']
 
 let currentUser = null, allBills = [], currentFilter = 'all'
 let txMonth = { y: new Date().getFullYear(), m: new Date().getMonth() }
@@ -975,9 +957,9 @@ async function doResetPassword(){ const newPassword=document.getElementById('res
 
 function updateUserUI(){ if(!currentUser)return; const initials=currentUser.name.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase(); document.getElementById('top-avatar').textContent=initials; document.getElementById('prof-av').textContent=initials; document.getElementById('prof-name').textContent=currentUser.name; document.getElementById('prof-email').textContent=currentUser.email; document.getElementById('home-name').textContent=currentUser.name.split(' ')[0]; const now=new Date(); document.getElementById('home-month').textContent=MONTHS[now.getMonth()]+' '+now.getFullYear() }
 function enterApp(){ showScreen('app'); updateUserUI(); navTo('home'); loadHome() }
-function navTo(tab){ TABS.forEach(t=>{ const el=document.getElementById('tab-'+t); const nav=document.getElementById('nav-'+t); if(el)el.style.display=t===tab?'block':'none'; if(nav)nav.classList.toggle('active',t===tab) }); if(tab==='home')loadHome(); if(tab==='bills')loadBillsTab(); if(tab==='investments')loadInvestments(); if(tab==='ai')loadInsights(); if(tab==='profile')loadProfile() }
+function navTo(tab){ TABS.forEach(t=>{ const el=document.getElementById('tab-'+t); const nav=document.getElementById('nav-'+t); if(el)el.style.display=t===tab?'block':'none'; if(nav)nav.classList.toggle('active',t===tab) }); if(tab==='home')loadHome(); if(tab==='bills')loadBillsTab(); if(tab==='investments')loadInvestments(); if(tab==='loans')loadLoans(); if(tab==='wealth')loadWealth(); if(tab==='ai')loadInsights(); if(tab==='profile')loadProfile() }
 
-async function loadHome(){ try{ const dash=await api.getDashboard(); const bills=await api.getBills(); allBills=bills||[]; document.getElementById('bal-free').textContent=fmt(dash.freeBalance); document.getElementById('bal-in').textContent=fmt(dash.salary); document.getElementById('bal-out').textContent=fmt(dash.totalPaid||0); document.getElementById('bal-pct').textContent=(dash.percentageCommitted||0)+'%'; document.getElementById('stat-paid').textContent=dash.paidBills||0; document.getElementById('stat-pend').textContent=dash.pendingBills||0; document.getElementById('stat-late').textContent=dash.lateBills||0; document.getElementById('stat-total').textContent=dash.totalBills||0; const total=dash.totalBills||1; const pp=Math.round(((dash.paidBills||0)/total)*100); document.getElementById('prog-paid').style.width=pp+'%'; if(dash.salary!==undefined){currentUser.salary=dash.salary; document.getElementById('prof-salary').textContent=fmt(dash.salary)} updateTobyMood(dash); updateMission(dash); renderHomeBills(allBills) }catch(e){console.error(e)} }
+async function loadHome(){ try{ const dash=await api.getDashboard(); const bills=await api.getBills(); allBills=bills||[]; document.getElementById('bal-free').textContent=fmt(dash.freeBalance); document.getElementById('bal-in').textContent=fmt(dash.salary); document.getElementById('bal-out').textContent=fmt(dash.totalPaid||0); document.getElementById('bal-pct').textContent=(dash.percentageCommitted||0)+'%'; document.getElementById('stat-paid').textContent=dash.paidBills||0; document.getElementById('stat-pend').textContent=dash.pendingBills||0; document.getElementById('stat-late').textContent=dash.lateBills||0; document.getElementById('stat-total').textContent=dash.totalBills||0; if(dash.salary!==undefined){currentUser.salary=dash.salary; document.getElementById('prof-salary').textContent=fmt(dash.salary)} updateTobyMood(dash); updateMission(dash); renderHomeBills(allBills) }catch(e){console.error(e)} }
 function updateTobyMood(dash){ const free=dash.freeBalance||0, late=dash.lateBills||0, pct=dash.percentageCommitted||0, paid=dash.paidBills||0, total=dash.totalBills||1; let avatar='🐶',msg='',small='',badge='🐶'; if(late>0){avatar='😟';msg=`Estou preocupado... Você tem ${late} conta(s) atrasada(s).`;small='Vamos resolver isso juntos!';badge='Preocupado'} else if(free<500&&free>0){avatar='🧐';msg=`Seu saldo livre é ${fmt(free)}. Vamos com cuidado!`;small='Evite gastos extras';badge='Atento'} else if(free>2000){avatar='😊';msg=`${fmt(free)} livres! Você está indo muito bem! 🎉`;small='Que tal guardar para um sonho?';badge='Feliz'} else if(pct>70){avatar='😟';msg=`Suas contas comprometem ${pct}% do salário.`;small='Ideal é abaixo de 50%';badge='Preocupado'} else if(paid===total&&total>0){avatar='🏆';msg='Uau! Todas as contas estão pagas!';small='Orgulhoso de você!';badge='Orgulhoso'} else{avatar='🐶';msg='Tudo dentro do esperado. Continue assim!';small='Estou aqui para o que precisar';badge='Normal'} document.getElementById('toby-avatar').textContent=avatar; document.getElementById('toby-message').textContent=msg; document.getElementById('toby-small').textContent=small; document.getElementById('toby-badge').textContent=badge }
 function updateMission(dash){ const late=dash.lateBills||0, pending=dash.pendingBills||0, paid=dash.paidBills||0, total=dash.totalBills||0; let txt='',prog=0,reward=''; if(late>0){txt=`Pague ${late} conta(s) atrasada(s)`;prog=50;reward='🏆 Conquista: "Em dia"'} else if(pending>0){txt=`Quite ${Math.min(3,pending)} conta(s) pendentes`;prog=total>0?(paid/total)*100:0;reward='🎯 Continue assim!'} else if(total===0){txt='Adicione sua primeira conta';prog=0;reward='🐶 Comece a jornada!'} else{txt='Mantenha todas as contas em dia';prog=100;reward='✨ Meta cumprida!'} document.getElementById('mission-text').textContent=txt; document.getElementById('mission-progress').style.width=prog+'%'; document.getElementById('mission-reward').innerHTML=reward }
 function renderHomeBills(bills){ const today=new Date().getDate(); const upcoming=bills.filter(b=>b.status==='pending'||b.status==='late').sort((a,b)=>a.due_day-b.due_day).slice(0,4); const el=document.getElementById('home-bills-list'); if(!upcoming.length){el.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--hint)">Sem contas pendentes 🎉</div>';return} el.innerHTML=upcoming.map(b=>{const cat=CATS[b.category]||CATS.outros; const isLate=b.due_day<today&&b.status!=='paid'; return `<div class="bill-item" onclick="navTo('bills')"><div class="bill-icon" style="background:${cat.bg}">${cat.e}</div><div class="bill-info"><div class="bill-name">${b.name}</div><div class="bill-meta">${isLate?'Atrasada':'Vence dia '+b.due_day}</div></div><div class="bill-right"><div class="bill-value">${fmt(b.value)}</div><div class="bill-status ${isLate?'status-late':'status-pending'}">${isLate?'Atrasado':'Pendente'}</div></div></div>`}).join('') }
@@ -990,16 +972,30 @@ async function saveBill(){ const name=document.getElementById('f-name').value.tr
 async function deleteBill(id){ if(!confirm('Remover esta conta?'))return; try{ await api.deleteBill(id); const bills=await api.getBills(); allBills=bills||[]; renderBills(currentFilter); await loadHome(); showToast('Conta removida') }catch(e){showToast('Erro ao remover')} }
 async function toggleStatus(id,currentStatus){ const newStatus=currentStatus==='paid'?'pending':'paid'; try{ await api.updateBillStatus(id,newStatus); const bills=await api.getBills(); allBills=bills||[]; renderBills(currentFilter); await loadHome(); showToast(newStatus==='paid'?'✅ Marcada como paga':'↩️ Marcada como pendente') }catch(e){showToast('Erro ao atualizar')} }
 
-async function loadInvestments(){ try{ const data=await api.getInvestments(); const summary=data.summary||{}; document.getElementById('total-invested').textContent=fmt(summary.totalInvested||0); const pl=summary.totalProfitLossPercent||0; document.getElementById('profit-loss').textContent=(pl>=0?'+':'')+pl.toFixed(2)+'%'; document.getElementById('profit-loss').style.color=pl>=0?'var(--green)':'var(--red)'; const invs=data.investments||[]; const cont=document.getElementById('investments-list-container'); if(!invs.length){cont.innerHTML='<div style="text-align:center;padding:2rem;color:var(--hint)">Nenhum investimento</div>';return} cont.innerHTML=invs.map(inv=>`<div class="bill-item"><div class="bill-icon">📈</div><div class="bill-info"><div class="bill-name">${inv.symbol}</div><div class="bill-meta">${inv.quantity} ações</div></div><div class="bill-right"><div class="bill-value">${fmt(inv.quantity*inv.purchase_price)}</div></div><div class="bill-action" onclick="deleteInvestment('${inv.id}')">🗑️</div></div>`).join('') }catch(e){console.error(e)} }
-async function deleteInvestment(id){ if(!confirm('Remover?'))return; try{await api.deleteInvestment(id); loadInvestments(); showToast('Removido')}catch(e){showToast('Erro')} }
-function showAddInvestmentModal(){ const modal=document.createElement('div'); modal.className='modal-overlay'; modal.innerHTML=`<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Investimento</h3><div class="field"><label>Símbolo</label><input type="text" id="inv-symbol" placeholder="PETR4"></div><div class="field-row"><div class="field"><label>Quantidade</label><input type="number" id="inv-quantity" step="0.01"></div><div class="field"><label>Preço médio</label><input type="number" id="inv-price" step="0.01"></div></div><div class="field"><label>Data</label><input type="date" id="inv-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveInvestment()">Salvar</button><button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button></div></div>`; document.body.appendChild(modal); modal.onclick=e=>{if(e.target===modal)closeModal()} }
-async function saveInvestment(){ const symbol=document.getElementById('inv-symbol').value.toUpperCase(); const quantity=parseFloat(document.getElementById('inv-quantity').value); const price=parseFloat(document.getElementById('inv-price').value); const date=document.getElementById('inv-date').value; if(!symbol||!quantity||!price||!date){showToast('Preencha todos');return} try{await api.createInvestment({symbol,quantity,purchasePrice:price,purchaseDate:date,assetType:'stock'}); showToast('Investimento cadastrado!'); closeModal(); loadInvestments()}catch(e){showToast(e.message)} }
+// INVESTIMENTOS
+async function loadInvestments(){ try{ const data=await api.getInvestments(); const summary=data.summary||{}; document.getElementById('total-invested').textContent=fmt(summary.totalInvested||0); const pl=summary.totalProfitLossPercent||0; document.getElementById('profit-loss').textContent=(pl>=0?'+':'')+pl.toFixed(2)+'%'; document.getElementById('profit-loss').style.color=pl>=0?'var(--green)':'var(--red)'; const invs=data.investments||[]; const cont=document.getElementById('investments-list-container'); if(!invs.length){cont.innerHTML='<div style="text-align:center;padding:2rem;color:var(--hint)">Nenhum investimento cadastrado</div>';return} cont.innerHTML=invs.map(inv=>`<div class="investment-item"><div class="bill-icon">📈</div><div class="bill-info"><div class="bill-name">${inv.symbol}</div><div class="bill-meta">${inv.quantity} ${inv.asset_type === 'stock' ? 'ações' : 'cotas'} · Preço médio: ${fmt(inv.purchase_price)}</div></div><div class="bill-right"><div class="bill-value">${fmt(inv.quantity * inv.purchase_price)}</div><div class="bill-action" onclick="deleteInvestment('${inv.id}')">🗑️</div></div></div>`).join('') }catch(e){console.error(e)} }
+async function deleteInvestment(id){ if(!confirm('Remover este investimento?'))return; try{await api.deleteInvestment(id); loadInvestments(); showToast('Investimento removido')}catch(e){showToast('Erro ao remover')} }
+function showAddInvestmentModal(){ const modal=document.createElement('div'); modal.className='modal-overlay'; modal.innerHTML=`<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Investimento</h3><div class="field"><label>Símbolo (ex: PETR4)</label><input type="text" id="inv-symbol" placeholder="PETR4, ITSA4, HGLG11"></div><div class="field"><label>Tipo</label><select id="inv-type"><option value="stock">Ação</option><option value="fii">FII</option><option value="fixed_income">Renda Fixa</option></select></div><div class="field-row"><div class="field"><label>Quantidade</label><input type="number" id="inv-quantity" step="0.01"></div><div class="field"><label>Preço médio (R$)</label><input type="number" id="inv-price" step="0.01"></div></div><div class="field"><label>Data da compra</label><input type="date" id="inv-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveInvestment()">Salvar</button><button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button></div></div>`; document.body.appendChild(modal); modal.onclick=e=>{if(e.target===modal)closeModal()} }
+async function saveInvestment(){ const symbol=document.getElementById('inv-symbol').value.toUpperCase(); const quantity=parseFloat(document.getElementById('inv-quantity').value); const price=parseFloat(document.getElementById('inv-price').value); const date=document.getElementById('inv-date').value; const assetType=document.getElementById('inv-type').value; if(!symbol||!quantity||!price||!date){showToast('Preencha todos');return} try{await api.createInvestment({symbol,quantity,purchasePrice:price,purchaseDate:date,assetType}); showToast('Investimento cadastrado!'); closeModal(); loadInvestments()}catch(e){showToast(e.message)} }
 
+// FINANCIAMENTOS
+async function loadLoans(){ try{ const data=await api.getLoans(); const loans=data.loans||[]; const summary=data.summary||{totalDebt:0,totalMonthlyPayment:0}; document.getElementById('total-debt').textContent=fmt(summary.totalDebt); document.getElementById('total-monthly').textContent=fmt(summary.totalMonthlyPayment); const container=document.getElementById('loans-list-container'); if(!loans.length){container.innerHTML='<div style="text-align:center;padding:2rem;color:var(--hint)">Nenhum financiamento cadastrado</div>';return} container.innerHTML=loans.map(loan=>`<div class="loan-item"><div class="bill-icon" style="background:var(--red-dim)">🏠</div><div class="bill-info"><div class="bill-name">${loan.name}</div><div class="bill-meta">${loan.remaining_installments} parcelas · Taxa: ${loan.interest_rate}% a.m.</div></div><div class="bill-right"><div class="bill-value">${fmt(loan.outstanding_balance)}</div><div class="bill-status status-pending">${fmt(loan.monthly_payment)}/mês</div><div class="bill-action" onclick="deleteLoan('${loan.id}')">🗑️</div></div></div>`).join('') }catch(e){console.error(e)} }
+async function deleteLoan(id){ if(!confirm('Remover este financiamento?'))return; try{await api.deleteLoan(id); showToast('Financiamento removido'); loadLoans()}catch(e){showToast('Erro ao remover')} }
+function showAddLoanModal(){ const modal=document.createElement('div'); modal.className='modal-overlay'; modal.innerHTML=`<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Financiamento</h3><div class="field"><label>Nome</label><input type="text" id="loan-name" placeholder="Ex: Financiamento Casa"></div><div class="field"><label>Tipo</label><select id="loan-type"><option value="mortgage">Financiamento Imobiliário</option><option value="car">Financiamento Veículo</option><option value="personal">Empréstimo Pessoal</option></select></div><div class="field-row"><div class="field"><label>Valor Total</label><input type="number" id="loan-total" step="0.01"></div><div class="field"><label>Saldo Devedor</label><input type="number" id="loan-balance" step="0.01"></div></div><div class="field-row"><div class="field"><label>Taxa Juros (% mês)</label><input type="number" id="loan-rate" step="0.01"></div><div class="field"><label>Parcelas Restantes</label><input type="number" id="loan-installments"></div></div><div class="field"><label>Data Início</label><input type="date" id="loan-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveLoan()">Salvar</button><button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button></div></div>`; document.body.appendChild(modal); modal.onclick=e=>{if(e.target===modal)closeModal()} }
+async function saveLoan(){ const name=document.getElementById('loan-name').value; const type=document.getElementById('loan-type').value; const totalPrincipal=parseFloat(document.getElementById('loan-total').value); const outstandingBalance=parseFloat(document.getElementById('loan-balance').value); const interestRate=parseFloat(document.getElementById('loan-rate').value); const remainingInstallments=parseInt(document.getElementById('loan-installments').value); const startDate=document.getElementById('loan-date').value; if(!name||!totalPrincipal||!outstandingBalance||!interestRate||!remainingInstallments||!startDate){showToast('Preencha todos os campos');return} try{await api.createLoan({name,type,totalPrincipal,outstandingBalance,interestRate,remainingInstallments,startDate}); showToast('Financiamento cadastrado!'); closeModal(); loadLoans()}catch(e){showToast(e.message)} }
+
+// PATRIMÔNIO
+async function loadWealth(){ try{ const summary=await api.getWealthSummary(); const wealthSummary=summary.summary||{}; document.getElementById('net-worth').textContent=fmt(wealthSummary.netWorth||0); document.getElementById('total-assets').textContent=fmt(wealthSummary.totalAssets||0); document.getElementById('total-liabilities').textContent=fmt(wealthSummary.totalLiabilities||0); const assets=await api.getAssets(); const assetsList=assets.assets||[]; const assetsContainer=document.getElementById('assets-list-container'); if(!assetsList.length)assetsContainer.innerHTML='<div style="text-align:center;padding:1rem;color:var(--hint)">Nenhum bem cadastrado</div>'; else assetsContainer.innerHTML=assetsList.map(a=>`<div class="asset-item"><div class="bill-icon" style="background:var(--green-dim)">🏠</div><div class="bill-info"><div class="bill-name">${a.name}</div><div class="bill-meta">${a.asset_type === 'real_estate' ? 'Imóvel' : a.asset_type === 'vehicle' ? 'Veículo' : a.asset_type === 'savings' ? 'Reserva' : 'Outro'}</div></div><div class="bill-right"><div class="bill-value">${fmt(a.estimated_value)}</div><div class="bill-action" onclick="deleteAsset('${a.id}')">🗑️</div></div></div>`).join('') }catch(e){console.error(e)} }
+async function deleteAsset(id){ if(!confirm('Remover este bem?'))return; try{await api.deleteAsset(id); showToast('Bem removido'); loadWealth()}catch(e){showToast('Erro ao remover')} }
+function showAddAssetModal(){ const modal=document.createElement('div'); modal.className='modal-overlay'; modal.innerHTML=`<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Bem</h3><div class="field"><label>Nome</label><input type="text" id="asset-name" placeholder="Ex: Apartamento, Carro, Reserva"></div><div class="field"><label>Tipo</label><select id="asset-type"><option value="real_estate">Imóvel</option><option value="vehicle">Veículo</option><option value="savings">Reserva Financeira</option><option value="other">Outro</option></select></div><div class="field"><label>Valor Estimado (R$)</label><input type="number" id="asset-value" step="0.01"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveAsset()">Salvar</button><button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button></div></div>`; document.body.appendChild(modal); modal.onclick=e=>{if(e.target===modal)closeModal()} }
+async function saveAsset(){ const name=document.getElementById('asset-name').value; const assetType=document.getElementById('asset-type').value; const estimatedValue=parseFloat(document.getElementById('asset-value').value); if(!name||!estimatedValue){showToast('Preencha todos os campos');return} try{await api.createAsset({name,assetType,estimatedValue}); showToast('Bem cadastrado!'); closeModal(); loadWealth()}catch(e){showToast(e.message)} }
+
+// INSIGHTS
 function loadInsights(){ const bills=allBills, salary=currentUser?.salary||0, today=new Date().getDate(), late=bills.filter(b=>b.status==='late'||(b.status==='pending'&&b.due_day<today)), free=salary-bills.filter(b=>b.status==='paid').reduce((s,b)=>s+parseFloat(b.value),0), pct=salary>0?Math.round((bills.reduce((s,b)=>s+parseFloat(b.value),0)/salary)*100):0; const el=document.getElementById('insights-list'); if(!bills.length){el.innerHTML='<div style="text-align:center;padding:1rem;color:var(--hint)">Cadastre contas para receber análises</div>';return} let cards=[]; if(late.length>0)cards.push(`<div class="insight-card"><div class="insight-head"><div class="insight-emoji">⚠️</div><div class="insight-title">${late.length} conta(s) atrasada(s)!</div></div><div class="insight-body">Regularize para evitar juros.</div><div class="insight-action" onclick="navTo('bills')">Ver contas →</div></div>`); if(pct>70)cards.push(`<div class="insight-card"><div class="insight-head"><div class="insight-emoji">📊</div><div class="insight-title">Comprometimento alto: ${pct}%</div></div><div class="insight-body">O ideal é abaixo de 50%.</div><div class="insight-action" onclick="navTo('bills')">Ver contas →</div></div>`); if(free>500)cards.push(`<div class="insight-card"><div class="insight-head"><div class="insight-emoji">💰</div><div class="insight-title">${fmt(free)} disponíveis</div></div><div class="insight-body">Considere investir esse valor!</div><div class="insight-action" onclick="navTo('investments')">Ver investimentos →</div></div>`); if(!cards.length)cards.push(`<div class="insight-card"><div class="insight-head"><div class="insight-emoji">🐶</div><div class="insight-title">Continue assim!</div></div><div class="insight-body">Quanto mais dados, melhores as análises.</div><div class="insight-action" onclick="navTo('bills')">Adicionar conta →</div></div>`); el.innerHTML=cards.join('') }
 async function sendMsg(){ const input=document.getElementById('chat-input'); const q=input.value.trim(); if(!q)return; input.value=''; const msgs=document.getElementById('chat-msgs'); msgs.innerHTML+=`<div class="msg msg-user">${q}</div>`; msgs.scrollTop=msgs.scrollHeight; document.getElementById('typing-ind').style.display='block'; const salary=currentUser?.salary||0; const ctx=`Contexto: salário R$${salary}, ${allBills.length} contas. Pergunta: ${q}`; try{ const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:'Você é o Tobby IA, assistente financeiro.',messages:[{role:'user',content:ctx}]})}); const data=await res.json(); const reply=data.content?.[0]?.text||'Desculpe, tente novamente.'; document.getElementById('typing-ind').style.display='none'; msgs.innerHTML+=`<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>${reply}</div>`; msgs.scrollTop=msgs.scrollHeight }catch(e){ document.getElementById('typing-ind').style.display='none'; msgs.innerHTML+=`<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Erro de conexão</div>` } }
 
 async function loadProfile(){ try{ const profile=await api.getProfile(); currentUser={...currentUser,...profile}; document.getElementById('prof-salary').textContent=fmt(profile.salary); updateUserUI() }catch(e){} }
-async function editSalary(){ const cur=currentUser?.salary||0; const novo=prompt('Informe seu salário mensal (R$):',cur); if(novo===null)return; const val=parseFloat(novo); if(isNaN(val)||val<0){showToast('Valor inválido');return} try{ const updated=await api.updateSalary(val); currentUser.salary=updated.salary; document.getElementById('prof-salary').textContent=fmt(updated.salary); await loadHome(); showToast('Salário atualizado 💰') }catch(e){showToast('Erro ao atualizar')} }
+async function editSalary(){ const cur=currentUser?.salary||0; const novo=prompt('Informe seu salário mensal (R$):',cur); if(novo===null)return; const val=parseFloat(novo); if(isNaN(val)||val<0){showToast('Valor inválido');return} try{ const updated=await api.updateSalary(val); currentUser.salary=updated.salary; document.getElementById('prof-salary').textContent=fmt(updated.salary); await loadHome(); showToast('Salário atualizado 💰') }catch(e){showToast('Erro ao atualizar salário')} }
 
 // NOTA FISCAL
 async function openReceiptScanner(){ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){showToast('Seu navegador não suporta câmera');return} let stream=null; try{ stream=await navigator.mediaDevices.getUserMedia({video:true}); window.currentCameraStream=stream; const modal=document.createElement('div'); modal.className='modal-overlay'; modal.innerHTML=`<div class="modal" style="padding:0"><div class="modal-handle"></div><video id="preview" autoplay playsinline style="width:100%;border-radius:12px"></video><div style="padding:1rem;display:flex;gap:0.5rem"><button class="btn-primary" style="flex:1" onclick="captureReceiptPhoto()">📸 Tirar Foto</button><button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button></div></div>`; document.body.appendChild(modal); const videoEl=modal.querySelector('#preview'); videoEl.srcObject=stream; window.captureReceiptPhoto=()=>{ const canvas=document.createElement('canvas'); canvas.width=videoEl.videoWidth; canvas.height=videoEl.videoHeight; canvas.getContext('2d').drawImage(videoEl,0,0); const imageData=canvas.toDataURL('image/jpeg',0.8); if(stream)stream.getTracks().forEach(t=>t.stop()); modal.remove(); window.currentCameraStream=null; processReceiptImage(imageData) }; modal.onclick=e=>{if(e.target===modal)closeModal()} }catch(err){showToast('Erro ao acessar câmera')} }
