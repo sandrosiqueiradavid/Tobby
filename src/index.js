@@ -17,12 +17,15 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/hollerith', require('./routes/hollerith'));
 app.use('/api/investment', require('./routes/investment'));
+app.use('/api/bank', require('./routes/bank'));
+app.use('/api/ai-document', require('./routes/aiDocument'));
 
 // Health check
 app.get('/', (req, res) => res.json({
   status: 'ok',
-  app: '🐶 Tobby API v3.0',
-  supabase: !!process.env.SUPABASE_URL
+  app: '🐶 Tobby API v4.0',
+  supabase: !!process.env.SUPABASE_URL,
+  ai: !!process.env.CLAUDE_API_KEY
 }));
 
 app.get('/health', (req, res) => res.json({

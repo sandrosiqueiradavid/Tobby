@@ -1,4 +1,4 @@
-// 🐶 Tobby API Client v3.0
+// 🐶 Tobby API Client v4.0
 const API_BASE = 'https://tobby-api.onrender.com/api';
 
 class TobbyAPI {
@@ -150,6 +150,35 @@ class TobbyAPI {
 
   async getRecommendations() {
     return this.request('/investment/recommendations');
+  }
+
+  async processBankExtract(extractText, format = 'text') {
+    return this.request('/bank/process', {
+      method: 'POST',
+      body: JSON.stringify({ extractText, format })
+    });
+  }
+
+  async uploadAIDocument(file) {
+    const formData = new FormData();
+    formData.append('document', file);
+    
+    const response = await fetch(`${API_BASE}/ai-document/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${this.token}` },
+      body: formData
+    });
+    
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error);
+    return data;
+  }
+
+  async processAIDocumentUrl(fileUrl) {
+    return this.request('/ai-document/process-url', {
+      method: 'POST',
+      body: JSON.stringify({ fileUrl })
+    });
   }
 }
 
