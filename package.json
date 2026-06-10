@@ -1,7 +1,7 @@
 {
   "name": "tobby-backend",
-  "version": "4.0.0",
-  "description": "Tobby Financial App - Backend Completo com IA para PDFs",
+  "version": "5.0.0",
+  "description": "Tobby Financial App - Ecossistema Financeiro Completo",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

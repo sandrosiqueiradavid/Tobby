@@ -18,8 +18,6 @@ app.use('/api/bills', require('./routes/bills'));
 app.use('/api/hollerith', require('./routes/hollerith'));
 app.use('/api/investment', require('./routes/investment'));
 app.use('/api/bank', require('./routes/bank'));
-app.use('/api/ai-document', require('./routes/aiDocument'));
-app.use('/api/investments', require('./routes/investment'));
 app.use('/api/loans', require('./routes/loan'));
 app.use('/api/wealth', require('./routes/wealth'));
 
@@ -27,8 +25,7 @@ app.use('/api/wealth', require('./routes/wealth'));
 app.get('/', (req, res) => res.json({
   status: 'ok',
   app: '🐶 Tobby API v5.0',
-  supabase: !!process.env.SUPABASE_URL,
-  ai: !!process.env.CLAUDE_API_KEY
+  supabase: !!process.env.SUPABASE_URL
 }));
 
 app.get('/health', (req, res) => res.json({

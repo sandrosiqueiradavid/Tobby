@@ -7,7 +7,6 @@ router.use(authMiddleware);
 
 router.get('/', investmentController.getInvestments);
 router.post('/', investmentController.createInvestment);
-router.put('/:id', investmentController.updateInvestment);
 router.delete('/:id', investmentController.deleteInvestment);
 
 module.exports = router;

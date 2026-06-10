@@ -1,4 +1,4 @@
-// 🐶 Tobby API Client v4.0
+// 🐶 Tobby API Client v5.0
 const API_BASE = 'https://tobby-api.onrender.com/api';
 
 class TobbyAPI {
@@ -45,6 +45,7 @@ class TobbyAPI {
     }
   }
 
+  // Auth
   async register(name, email, password, salary) {
     const data = await this.request('/auth/register', {
       method: 'POST',
@@ -63,6 +64,25 @@ class TobbyAPI {
     return data.user;
   }
 
+  async forgotPassword(email) {
+    const response = await fetch(`${API_BASE}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    return response.json();
+  }
+
+  async resetPassword(token, newPassword) {
+    const response = await fetch(`${API_BASE}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword })
+    });
+    return response.json();
+  }
+
+  // Bills
   async getBills(status = null) {
     const url = status ? `/bills?status=${status}` : '/bills';
     const data = await this.request(url);
@@ -94,6 +114,15 @@ class TobbyAPI {
     });
   }
 
+  async getDashboard() {
+    return this.request('/bills/dashboard/summary');
+  }
+
+  // User
+  async getProfile() {
+    return this.request('/user/profile');
+  }
+
   async updateSalary(salary) {
     return this.request('/user/salary', {
       method: 'PUT',
@@ -101,32 +130,7 @@ class TobbyAPI {
     });
   }
 
-  async getProfile() {
-    return this.request('/user/profile');
-  }
-
-  async getDashboard() {
-    return this.request('/bills/dashboard/summary');
-  }
-
-  async forgotPassword(email) {
-    const response = await fetch(`${API_BASE}/auth/forgot-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-    return response.json();
-  }
-
-  async resetPassword(token, newPassword) {
-    const response = await fetch(`${API_BASE}/auth/reset-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, newPassword })
-    });
-    return response.json();
-  }
-
+  // Hollerith
   async processHollerith(hollerithText) {
     return this.request('/hollerith/process', {
       method: 'POST',
@@ -144,14 +148,23 @@ class TobbyAPI {
     return this.request(url);
   }
 
-  async getInvestmentNews() {
-    return this.request('/investment/news');
+  // Investments
+  async getInvestments() {
+    return this.request('/investments');
   }
 
-  async getRecommendations() {
-    return this.request('/investment/recommendations');
+  async createInvestment(data) {
+    return this.request('/investments', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 
+  async deleteInvestment(id) {
+    return this.request(`/investments/${id}`, { method: 'DELETE' });
+  }
+
+  // Bank
   async processBankExtract(extractText, format = 'text') {
     return this.request('/bank/process', {
       method: 'POST',
@@ -159,26 +172,47 @@ class TobbyAPI {
     });
   }
 
-  async uploadAIDocument(file) {
-    const formData = new FormData();
-    formData.append('document', file);
-    
-    const response = await fetch(`${API_BASE}/ai-document/upload`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${this.token}` },
-      body: formData
-    });
-    
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error);
-    return data;
+  // Loans
+  async getLoans() {
+    return this.request('/loans');
   }
 
-  async processAIDocumentUrl(fileUrl) {
-    return this.request('/ai-document/process-url', {
+  async createLoan(data) {
+    return this.request('/loans', {
       method: 'POST',
-      body: JSON.stringify({ fileUrl })
+      body: JSON.stringify(data)
     });
+  }
+
+  async simulateLoan(id, extraAmount) {
+    return this.request(`/loans/${id}/simulate`, {
+      method: 'POST',
+      body: JSON.stringify({ extraAmount })
+    });
+  }
+
+  async deleteLoan(id) {
+    return this.request(`/loans/${id}`, { method: 'DELETE' });
+  }
+
+  // Wealth
+  async getWealthSummary() {
+    return this.request('/wealth/summary');
+  }
+
+  async getAssets() {
+    return this.request('/wealth/assets');
+  }
+
+  async createAsset(data) {
+    return this.request('/wealth/assets', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteAsset(id) {
+    return this.request(`/wealth/assets/${id}`, { method: 'DELETE' });
   }
 }
 

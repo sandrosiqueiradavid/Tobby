@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tobby">
 <link rel="manifest" href="manifest.json">
-<title>Tobby 🐶 — Organizador Financeiro com IA</title>
+<title>Tobby 🐶 — Organizador Financeiro Completo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
@@ -228,7 +228,7 @@ input[type=file]::file-selector-button{background:var(--green-dim);border:none;b
   <div class="auth-logo">
     <div class="logo-mark">🐶</div>
     <div class="logo-title">Tobby</div>
-    <div class="logo-sub">Organizador Financeiro com IA</div>
+    <div class="logo-sub">Organizador Financeiro Completo</div>
   </div>
 
   <!-- Login -->
@@ -429,9 +429,6 @@ input[type=file]::file-selector-button{background:var(--green-dim);border:none;b
       </div>
     </div>
     
-    <div class="section-hd">📈 Evolução Mensal</div>
-    <div id="wealth-chart" style="height:200px;margin-bottom:1rem;background:var(--card);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--muted)">Gráfico em breve</div>
-    
     <div class="section-hd">💡 Recomendações da IA</div>
     <div id="wealth-recommendations"></div>
     
@@ -494,26 +491,66 @@ input[type=file]::file-selector-button{background:var(--green-dim);border:none;b
       </div>
       <div class="salary-val" id="prof-salary">R$ 0,00</div>
     </div>
-    <div class="section-hd" style="margin-bottom:.6rem">🤖 IA e Documentos</div>
+    <div class="section-hd" style="margin-bottom:.6rem">📸 IA e Documentos</div>
     <div class="menu-group">
-      <div class="menu-item" onclick="showAIDocumentModal()"><div class="menu-icon" style="background:linear-gradient(135deg,#9D74FF,#22D07A)">🤖</div><div class="menu-label">🤖 IA: Ler PDF com Inteligência</div><div class="menu-chev">›</div></div>
-      <div class="menu-item" onclick="showHollerithModal()"><div class="menu-icon" style="background:var(--green-dim)">📄</div><div class="menu-label">📄 Ler Holerite (Texto)</div><div class="menu-chev">›</div></div>
-      <div class="menu-item" onclick="showBankExtractModal()"><div class="menu-icon" style="background:var(--blue-dim)">🏦</div><div class="menu-label">🏦 Importar Extrato Bancário</div><div class="menu-chev">›</div></div>
+      <div class="menu-item" onclick="openReceiptScanner()">
+        <div class="menu-icon" style="background:var(--green-dim)">📸</div>
+        <div class="menu-label">📸 Ler Nota Fiscal com a Câmera</div>
+        <div class="menu-chev">›</div>
+      </div>
+      <div class="menu-item" onclick="showHollerithModal()">
+        <div class="menu-icon" style="background:var(--purple-dim)">📄</div>
+        <div class="menu-label">📄 Ler Holerite (Texto)</div>
+        <div class="menu-chev">›</div>
+      </div>
+      <div class="menu-item" onclick="showBankExtractModal()">
+        <div class="menu-icon" style="background:var(--blue-dim)">🏦</div>
+        <div class="menu-label">🏦 Importar Extrato Bancário</div>
+        <div class="menu-chev">›</div>
+      </div>
     </div>
     <div class="section-hd" style="margin-bottom:.6rem">📊 Impostos e Relatórios</div>
     <div class="menu-group">
-      <div class="menu-item" onclick="showIncomeReport()"><div class="menu-icon" style="background:var(--purple-dim)">📊</div><div class="menu-label">📊 Informe de Rendimentos</div><div class="menu-chev">›</div></div>
-      <div class="menu-item" onclick="generateIRDeclaration()"><div class="menu-icon" style="background:var(--amber-dim)">📝</div><div class="menu-label">📝 Declaração IR Simplificada</div><div class="menu-chev">›</div></div>
+      <div class="menu-item" onclick="showIncomeReport()">
+        <div class="menu-icon" style="background:var(--green-dim)">📊</div>
+        <div class="menu-label">📊 Informe de Rendimentos</div>
+        <div class="menu-chev">›</div>
+      </div>
+      <div class="menu-item" onclick="generateIRDeclaration()">
+        <div class="menu-icon" style="background:var(--amber-dim)">📝</div>
+        <div class="menu-label">📝 Declaração IR Simplificada</div>
+        <div class="menu-chev">›</div>
+      </div>
     </div>
     <div class="section-hd" style="margin-bottom:.6rem">⚙️ Configurações</div>
     <div class="menu-group">
-      <div class="menu-item" onclick="editSalary()"><div class="menu-icon" style="background:var(--blue-dim)">💰</div><div class="menu-label">Salário e receitas</div><div class="menu-chev">›</div></div>
-      <div class="menu-item" onclick="showToast('Em breve 🔔')"><div class="menu-icon" style="background:var(--purple-dim)">🔔</div><div class="menu-label">Notificações</div><div class="menu-chev">›</div></div>
-      <div class="menu-item" onclick="showToast('Em breve 🎯')"><div class="menu-icon" style="background:var(--green-dim)">🎯</div><div class="menu-label">Metas financeiras</div><div class="menu-chev">›</div></div>
+      <div class="menu-item" onclick="editSalary()">
+        <div class="menu-icon" style="background:var(--blue-dim)">💰</div>
+        <div class="menu-label">Salário e receitas</div>
+        <div class="menu-chev">›</div>
+      </div>
+      <div class="menu-item" onclick="showToast('Em breve 🔔')">
+        <div class="menu-icon" style="background:var(--purple-dim)">🔔</div>
+        <div class="menu-label">Notificações</div>
+        <div class="menu-chev">›</div>
+      </div>
+      <div class="menu-item" onclick="showToast('Em breve 🎯')">
+        <div class="menu-icon" style="background:var(--green-dim)">🎯</div>
+        <div class="menu-label">Metas financeiras</div>
+        <div class="menu-chev">›</div>
+      </div>
     </div>
     <div class="menu-group">
-      <div class="menu-item" onclick="showToast('Em breve 🔒')"><div class="menu-icon" style="background:var(--amber-dim)">🔒</div><div class="menu-label">Segurança e senha</div><div class="menu-chev">›</div></div>
-      <div class="menu-item" onclick="showToast('Em breve 💬')"><div class="menu-icon" style="background:var(--red-dim)">💬</div><div class="menu-label">Suporte</div><div class="menu-chev">›</div></div>
+      <div class="menu-item" onclick="showToast('Em breve 🔒')">
+        <div class="menu-icon" style="background:var(--amber-dim)">🔒</div>
+        <div class="menu-label">Segurança e senha</div>
+        <div class="menu-chev">›</div>
+      </div>
+      <div class="menu-item" onclick="showToast('Em breve 💬')">
+        <div class="menu-icon" style="background:var(--red-dim)">💬</div>
+        <div class="menu-label">Suporte</div>
+        <div class="menu-chev">›</div>
+      </div>
     </div>
     <div style="text-align:center;font-size:11px;color:var(--hint);margin-bottom:.75rem">Tobby v5.0 • Ecossistema Financeiro</div>
     <button class="btn-danger" onclick="doLogout()">Sair da conta</button>
@@ -521,6 +558,7 @@ input[type=file]::file-selector-button{background:var(--green-dim);border:none;b
 
   <nav class="bottomnav">
     <div class="nav-item active" id="nav-home" onclick="navTo('home')"><div class="nav-icon">🏠</div>Início</div>
+    <div class="nav-item" id="nav-bills" onclick="navTo('bills')"><div class="nav-icon">📋</div>Contas</div>
     <div class="nav-item" id="nav-investments" onclick="navTo('investments')"><div class="nav-icon">📈</div>Investir</div>
     <div class="nav-item" id="nav-loans" onclick="navTo('loans')"><div class="nav-icon">💸</div>Dívidas</div>
     <div class="nav-item" id="nav-wealth" onclick="navTo('wealth')"><div class="nav-icon">🏆</div>Patrimônio</div>
@@ -771,11 +809,8 @@ async function doForgotPassword() {
     showError('forgot-err', 'Digite seu e-mail')
     return
   }
-  
   const btn = event.target
-  btn.disabled = true
-  btn.textContent = 'Enviando...'
-  
+  btn.disabled = true; btn.textContent = 'Enviando...'
   try {
     const data = await api.forgotPassword(email)
     const successDiv = document.getElementById('forgot-success')
@@ -787,8 +822,7 @@ async function doForgotPassword() {
   } catch (error) {
     showError('forgot-err', 'Erro de conexão. Tente novamente.')
   } finally {
-    btn.disabled = false
-    btn.textContent = 'Enviar instruções →'
+    btn.disabled = false; btn.textContent = 'Enviar instruções →'
   }
 }
 
@@ -807,7 +841,6 @@ function checkResetToken() {
 async function doResetPassword() {
   const newPassword = document.getElementById('reset-pwd').value
   const confirmPassword = document.getElementById('reset-pwd-confirm').value
-  
   if (!newPassword || !confirmPassword) {
     showError('reset-err', 'Preencha ambos os campos')
     return
@@ -820,10 +853,8 @@ async function doResetPassword() {
     showError('reset-err', 'A senha deve ter no mínimo 6 caracteres')
     return
   }
-  
   const btn = event.target
-  btn.disabled = true
-  btn.textContent = 'Redefinindo...'
+  btn.disabled = true; btn.textContent = 'Redefinindo...'
   try {
     const data = await api.resetPassword(resetToken, newPassword)
     alert('✅ ' + data.message)
@@ -832,8 +863,7 @@ async function doResetPassword() {
   } catch (error) {
     showError('reset-err', 'Erro ao redefinir senha')
   } finally {
-    btn.disabled = false
-    btn.textContent = 'Redefinir senha →'
+    btn.disabled = false; btn.textContent = 'Redefinir senha →'
   }
 }
 
@@ -891,9 +921,9 @@ function navTo(tab) {
   })
   if(tab==='home') loadHome()
   if(tab==='bills') loadBillsTab()
-  if(tab==='investments') loadInvestmentsPage()
-  if(tab==='loans') loadLoansPage()
-  if(tab==='wealth') loadWealthPage()
+  if(tab==='investments') loadInvestments()
+  if(tab==='loans') loadLoans()
+  if(tab==='wealth') loadWealth()
   if(tab==='ai') loadInsights()
   if(tab==='tx') renderTx()
   if(tab==='profile') loadProfile()
@@ -902,10 +932,9 @@ function navTo(tab) {
 // ===== HOME =====
 async function loadHome() {
   try {
-    const dash = await apiRequest('/bills/dashboard/summary')
-    const bills = await apiRequest('/bills')
-    allBills = bills.data || []
-    
+    const dash = await api.getDashboard()
+    const bills = await api.getBills()
+    allBills = bills || []
     document.getElementById('bal-free').textContent = fmt(dash.freeBalance)
     document.getElementById('bal-in').textContent = fmt(dash.salary)
     document.getElementById('bal-out').textContent = fmt(dash.totalPaid || 0)
@@ -914,17 +943,14 @@ async function loadHome() {
     document.getElementById('stat-pend').textContent = dash.pendingBills || 0
     document.getElementById('stat-late').textContent = dash.lateBills || 0
     document.getElementById('stat-total').textContent = dash.totalBills || 0
-    
     const total = dash.totalBills || 1
     const pp = Math.round(((dash.paidBills || 0) / total) * 100)
     document.getElementById('prog-paid').style.width = pp+'%'
     document.getElementById('stat-paid-pct').textContent = pp+'% do total'
-    
     if (dash.salary !== undefined) {
       currentUser.salary = dash.salary
       document.getElementById('prof-salary').textContent = fmt(dash.salary)
     }
-    
     updateTobyMood(dash)
     updateMission(dash)
     renderHomeBills(allBills)
@@ -957,8 +983,8 @@ function renderHomeBills(bills) {
 // ===== BILLS TAB =====
 async function loadBillsTab() {
   try {
-    const response = await apiRequest('/bills')
-    allBills = response.data || []
+    const bills = await api.getBills()
+    allBills = bills || []
     renderBills(currentFilter)
   } catch(e) { showToast('Erro ao carregar contas') }
 }
@@ -1037,13 +1063,13 @@ async function saveBill() {
   btn.disabled = true; btn.textContent = 'Salvando...'
   try {
     if (eid) {
-      await apiRequest(`/bills/${eid}`, { method: 'PUT', body: JSON.stringify({ name, value, due_day, category, status }) })
+      await api.updateBill(eid, name, value, due_day, category, status)
     } else {
-      await apiRequest('/bills', { method: 'POST', body: JSON.stringify({ name, value, due_day, category, status }) })
+      await api.createBill(name, value, due_day, category, status)
     }
     closeModal()
-    const response = await apiRequest('/bills')
-    allBills = response.data || []
+    const bills = await api.getBills()
+    allBills = bills || []
     renderBills(currentFilter)
     await loadHome()
     showToast('Conta salva com sucesso 🐶')
@@ -1054,9 +1080,9 @@ async function saveBill() {
 async function deleteBill(id) {
   if (!confirm('Remover esta conta?')) return
   try {
-    await apiRequest(`/bills/${id}`, { method: 'DELETE' })
-    const response = await apiRequest('/bills')
-    allBills = response.data || []
+    await api.deleteBill(id)
+    const bills = await api.getBills()
+    allBills = bills || []
     renderBills(currentFilter)
     await loadHome()
     showToast('Conta removida')
@@ -1066,9 +1092,9 @@ async function deleteBill(id) {
 async function toggleStatus(id, currentStatus) {
   const newStatus = currentStatus === 'paid' ? 'pending' : 'paid'
   try {
-    await apiRequest(`/bills/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) })
-    const response = await apiRequest('/bills')
-    allBills = response.data || []
+    await api.updateBillStatus(id, newStatus)
+    const bills = await api.getBills()
+    allBills = bills || []
     renderBills(currentFilter)
     await loadHome()
     showToast(newStatus==='paid' ? '✅ Marcada como paga' : '↩️ Marcada como pendente')
@@ -1116,9 +1142,9 @@ function renderTx() {
 }
 
 // ===== INVESTIMENTOS =====
-async function loadInvestmentsPage() {
+async function loadInvestments() {
   try {
-    const data = await apiRequest('/investments')
+    const data = await api.getInvestments()
     const summary = data.summary || { totalInvested: 0, totalCurrent: 0, totalProfitLossPercent: 0 }
     document.getElementById('total-invested').textContent = fmt(summary.totalInvested)
     document.getElementById('current-value').textContent = fmt(summary.totalCurrent)
@@ -1140,8 +1166,8 @@ async function loadInvestmentsPage() {
           <div class="bill-meta">${inv.quantity} ações · Compra: ${fmt(inv.purchase_price)}</div>
         </div>
         <div class="bill-right">
-          <div class="bill-val">${fmt(inv.current_value || inv.invested_value)}</div>
-          <div style="margin-top:3px"><span class="chip ${(inv.profit_loss || 0) >= 0 ? 'chip-green' : 'chip-red'}">${(inv.profit_loss_percent || 0).toFixed(2)}%</span></div>
+          <div class="bill-val">${fmt((inv.current_price || inv.purchase_price) * inv.quantity)}</div>
+          <div style="margin-top:3px"><span class="chip ${((inv.current_price || inv.purchase_price) - inv.purchase_price) >= 0 ? 'chip-green' : 'chip-red'}">${(((inv.current_price || inv.purchase_price) - inv.purchase_price) / inv.purchase_price * 100).toFixed(2)}%</span></div>
         </div>
         <div class="bill-actions">
           <div class="bill-action" onclick="deleteInvestment('${inv.id}')" title="Remover">🗑️</div>
@@ -1154,9 +1180,9 @@ async function loadInvestmentsPage() {
 async function deleteInvestment(id) {
   if (!confirm('Remover este investimento?')) return
   try {
-    await apiRequest(`/investments/${id}`, { method: 'DELETE' })
+    await api.deleteInvestment(id)
     showToast('Investimento removido')
-    loadInvestmentsPage()
+    loadInvestments()
   } catch(e) { showToast('Erro ao remover') }
 }
 
@@ -1172,7 +1198,6 @@ function showAddInvestmentModal() {
       <div class="field-row"><div class="field"><label>Quantidade</label><input type="number" id="inv-quantity" step="0.01"></div><div class="field"><label>Preço médio</label><input type="number" id="inv-price" step="0.01"></div></div>
       <div class="field"><label>Data da compra</label><input type="date" id="inv-date"></div>
       <div class="field-row"><button class="btn-primary" onclick="saveInvestment()">Salvar</button><button class="btn-ghost" onclick="closeModal()">Cancelar</button></div>
-      <div id="inv-result" style="margin-top:1rem;display:none"></div>
     </div>
   `
   document.body.appendChild(modal)
@@ -1187,17 +1212,17 @@ async function saveInvestment() {
   const assetType = document.getElementById('inv-type').value
   if (!symbol || !quantity || !purchasePrice || !purchaseDate) { showToast('Preencha todos os campos'); return }
   try {
-    await apiRequest('/investments', { method: 'POST', body: JSON.stringify({ symbol, quantity, purchasePrice, purchaseDate, assetType }) })
+    await api.createInvestment({ symbol, quantity, purchasePrice, purchaseDate, assetType })
     showToast('Investimento cadastrado!')
     closeModal()
-    loadInvestmentsPage()
+    loadInvestments()
   } catch(e) { showToast(e.message) }
 }
 
 // ===== FINANCIAMENTOS =====
-async function loadLoansPage() {
+async function loadLoans() {
   try {
-    const data = await apiRequest('/loans')
+    const data = await api.getLoans()
     const loans = data.loans || []
     const summary = data.summary || { totalDebt: 0, totalMonthlyPayment: 0 }
     document.getElementById('total-debt').textContent = fmt(summary.totalDebt)
@@ -1219,7 +1244,7 @@ async function loadLoansPage() {
           <div style="margin-top:3px"><span class="chip chip-amber">${fmt(loan.monthly_payment)}/mês</span></div>
         </div>
         <div class="bill-actions">
-          <div class="bill-action" onclick="showSimulateLoan('${loan.id}')" title="Simular amortização">💰</div>
+          <div class="bill-action" onclick="simulateLoan('${loan.id}')" title="Simular amortização">💰</div>
           <div class="bill-action" onclick="deleteLoan('${loan.id}')" title="Remover">🗑️</div>
         </div>
       </div>
@@ -1230,9 +1255,9 @@ async function loadLoansPage() {
 async function deleteLoan(id) {
   if (!confirm('Remover este financiamento?')) return
   try {
-    await apiRequest(`/loans/${id}`, { method: 'DELETE' })
+    await api.deleteLoan(id)
     showToast('Financiamento removido')
-    loadLoansPage()
+    loadLoans()
   } catch(e) { showToast('Erro ao remover') }
 }
 
@@ -1265,36 +1290,36 @@ async function saveLoan() {
   const startDate = document.getElementById('loan-date').value
   if (!name || !totalPrincipal || !outstandingBalance || !interestRate || !remainingInstallments || !startDate) { showToast('Preencha todos os campos'); return }
   try {
-    await apiRequest('/loans', { method: 'POST', body: JSON.stringify({ name, type, totalPrincipal, outstandingBalance, interestRate, remainingInstallments, startDate, amortizationType: 'price' }) })
+    await api.createLoan({ name, type, totalPrincipal, outstandingBalance, interestRate, remainingInstallments, startDate })
     showToast('Financiamento cadastrado!')
     closeModal()
-    loadLoansPage()
+    loadLoans()
   } catch(e) { showToast(e.message) }
 }
 
-async function showSimulateLoan(id) {
+async function simulateLoan(id) {
   const extra = prompt('Valor extra que deseja amortizar (R$):', '1000')
   if (!extra) return
   try {
-    const data = await apiRequest(`/loans/${id}/simulate`, { method: 'POST', body: JSON.stringify({ extraAmount: parseFloat(extra) }) })
+    const data = await api.simulateLoan(id, parseFloat(extra))
     showToast(`💰 Você economizaria ${fmt(data.interestSaved)} e quitaria ${data.monthsSaved} meses antes!`)
   } catch(e) { showToast('Erro na simulação') }
 }
 
 // ===== PATRIMÔNIO =====
-async function loadWealthPage() {
+async function loadWealth() {
   try {
-    const data = await apiRequest('/wealth/summary')
-    const summary = data.summary || {}
-    document.getElementById('net-worth').textContent = fmt(summary.netWorth || 0)
-    document.getElementById('total-assets').textContent = fmt(summary.totalAssets || 0)
-    document.getElementById('total-liabilities').textContent = fmt(summary.totalLiabilities || 0)
-    const recs = data.recommendations || []
+    const summary = await api.getWealthSummary()
+    const wealthSummary = summary.summary || {}
+    document.getElementById('net-worth').textContent = fmt(wealthSummary.netWorth || 0)
+    document.getElementById('total-assets').textContent = fmt(wealthSummary.totalAssets || 0)
+    document.getElementById('total-liabilities').textContent = fmt(wealthSummary.totalLiabilities || 0)
+    const recs = summary.recommendations || []
     const recContainer = document.getElementById('wealth-recommendations')
     if (!recs.length) recContainer.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--hint)">Nenhuma recomendação no momento</div>'
     else recContainer.innerHTML = recs.map(r => `<div class="insight-card"><div class="insight-head"><div class="insight-emoji">💡</div><div class="insight-title">${r.message}</div></div><div class="insight-body">Prioridade: ${r.priority}</div></div>`).join('')
     
-    const assets = await apiRequest('/wealth/assets')
+    const assets = await api.getAssets()
     const assetsList = assets.assets || []
     const assetsContainer = document.getElementById('assets-list-container')
     if (!assetsList.length) assetsContainer.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--hint)">Nenhum bem cadastrado</div>'
@@ -1305,9 +1330,9 @@ async function loadWealthPage() {
 async function deleteAsset(id) {
   if (!confirm('Remover este bem?')) return
   try {
-    await apiRequest(`/wealth/assets/${id}`, { method: 'DELETE' })
+    await api.deleteAsset(id)
     showToast('Bem removido')
-    loadWealthPage()
+    loadWealth()
   } catch(e) { showToast('Erro ao remover') }
 }
 
@@ -1334,10 +1359,10 @@ async function saveAsset() {
   const estimatedValue = parseFloat(document.getElementById('asset-value').value)
   if (!name || !estimatedValue) { showToast('Preencha todos os campos'); return }
   try {
-    await apiRequest('/wealth/assets', { method: 'POST', body: JSON.stringify({ name, assetType, estimatedValue }) })
+    await api.createAsset({ name, assetType, estimatedValue })
     showToast('Bem cadastrado!')
     closeModal()
-    loadWealthPage()
+    loadWealth()
   } catch(e) { showToast(e.message) }
 }
 
@@ -1364,7 +1389,8 @@ function loadInsights() {
 
 function sendPrompt(text) { navTo('ai'); document.getElementById('chat-input').value = text; sendMsg() }
 
-const AI_SYSTEM = `Você é o Tobby IA, assistente financeiro... Responda em português brasileiro, de forma prática.`
+const AI_SYSTEM = `Você é o Tobby IA, assistente financeiro do app Tobby (nomeado em homenagem ao cachorro Tobby Maguire). Responda sempre em português brasileiro, de forma direta e prática. Use emojis moderadamente. Foque em dicas reais de finanças pessoais: quitação de dívidas, investimentos acessíveis (Tesouro Direto, CDB, Renda Variável), controle de gastos e organização financeira. Seja como um amigo que entende de finanças. Máximo 3 parágrafos curtos.`
+
 async function sendMsg() {
   const input = document.getElementById('chat-input')
   const q = input.value.trim()
@@ -1377,19 +1403,23 @@ async function sendMsg() {
   const salary = currentUser?.salary || 0
   const ctx = `Contexto: salário R$${salary}, ${allBills.length} contas, total R$${allBills.reduce((s,b)=>s+parseFloat(b.value),0).toFixed(2)}. Pergunta: ${q}`
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: AI_SYSTEM, messages: [{ role: 'user', content: ctx }] }) })
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: AI_SYSTEM, messages: [{ role: 'user', content: ctx }] })
+    })
     const data = await res.json()
     const reply = data.content?.[0]?.text || 'Desculpe, tente novamente.'
     document.getElementById('typing-ind').style.display = 'none'
     msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>${reply}</div>`
     msgs.scrollTop = msgs.scrollHeight
-  } catch(e) { document.getElementById('typing-ind').style.display = 'none'; msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Erro de conexão.</div>` }
+  } catch(e) { document.getElementById('typing-ind').style.display = 'none'; msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Erro de conexão. Tente novamente.</div>` }
 }
 
 // ===== PROFILE =====
 async function loadProfile() {
   try {
-    const profile = await apiRequest('/user/profile')
+    const profile = await api.getProfile()
     currentUser = { ...currentUser, ...profile }
     document.getElementById('prof-salary').textContent = fmt(profile.salary)
     updateUserUI()
@@ -1403,7 +1433,7 @@ async function editSalary() {
   const val = parseFloat(novo)
   if (isNaN(val) || val < 0) { showToast('Valor inválido'); return }
   try {
-    const updated = await apiRequest('/user/salary', { method: 'PUT', body: JSON.stringify({ salary: val }) })
+    const updated = await api.updateSalary(val)
     currentUser.salary = updated.salary
     document.getElementById('prof-salary').textContent = fmt(updated.salary)
     await loadHome()
@@ -1411,18 +1441,135 @@ async function editSalary() {
   } catch(e) { showToast('Erro ao atualizar salário') }
 }
 
-// ===== HOLLERITH, EXTRATO, IA DOCUMENTO =====
-function showHollerithModal() { /* manter implementação anterior */ }
-async function processHollerith() { /* manter implementação anterior */ }
-function showBankExtractModal() { /* manter implementação anterior */ }
-async function processBankExtract() { /* manter implementação anterior */ }
-function showAIDocumentModal() { /* manter implementação anterior */ }
-async function uploadAIDocument() { /* manter implementação anterior */ }
-async function showIncomeReport() { /* manter implementação anterior */ }
-async function generateIRDeclaration() { /* manter implementação anterior */ }
-function showDynamicModal(title, content) { /* manter implementação anterior */ }
-function closeDynamicModal() { /* manter implementação anterior */ }
+// ===== NOTA FISCAL (LEITOR DE CÂMERA) =====
+async function openReceiptScanner() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showToast('Seu navegador não suporta câmera')
+    return
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+    const modal = document.createElement('div')
+    modal.className = 'modal-overlay'
+    modal.innerHTML = `
+      <div class="modal" style="padding:0">
+        <div class="modal-handle"></div>
+        <video id="preview" autoplay playsinline style="width:100%;border-radius:12px"></video>
+        <div style="padding:1rem">
+          <button class="btn-primary" onclick="captureReceiptPhoto()">📸 Tirar Foto</button>
+          <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+        </div>
+      </div>
+    `
+    document.body.appendChild(modal)
+    const videoEl = modal.querySelector('#preview')
+    videoEl.srcObject = stream
+    window.captureReceiptPhoto = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = videoEl.videoWidth
+      canvas.height = videoEl.videoHeight
+      canvas.getContext('2d').drawImage(videoEl, 0, 0)
+      const imageData = canvas.toDataURL('image/jpeg', 0.8)
+      stream.getTracks().forEach(track => track.stop())
+      modal.remove()
+      processReceiptImage(imageData)
+    }
+    modal.onclick = (e) => { if (e.target === modal) { stream.getTracks().forEach(track => track.stop()); modal.remove() } }
+  } catch(err) { showToast('Erro ao acessar câmera: ' + err.message) }
+}
 
+async function processReceiptImage(imageData) {
+  showToast('📸 Processando imagem...')
+  // Simulação de leitura da nota fiscal (em produção, integrar com API de visão)
+  setTimeout(() => {
+    const value = prompt('Valor total da compra (R$):', '0')
+    const store = prompt('Nome do estabelecimento:', '')
+    if (value && parseFloat(value) > 0) {
+      api.createBill(`Compra em ${store || 'estabelecimento'}`, parseFloat(value), new Date().getDate(), 'alimentacao', 'paid')
+        .then(() => { showToast('✅ Nota fiscal cadastrada!'); loadHome(); })
+        .catch(() => showToast('Erro ao salvar'))
+    }
+  }, 1000)
+}
+
+// ===== HOLLERITH =====
+function showHollerithModal() {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3>📄 Leitor de Holerite</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:1rem">Cole o texto do seu holerite. O Tobby vai identificar automaticamente salário e descontos.</p>
+      <textarea id="holerite-text" rows="8" placeholder="Cole aqui o texto do seu holerite..."></textarea>
+      <button class="btn-primary" onclick="processHollerith()">📊 Processar Holerite</button>
+      <div id="holerite-result" style="margin-top:1rem;display:none"></div>
+    </div>
+  `
+  document.body.appendChild(modal)
+  modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+}
+
+async function processHollerith() {
+  const text = document.getElementById('holerite-text')?.value
+  if (!text) { showToast('Cole o texto do holerite'); return }
+  try {
+    const data = await api.processHollerith(text)
+    const resultDiv = document.getElementById('holerite-result')
+    if (resultDiv) {
+      resultDiv.style.display = 'block'
+      resultDiv.innerHTML = `<div style="background:var(--green-dim);border-radius:8px;padding:1rem"><div style="color:var(--green);font-weight:700">✅ ${data.message}</div></div>`
+    }
+    showToast(data.message)
+    setTimeout(() => { const modal = document.querySelector('.modal-overlay'); if(modal) modal.remove(); loadHome() }, 2000)
+  } catch(e) { showToast(e.message || 'Erro ao processar') }
+}
+
+// ===== EXTRATO BANCÁRIO =====
+function showBankExtractModal() {
+  const modal = document.createElement('div')
+  modal.className = 'modal-overlay'
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3>🏦 Importar Extrato Bancário</h3>
+      <select id="extract-format"><option value="text">📝 Texto simples</option><option value="csv">📊 CSV</option><option value="ofx">🏦 OFX</option></select>
+      <textarea id="extract-text" rows="8" placeholder="Cole aqui o texto do seu extrato bancário..."></textarea>
+      <button class="btn-primary" onclick="processBankExtract()">📊 Processar Extrato</button>
+      <div id="extract-result" style="margin-top:1rem;display:none"></div>
+    </div>
+  `
+  document.body.appendChild(modal)
+  modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+}
+
+async function processBankExtract() {
+  const text = document.getElementById('extract-text')?.value
+  const format = document.getElementById('extract-format')?.value || 'text'
+  if (!text) { showToast('Cole o texto do extrato'); return }
+  try {
+    const data = await api.processBankExtract(text, format)
+    showToast(data.message)
+    setTimeout(() => { const modal = document.querySelector('.modal-overlay'); if(modal) modal.remove(); loadHome() }, 2000)
+  } catch(e) { showToast(e.message || 'Erro ao processar') }
+}
+
+// ===== INFORME DE RENDIMENTOS =====
+async function showIncomeReport() {
+  try {
+    const report = await api.getIncomeReport()
+    alert(`📊 INFORME DE RENDIMENTOS\n\nUsuário: ${report.user}\nAno: ${report.year}\nRendimentos Totais: ${fmt(report.totalIncome)}\nDespesas Dedutíveis: ${fmt(report.totalExpenses)}\nINSS pago: ${fmt(report.annualINSS)}\nIRRF retido: ${fmt(report.annualIRRF)}`)
+  } catch(e) { showToast('Erro ao gerar informe') }
+}
+
+async function generateIRDeclaration() {
+  try {
+    const ir = await api.getIRDeclaration()
+    alert(`📝 DECLARAÇÃO IR SIMPLIFICADA\n\nContribuinte: ${ir.taxpayer.name}\nAno: ${ir.year}\nRendimentos: ${fmt(ir.annualIncome)}\nIRRF Retido: ${fmt(ir.annualIRRF)}\nSituação: ${ir.status}\n${ir.estimatedRefund > 0 ? `Restituição: ${fmt(ir.estimatedRefund)}` : `Saldo a pagar: ${fmt(ir.estimatedPayment)}`}`)
+  } catch(e) { showToast('Erro ao gerar declaração') }
+}
+
+// ===== TOAST =====
 function showToast(msg) {
   const t = document.getElementById('toast')
   t.textContent = msg
@@ -1430,11 +1577,12 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2800)
 }
 
+// ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
   const token = localStorage.getItem('token')
   if (token) {
     try {
-      const profile = await apiRequest('/user/profile')
+      const profile = await api.getProfile()
       currentUser = profile
       enterApp()
     } catch(e) {
