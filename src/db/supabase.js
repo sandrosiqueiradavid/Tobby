@@ -3,51 +3,29 @@ const { createClient } = require('@supabase/supabase-js');
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SECRET_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Supabase credentials missing!');
-}
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+console.log('🔌 INICIANDO CLIENTE SUPABASE (VERSÃO SIMPLIFICADA)');
+console.log(`📡 URL: ${supabaseUrl}`);
+console.log(`🔑 KEY: ${supabaseKey ? supabaseKey.substring(0, 15) + '...' : '❌'}`);
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-// Garantir que a URL não tem barra no final
-const cleanUrl = supabaseUrl?.replace(/\/$/, '');
+// Cliente sem opções extras para evitar problemas
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Configuração com schema explícito
-const supabase = createClient(cleanUrl, supabaseKey, {
-  db: {
-    schema: 'public'
-  },
-  auth: {
-    persistSession: false
-  }
-});
-
-// Teste de conexão com a tabela específica
+// Teste rápido para confirmar que está funcionando
 (async () => {
   try {
-    // Teste de conexão com a tabela
-    const { error, count, data } = await supabase
+    const { data, error, count } = await supabase
       .from('tobby_users')
       .select('*', { count: 'exact', head: true });
     
     if (error) {
-      console.error(`❌ Supabase error: ${error.message} (Code: ${error.code})`);
-      console.error(`📋 Full error:`, JSON.stringify(error, null, 2));
+      console.error('❌ Erro no teste:', error.message);
     } else {
-      console.log(`✅ Supabase connected successfully! Users count: ${count}`);
-      
-      // Verificar se consegue ler os dados
-      const { data: users, error: readError } = await supabase
-        .from('tobby_users')
-        .select('id, name, email')
-        .limit(1);
-      
-      if (readError) {
-        console.error(`❌ Error reading data: ${readError.message}`);
-      } else if (users && users.length > 0) {
-        console.log(`✅ Sample user found: ${users[0].email}`);
-      }
+      console.log(`✅ Cliente Supabase funcionando! Total de usuários: ${count}`);
     }
   } catch (err) {
-    console.error(`❌ Supabase exception: ${err.message}`);
+    console.error('❌ Exceção no teste:', err.message);
   }
 })();
 
