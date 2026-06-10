@@ -20,6 +20,7 @@ app.use('/api/investment', require('./routes/investment'));
 app.use('/api/bank', require('./routes/bank'));
 app.use('/api/loans', require('./routes/loan'));
 app.use('/api/wealth', require('./routes/wealth'));
+app.use('/api/admin', require('./routes/admin'));  // ✅ NOVA ROTA DO ADMIN
 
 // Health check
 app.get('/', (req, res) => res.json({
