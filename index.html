@@ -1027,6 +1027,7 @@ function renderBills(filter) {
 }
 
 function openModal(id) {
+  const modalDiv = document.getElementById('modal')
   if (id) {
     const b = allBills.find(x => x.id==id)
     if (!b) return
@@ -1046,10 +1047,32 @@ function openModal(id) {
     document.getElementById('f-cat').value = 'outros'
     document.getElementById('f-status').value = 'pending'
   }
-  document.getElementById('modal').style.display = 'block'
+  modalDiv.style.display = 'block'
 }
 
-function closeModal() { document.getElementById('modal').style.display = 'none' }
+function closeModal() {
+  // Fecha o modal de contas (base)
+  const baseModal = document.getElementById('modal')
+  if (baseModal) baseModal.style.display = 'none'
+  
+  // Para qualquer stream de vídeo ativo
+  if (window.currentCameraStream) {
+    window.currentCameraStream.getTracks().forEach(track => track.stop())
+    window.currentCameraStream = null
+  }
+  
+  // Fecha qualquer modal dinâmico aberto
+  const dynamicModals = document.querySelectorAll('.modal-overlay')
+  dynamicModals.forEach(modal => {
+    const video = modal.querySelector('video')
+    if (video && video.srcObject) {
+      video.srcObject.getTracks().forEach(track => track.stop())
+    }
+    modal.remove()
+  })
+  
+  document.body.style.overflow = ''
+}
 
 async function saveBill() {
   const name = document.getElementById('f-name').value.trim()
@@ -1197,11 +1220,14 @@ function showAddInvestmentModal() {
       <div class="field"><label>Tipo</label><select id="inv-type"><option value="stock">Ação</option><option value="fii">FII</option><option value="fixed_income">Renda Fixa</option></select></div>
       <div class="field-row"><div class="field"><label>Quantidade</label><input type="number" id="inv-quantity" step="0.01"></div><div class="field"><label>Preço médio</label><input type="number" id="inv-price" step="0.01"></div></div>
       <div class="field"><label>Data da compra</label><input type="date" id="inv-date"></div>
-      <div class="field-row"><button class="btn-primary" onclick="saveInvestment()">Salvar</button><button class="btn-ghost" onclick="closeModal()">Cancelar</button></div>
+      <div style="display:flex; gap:0.5rem; margin-top:1rem">
+        <button class="btn-primary" style="flex:1" onclick="saveInvestment()">Salvar</button>
+        <button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button>
+      </div>
     </div>
   `
   document.body.appendChild(modal)
-  modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+  modal.onclick = (e) => { if (e.target === modal) closeModal() }
 }
 
 async function saveInvestment() {
@@ -1273,11 +1299,14 @@ function showAddLoanModal() {
       <div class="field-row"><div class="field"><label>Valor Total</label><input type="number" id="loan-total" step="0.01"></div><div class="field"><label>Saldo Devedor</label><input type="number" id="loan-balance" step="0.01"></div></div>
       <div class="field-row"><div class="field"><label>Taxa Juros (% mês)</label><input type="number" id="loan-rate" step="0.01"></div><div class="field"><label>Parcelas Restantes</label><input type="number" id="loan-installments"></div></div>
       <div class="field"><label>Data Início</label><input type="date" id="loan-date"></div>
-      <div class="field-row"><button class="btn-primary" onclick="saveLoan()">Salvar</button><button class="btn-ghost" onclick="closeModal()">Cancelar</button></div>
+      <div style="display:flex; gap:0.5rem; margin-top:1rem">
+        <button class="btn-primary" style="flex:1" onclick="saveLoan()">Salvar</button>
+        <button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button>
+      </div>
     </div>
   `
   document.body.appendChild(modal)
-  modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+  modal.onclick = (e) => { if (e.target === modal) closeModal() }
 }
 
 async function saveLoan() {
@@ -1346,11 +1375,14 @@ function showAddAssetModal() {
       <div class="field"><label>Nome</label><input type="text" id="asset-name" placeholder="Ex: Apartamento, Carro, Reserva"></div>
       <div class="field"><label>Tipo</label><select id="asset-type"><option value="real_estate">Imóvel</option><option value="vehicle">Veículo</option><option value="savings">Reserva Financeira</option><option value="other">Outro</option></select></div>
       <div class="field"><label>Valor Estimado (R$)</label><input type="number" id="asset-value" step="0.01"></div>
-      <div class="field-row"><button class="btn-primary" onclick="saveAsset()">Salvar</button><button class="btn-ghost" onclick="closeModal()">Cancelar</button></div>
+      <div style="display:flex; gap:0.5rem; margin-top:1rem">
+        <button class="btn-primary" style="flex:1" onclick="saveAsset()">Salvar</button>
+        <button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button>
+      </div>
     </div>
   `
   document.body.appendChild(modal)
-  modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+  modal.onclick = (e) => { if (e.target === modal) closeModal() }
 }
 
 async function saveAsset() {
@@ -1447,35 +1479,50 @@ async function openReceiptScanner() {
     showToast('Seu navegador não suporta câmera')
     return
   }
+  
+  let stream = null
+  
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+    stream = await navigator.mediaDevices.getUserMedia({ video: true })
+    window.currentCameraStream = stream
+    
     const modal = document.createElement('div')
     modal.className = 'modal-overlay'
     modal.innerHTML = `
       <div class="modal" style="padding:0">
         <div class="modal-handle"></div>
         <video id="preview" autoplay playsinline style="width:100%;border-radius:12px"></video>
-        <div style="padding:1rem">
-          <button class="btn-primary" onclick="captureReceiptPhoto()">📸 Tirar Foto</button>
-          <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+        <div style="padding:1rem; display:flex; gap:0.5rem">
+          <button class="btn-primary" style="flex:1" onclick="captureReceiptPhoto()">📸 Tirar Foto</button>
+          <button class="btn-ghost" style="flex:1" onclick="closeModal()">❌ Cancelar</button>
         </div>
       </div>
     `
     document.body.appendChild(modal)
+    
     const videoEl = modal.querySelector('#preview')
     videoEl.srcObject = stream
+    
     window.captureReceiptPhoto = () => {
       const canvas = document.createElement('canvas')
       canvas.width = videoEl.videoWidth
       canvas.height = videoEl.videoHeight
       canvas.getContext('2d').drawImage(videoEl, 0, 0)
       const imageData = canvas.toDataURL('image/jpeg', 0.8)
-      stream.getTracks().forEach(track => track.stop())
+      
+      if (stream) stream.getTracks().forEach(track => track.stop())
       modal.remove()
+      window.currentCameraStream = null
+      
       processReceiptImage(imageData)
     }
-    modal.onclick = (e) => { if (e.target === modal) { stream.getTracks().forEach(track => track.stop()); modal.remove() } }
-  } catch(err) { showToast('Erro ao acessar câmera: ' + err.message) }
+    
+    modal.onclick = (e) => { if (e.target === modal) closeModal() }
+    
+  } catch(err) {
+    showToast('Erro ao acessar câmera: ' + err.message)
+    if (stream) stream.getTracks().forEach(track => track.stop())
+  }
 }
 
 async function processReceiptImage(imageData) {
@@ -1502,12 +1549,15 @@ function showHollerithModal() {
       <h3>📄 Leitor de Holerite</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:1rem">Cole o texto do seu holerite. O Tobby vai identificar automaticamente salário e descontos.</p>
       <textarea id="holerite-text" rows="8" placeholder="Cole aqui o texto do seu holerite..."></textarea>
-      <button class="btn-primary" onclick="processHollerith()">📊 Processar Holerite</button>
+      <div style="display:flex; gap:0.5rem; margin-top:1rem">
+        <button class="btn-primary" style="flex:1" onclick="processHollerith()">📊 Processar</button>
+        <button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button>
+      </div>
       <div id="holerite-result" style="margin-top:1rem;display:none"></div>
     </div>
   `
   document.body.appendChild(modal)
-  modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+  modal.onclick = (e) => { if (e.target === modal) closeModal() }
 }
 
 async function processHollerith() {
@@ -1521,7 +1571,8 @@ async function processHollerith() {
       resultDiv.innerHTML = `<div style="background:var(--green-dim);border-radius:8px;padding:1rem"><div style="color:var(--green);font-weight:700">✅ ${data.message}</div></div>`
     }
     showToast(data.message)
-    setTimeout(() => { const modal = document.querySelector('.modal-overlay'); if(modal) modal.remove(); loadHome() }, 2000)
+    setTimeout(() => closeModal(), 2000)
+    loadHome()
   } catch(e) { showToast(e.message || 'Erro ao processar') }
 }
 
@@ -1533,14 +1584,17 @@ function showBankExtractModal() {
     <div class="modal">
       <div class="modal-handle"></div>
       <h3>🏦 Importar Extrato Bancário</h3>
-      <select id="extract-format"><option value="text">📝 Texto simples</option><option value="csv">📊 CSV</option><option value="ofx">🏦 OFX</option></select>
+      <div class="field"><label>Formato</label><select id="extract-format"><option value="text">📝 Texto simples</option><option value="csv">📊 CSV</option><option value="ofx">🏦 OFX</option></select></div>
       <textarea id="extract-text" rows="8" placeholder="Cole aqui o texto do seu extrato bancário..."></textarea>
-      <button class="btn-primary" onclick="processBankExtract()">📊 Processar Extrato</button>
+      <div style="display:flex; gap:0.5rem; margin-top:1rem">
+        <button class="btn-primary" style="flex:1" onclick="processBankExtract()">📊 Processar</button>
+        <button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button>
+      </div>
       <div id="extract-result" style="margin-top:1rem;display:none"></div>
     </div>
   `
   document.body.appendChild(modal)
-  modal.onclick = (e) => { if (e.target === modal) modal.remove() }
+  modal.onclick = (e) => { if (e.target === modal) closeModal() }
 }
 
 async function processBankExtract() {
@@ -1550,7 +1604,8 @@ async function processBankExtract() {
   try {
     const data = await api.processBankExtract(text, format)
     showToast(data.message)
-    setTimeout(() => { const modal = document.querySelector('.modal-overlay'); if(modal) modal.remove(); loadHome() }, 2000)
+    setTimeout(() => closeModal(), 2000)
+    loadHome()
   } catch(e) { showToast(e.message || 'Erro ao processar') }
 }
 
