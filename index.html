@@ -2,12 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
 <meta name="theme-color" content="#22D07A" id="theme-color-meta">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tobby">
 <link rel="manifest" href="manifest.json">
-<title>Tobby 🐶 — Organizador Financeiro com Personalidade</title>
+<title>Tobby 🐶 — Organizador Financeiro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -76,33 +76,204 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
-  max-width: 480px;
-  margin: 0 auto;
-  position: relative;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-.hidden { display: none !important; }
-.screen { display: none; min-height: 100vh; animation: fadeInUp 0.4s ease; }
-.screen.active { display: flex; }
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ===== CONTAINER PRINCIPAL RESPONSIVO ===== */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  min-height: 100vh;
 }
 
-/* ===== SCROLLBAR ===== */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--border); border-radius: 4px; }
-::-webkit-scrollbar-thumb { background: var(--green); border-radius: 4px; }
+/* ===== CONTENT RESPONSIVO ===== */
+.content {
+  padding: 1.25rem;
+  overflow-y: auto;
+  padding-bottom: 80px;
+}
+
+/* Desktop - ajuste de grid */
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .balance-details {
+    max-width: 400px;
+  }
+}
+
+/* ===== BOTTOM NAV RESPONSIVO ===== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom));
+  z-index: 100;
+  backdrop-filter: blur(10px);
+}
+
+.bottom-nav .nav-container {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-muted);
+  max-width: 80px;
+}
+
+/* ===== MODAL RESPONSIVO ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border-radius: 24px 24px 0 0;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .modal-overlay {
+    align-items: center;
+  }
+  .modal {
+    border-radius: 24px;
+    margin: 1rem;
+    max-width: 500px;
+  }
+}
+
+/* ===== TOAST RESPONSIVO ===== */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 0.65rem 1.1rem;
+  font-size: 13px;
+  z-index: 300;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow-lg);
+}
+
+@media (max-width: 640px) {
+  .toast {
+    white-space: normal;
+    max-width: 90vw;
+    text-align: center;
+  }
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== BILLS GRID RESPONSIVO ===== */
+@media (min-width: 768px) {
+  #bills-list-main {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .bill-item {
+    margin-bottom: 0;
+  }
+  
+  .quick-actions {
+    max-width: 500px;
+  }
+}
+
+/* ===== INVESTMENTS, LOANS, ASSETS RESPONSIVE ===== */
+@media (min-width: 768px) {
+  #investments-list-container,
+  #loans-list-container,
+  #assets-list-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .investment-item, .loan-item, .asset-item {
+    margin-bottom: 0;
+  }
+}
+
+/* ===== AUTH RESPONSIVO ===== */
+#auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.auth-card {
+  max-width: 450px;
+  width: 100%;
+  margin: 0 auto;
+}
 
 /* ===== LOADING ===== */
 #loading {
-  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  min-height: 100vh;
+  background: var(--bg-primary);
+  z-index: 1000;
 }
 .spinner {
   width: 48px;
@@ -114,6 +285,7 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text {
+  margin-top: 1rem;
   font-size: 14px;
   color: var(--text-secondary);
   animation: pulse 1.5s ease infinite;
@@ -121,232 +293,6 @@ body {
 @keyframes pulse {
   0%, 100% { opacity: 0.6; }
   50% { opacity: 1; }
-}
-
-/* ===== AUTH ===== */
-#auth {
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  min-height: 100vh;
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-}
-.auth-logo {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-.logo-mark {
-  width: 72px;
-  height: 72px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, var(--green), var(--blue));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36px;
-  margin: 0 auto 1rem;
-  animation: bounce 2s ease infinite;
-}
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-.logo-title {
-  font-family: 'DM Serif Display', serif;
-  font-size: 32px;
-  background: linear-gradient(135deg, var(--green), var(--blue));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.logo-sub {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 4px;
-}
-.auth-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 1.75rem;
-  width: 100%;
-  max-width: 400px;
-  box-shadow: var(--shadow-lg);
-}
-.auth-card h2 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-.auth-card p {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-bottom: 1.5rem;
-}
-.field { margin-bottom: 1rem; }
-.field label {
-  display: block;
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.field input, .field select {
-  width: 100%;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  transition: var(--transition);
-}
-.field input:focus, .field select:focus {
-  outline: none;
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px var(--green-bg);
-}
-.forgot-link {
-  text-align: right;
-  margin-bottom: 1rem;
-  font-size: 12px;
-}
-.forgot-link span {
-  color: var(--green);
-  cursor: pointer;
-  font-weight: 500;
-}
-.btn-primary {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--green), var(--green-dark));
-  border: none;
-  border-radius: var(--radius-md);
-  color: white;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.btn-primary:active { transform: scale(0.98); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-ghost {
-  width: 100%;
-  padding: 13px;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  transition: var(--transition);
-  margin-top: 0.5rem;
-}
-.btn-ghost:hover { border-color: var(--green); color: var(--green); }
-.auth-switch {
-  text-align: center;
-  margin-top: 1rem;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.auth-switch span {
-  color: var(--green);
-  cursor: pointer;
-  font-weight: 600;
-}
-.err-msg {
-  font-size: 12px;
-  color: var(--red);
-  margin-top: 6px;
-  display: none;
-  padding: 8px;
-  background: var(--red-bg);
-  border-radius: var(--radius-sm);
-}
-.success-msg {
-  font-size: 12px;
-  margin-top: 6px;
-  padding: 8px;
-  border-radius: var(--radius-sm);
-  text-align: center;
-  background: var(--green-bg);
-  color: var(--green);
-  display: none;
-}
-
-/* ===== TOPBAR ===== */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(10px);
-}
-.topbar-left { display: flex; align-items: center; gap: 10px; }
-.topbar-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--green), var(--blue));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-.topbar-name {
-  font-family: 'DM Serif Display', serif;
-  font-size: 20px;
-  background: linear-gradient(135deg, var(--green), var(--blue));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.topbar-right { display: flex; align-items: center; gap: 12px; }
-.icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.icon-btn:active { transform: scale(0.95); background: var(--bg-card-hover); }
-.avatar-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--purple), var(--pink));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.avatar-btn:active { transform: scale(0.95); }
-
-.content {
-  flex: 1;
-  padding: 1.25rem;
-  overflow-y: auto;
-  padding-bottom: 80px;
 }
 
 /* ===== TOBY MOOD ===== */
@@ -466,8 +412,9 @@ body {
 .balance-details {
   display: flex;
   gap: 1.5rem;
+  flex-wrap: wrap;
 }
-.balance-detail { flex: 1; }
+.balance-detail { flex: 1; min-width: 80px; }
 .balance-detail-label {
   font-size: 10px;
   color: var(--text-secondary);
@@ -572,80 +519,103 @@ body {
 .status-paid { background: var(--green-bg); color: var(--green); }
 .status-pending { background: var(--amber-bg); color: var(--amber); }
 .status-late { background: var(--red-bg); color: var(--red); }
-
-/* ===== BOTTOM NAV ===== */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border);
+.bill-actions {
   display: flex;
-  padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom));
+  gap: 8px;
+}
+.bill-action {
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  transition: var(--transition);
+}
+.bill-action:active { transform: scale(0.9); }
+
+/* ===== THEME TOGGLE ===== */
+.theme-toggle {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+}
+.theme-option {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.theme-option.active {
+  background: var(--green);
+  color: white;
+}
+.theme-option:active { transform: scale(0.95); }
+
+/* ===== TOPBAR ===== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
   z-index: 100;
   backdrop-filter: blur(10px);
 }
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 0.5rem;
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-logo {
+  width: 36px;
+  height: 36px;
   border-radius: 12px;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.topbar-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: var(--transition);
-  color: var(--text-muted);
 }
-.nav-item.active {
-  color: var(--green);
-  background: var(--green-bg);
-}
-.nav-item:active { transform: scale(0.95); }
-.nav-icon { font-size: 20px; transition: transform 0.2s ease; }
-.nav-item.active .nav-icon { transform: translateY(-2px); }
-.nav-label { font-size: 10px; font-weight: 600; }
-
-/* ===== MODAL ===== */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 200;
+.icon-btn:active { transform: scale(0.95); background: var(--bg-card-hover); }
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  max-width: 480px;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: fadeIn 0.2s ease;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
 }
-.modal {
-  background: var(--bg-secondary);
-  border-radius: 24px 24px 0 0;
-  padding: 1.5rem;
-  width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-  animation: slideUp 0.3s ease;
-}
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-.modal-handle {
-  width: 40px;
-  height: 4px;
-  background: var(--border);
-  border-radius: 99px;
-  margin: 0 auto 1rem;
-}
-.modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 1.25rem; }
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.avatar-btn:active { transform: scale(0.95); }
 
 /* ===== CHAT ===== */
 .chat-msgs {
@@ -653,7 +623,7 @@ body {
   flex-direction: column;
   gap: 0.75rem;
   margin-bottom: 0.85rem;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
 }
 .msg {
@@ -722,53 +692,176 @@ body {
   display: none;
 }
 
-/* ===== THEME TOGGLE ===== */
-.theme-toggle {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  padding: 4px;
-  display: flex;
-  gap: 4px;
+/* ===== FORMS ===== */
+.field { margin-bottom: 1rem; }
+.field label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.theme-option {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.field input, .field select, textarea {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  transition: var(--transition);
+}
+.field input:focus, .field select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-bg);
+}
+textarea {
+  resize: vertical;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* ===== BUTTONS ===== */
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 15px;
   cursor: pointer;
   transition: var(--transition);
 }
-.theme-option.active {
-  background: var(--green);
-  color: white;
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-ghost {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 0.5rem;
 }
-.theme-option:active { transform: scale(0.95); }
-
-/* ===== TOAST ===== */
-.toast {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--bg-card);
+.btn-ghost:hover { border-color: var(--green); color: var(--green); }
+.btn-danger {
+  width: 100%;
+  padding: 14px;
+  background: var(--red-bg);
   border: 1px solid var(--border);
   border-radius: 30px;
-  padding: 0.65rem 1.1rem;
-  font-size: 13px;
-  z-index: 300;
-  opacity: 0;
-  transition: all 0.3s;
-  pointer-events: none;
-  white-space: nowrap;
-  max-width: 90vw;
+  color: var(--red);
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-danger:active { transform: scale(0.98); }
+
+/* ===== AUTH ===== */
+.auth-logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.logo-mark {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin: 0 auto 1rem;
+  animation: bounce 2s ease infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.logo-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.logo-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+.auth-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
   box-shadow: var(--shadow-lg);
 }
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+.auth-card h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.auth-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+.forgot-link {
+  text-align: right;
+  margin-bottom: 1rem;
+  font-size: 12px;
+}
+.forgot-link span {
+  color: var(--green);
+  cursor: pointer;
+  font-weight: 500;
+}
+.auth-switch {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.auth-switch span {
+  color: var(--green);
+  cursor: pointer;
+  font-weight: 600;
+}
+.err-msg {
+  font-size: 12px;
+  color: var(--red);
+  margin-top: 6px;
+  display: none;
+  padding: 8px;
+  background: var(--red-bg);
+  border-radius: var(--radius-sm);
+}
+.success-msg {
+  font-size: 12px;
+  margin-top: 6px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  background: var(--green-bg);
+  color: var(--green);
+  display: none;
 }
 
 /* ===== INVESTMENTS, LOANS, ASSETS ===== */
@@ -785,274 +878,329 @@ body {
 }
 .investment-item:active, .loan-item:active, .asset-item:active { transform: scale(0.99); }
 
-/* ===== UTILITIES ===== */
-textarea {
-  width: 100%;
-  background: var(--bg-secondary);
+/* ===== INSIGHT CARD ===== */
+.insight-card {
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 12px;
-  color: var(--text-primary);
-  font-family: monospace;
-  font-size: 12px;
-  resize: vertical;
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  margin-bottom: 0.7rem;
 }
-textarea:focus { outline: none; border-color: var(--green); }
+.insight-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.insight-emoji { font-size: 20px; flex-shrink: 0; }
+.insight-title { font-size: 13px; font-weight: 700; }
+.insight-body { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+.insight-action {
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 600;
+  margin-top: 0.4rem;
+  cursor: pointer;
+  display: inline-block;
+}
+
+/* ===== CHIP ===== */
 .chip {
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
   display: inline-block;
+  cursor: pointer;
+  transition: var(--transition);
 }
 .chip-green { background: var(--green-bg); color: var(--green); }
+.chip:active { transform: scale(0.95); }
+
+/* ===== UTILITIES ===== */
+.hidden { display: none !important; }
+.screen { display: none; min-height: 100vh; animation: fadeInUp 0.4s ease; }
+.screen.active { display: block; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.profile-hero { text-align: center; padding: 1rem 0; }
+.profile-name { font-family: 'DM Serif Display', serif; font-size: 20px; }
+.profile-email { font-size: 12px; color: var(--text-secondary); }
+.salary-edit { text-align: right; font-size: 12px; color: var(--green); cursor: pointer; }
+.stat-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.ai-header { text-align: center; padding: 1rem 0; }
+.ai-orb { width: 70px; height: 70px; margin: 0 auto 1rem; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink), var(--green)); display: flex; align-items: center; justify-content: center; font-size: 36px; animation: pulse 2s ease infinite; }
+.ai-title { font-family: 'DM Serif Display', serif; font-size: 20px; }
+.ai-sub { font-size: 12px; color: var(--text-secondary); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--green); border-radius: 4px; }
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
-<div id="loading" class="screen active">
-  <div class="spinner"></div>
-  <div class="loading-text">Carregando Tobby...</div>
-</div>
-
-<!-- AUTH -->
-<div id="auth" class="screen">
-  <div class="auth-logo">
-    <div class="logo-mark">🐶</div>
-    <div class="logo-title">Tobby</div>
-    <div class="logo-sub">Organizador Financeiro com Personalidade</div>
-  </div>
-
-  <div class="auth-card" id="login-card">
-    <h2>Bem-vindo de volta</h2>
-    <p>Entre para organizar suas finanças</p>
-    <div class="field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com"></div>
-    <div class="field"><label>Senha</label><input type="password" id="login-pwd" placeholder="••••••••"></div>
-    <div class="forgot-link"><span onclick="showForgotPassword()">Esqueci minha senha?</span></div>
-    <div class="err-msg" id="login-err">E-mail ou senha inválidos</div>
-    <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar →</button>
-    <div class="auth-switch">Não tem conta? <span onclick="showRegister()">Criar agora</span></div>
-  </div>
-
-  <div class="auth-card hidden" id="register-card">
-    <h2>Criar conta grátis</h2>
-    <p>Comece a organizar suas finanças hoje</p>
-    <div class="field"><label>Nome completo</label><input type="text" id="reg-name" placeholder="Seu nome"></div>
-    <div class="field"><label>E-mail</label><input type="email" id="reg-email" placeholder="seu@email.com"></div>
-    <div class="field"><label>Senha</label><input type="password" id="reg-pwd" placeholder="Mínimo 6 caracteres"></div>
-    <div class="field"><label>Salário mensal (R$)</label><input type="number" id="reg-salary" placeholder="Ex: 5000" step="0.01"></div>
-    <div class="err-msg" id="reg-err"></div>
-    <button class="btn-primary" id="reg-btn" onclick="doRegister()" style="background:linear-gradient(135deg,#8B5CF6,#EC4899);color:#fff">Criar conta →</button>
-    <div class="auth-switch">Já tem conta? <span onclick="showLogin()">Entrar</span></div>
-  </div>
-
-  <div class="auth-card hidden" id="forgot-card">
-    <h2>Recuperar senha</h2>
-    <p>Digite seu e-mail para receber as instruções</p>
-    <div class="field"><label>E-mail</label><input type="email" id="forgot-email" placeholder="seu@email.com"></div>
-    <div class="err-msg" id="forgot-err"></div>
-    <div class="success-msg" id="forgot-success"></div>
-    <button class="btn-primary" onclick="doForgotPassword()" style="background:linear-gradient(135deg,#8B5CF6,#EC4899);color:#fff">Enviar instruções →</button>
-    <button class="btn-ghost" onclick="showLogin()">Voltar ao login</button>
-  </div>
-
-  <div class="auth-card hidden" id="reset-card">
-    <h2>Redefinir senha</h2>
-    <p>Digite sua nova senha</p>
-    <div class="field"><label>Nova senha</label><input type="password" id="reset-pwd" placeholder="Mínimo 6 caracteres"></div>
-    <div class="field"><label>Confirmar senha</label><input type="password" id="reset-pwd-confirm" placeholder="Digite novamente"></div>
-    <div class="err-msg" id="reset-err"></div>
-    <button class="btn-primary" onclick="doResetPassword()">Redefinir senha →</button>
-    <button class="btn-ghost" onclick="showLogin()">Voltar ao login</button>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app" class="screen">
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-logo">🐶</div>
-      <div class="topbar-name">Tobby</div>
+<div class="app-container">
+  <!-- LOADING -->
+  <div id="loading" class="screen active">
+    <div style="text-align:center">
+      <div class="spinner" style="margin:0 auto"></div>
+      <div class="loading-text">Carregando Tobby...</div>
     </div>
-    <div class="topbar-right">
-      <div class="theme-toggle" id="theme-toggle">
-        <div class="theme-option" data-theme="dark" title="Tema escuro">🌙</div>
-        <div class="theme-option" data-theme="light" title="Tema claro">☀️</div>
+  </div>
+
+  <!-- AUTH -->
+  <div id="auth" class="screen">
+    <div class="auth-logo">
+      <div class="logo-mark">🐶</div>
+      <div class="logo-title">Tobby</div>
+      <div class="logo-sub">Organizador Financeiro com Personalidade</div>
+    </div>
+
+    <div class="auth-card" id="login-card">
+      <h2>Bem-vindo de volta</h2>
+      <p>Entre para organizar suas finanças</p>
+      <div class="field"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com"></div>
+      <div class="field"><label>Senha</label><input type="password" id="login-pwd" placeholder="••••••••"></div>
+      <div class="forgot-link"><span onclick="showForgotPassword()">Esqueci minha senha?</span></div>
+      <div class="err-msg" id="login-err">E-mail ou senha inválidos</div>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Entrar →</button>
+      <div class="auth-switch">Não tem conta? <span onclick="showRegister()">Criar agora</span></div>
+    </div>
+
+    <div class="auth-card hidden" id="register-card">
+      <h2>Criar conta grátis</h2>
+      <p>Comece a organizar suas finanças hoje</p>
+      <div class="field"><label>Nome completo</label><input type="text" id="reg-name" placeholder="Seu nome"></div>
+      <div class="field"><label>E-mail</label><input type="email" id="reg-email" placeholder="seu@email.com"></div>
+      <div class="field"><label>Senha</label><input type="password" id="reg-pwd" placeholder="Mínimo 6 caracteres"></div>
+      <div class="field"><label>Salário mensal (R$)</label><input type="number" id="reg-salary" placeholder="Ex: 5000" step="0.01"></div>
+      <div class="err-msg" id="reg-err"></div>
+      <button class="btn-primary" id="reg-btn" onclick="doRegister()" style="background:linear-gradient(135deg,#8B5CF6,#EC4899);color:#fff">Criar conta →</button>
+      <div class="auth-switch">Já tem conta? <span onclick="showLogin()">Entrar</span></div>
+    </div>
+
+    <div class="auth-card hidden" id="forgot-card">
+      <h2>Recuperar senha</h2>
+      <p>Digite seu e-mail para receber as instruções</p>
+      <div class="field"><label>E-mail</label><input type="email" id="forgot-email" placeholder="seu@email.com"></div>
+      <div class="err-msg" id="forgot-err"></div>
+      <div class="success-msg" id="forgot-success"></div>
+      <button class="btn-primary" onclick="doForgotPassword()" style="background:linear-gradient(135deg,#8B5CF6,#EC4899);color:#fff">Enviar instruções →</button>
+      <button class="btn-ghost" onclick="showLogin()">Voltar ao login</button>
+    </div>
+
+    <div class="auth-card hidden" id="reset-card">
+      <h2>Redefinir senha</h2>
+      <p>Digite sua nova senha</p>
+      <div class="field"><label>Nova senha</label><input type="password" id="reset-pwd" placeholder="Mínimo 6 caracteres"></div>
+      <div class="field"><label>Confirmar senha</label><input type="password" id="reset-pwd-confirm" placeholder="Digite novamente"></div>
+      <div class="err-msg" id="reset-err"></div>
+      <button class="btn-primary" onclick="doResetPassword()">Redefinir senha →</button>
+      <button class="btn-ghost" onclick="showLogin()">Voltar ao login</button>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="screen">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-logo">🐶</div>
+        <div class="topbar-name">Tobby</div>
       </div>
-      <div class="icon-btn" onclick="showToast('Sem novas notificações 🎉')"><i class="fas fa-bell"></i></div>
-      <div class="avatar-btn" id="top-avatar" onclick="navTo('profile')">--</div>
-    </div>
-  </div>
-
-  <!-- HOME -->
-  <div id="tab-home" class="content">
-    <div class="toby-card">
-      <div class="toby-avatar" id="toby-avatar">🐶</div>
-      <div class="toby-message">
-        <p id="toby-message">Carregando...</p>
-        <small id="toby-small">Analisando suas finanças...</small>
-      </div>
-      <div class="toby-badge" id="toby-badge">🐶</div>
-    </div>
-
-    <div class="mission-card">
-      <div class="mission-title"><i class="fas fa-flag-checkered"></i> MISSÃO DA SEMANA</div>
-      <div class="mission-text" id="mission-text">Carregando missão...</div>
-      <div class="mission-progress"><div class="mission-progress-fill" id="mission-progress" style="width:0%"></div></div>
-      <div class="mission-reward" id="mission-reward">✨ Complete para ganhar uma conquista</div>
-    </div>
-
-    <div class="balance-card">
-      <div class="balance-label">Saldo disponível</div>
-      <div class="balance-value" id="bal-free">R$ 0,00</div>
-      <div class="balance-details">
-        <div class="balance-detail">
-          <div class="balance-detail-label">Salário</div>
-          <div class="balance-detail-value income" id="bal-in">R$ 0,00</div>
+      <div class="topbar-right">
+        <div class="theme-toggle" id="theme-toggle">
+          <div class="theme-option" data-theme="dark" title="Tema escuro">🌙</div>
+          <div class="theme-option" data-theme="light" title="Tema claro">☀️</div>
         </div>
-        <div class="balance-detail">
-          <div class="balance-detail-label">Contas pagas</div>
-          <div class="balance-detail-value expense" id="bal-out">R$ 0,00</div>
+        <div class="icon-btn" onclick="showToast('Sem novas notificações 🎉')"><i class="fas fa-bell"></i></div>
+        <div class="avatar-btn" id="top-avatar" onclick="navTo('profile')">--</div>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div id="tab-home" class="content">
+      <div class="toby-card">
+        <div class="toby-avatar" id="toby-avatar">🐶</div>
+        <div class="toby-message">
+          <p id="toby-message">Carregando...</p>
+          <small id="toby-small">Analisando suas finanças...</small>
         </div>
-        <div class="balance-detail">
-          <div class="balance-detail-label">Comprometido</div>
-          <div class="balance-detail-value" id="bal-pct">0%</div>
+        <div class="toby-badge" id="toby-badge">🐶</div>
+      </div>
+
+      <div class="mission-card">
+        <div class="mission-title"><i class="fas fa-flag-checkered"></i> MISSÃO DA SEMANA</div>
+        <div class="mission-text" id="mission-text">Carregando missão...</div>
+        <div class="mission-progress"><div class="mission-progress-fill" id="mission-progress" style="width:0%"></div></div>
+        <div class="mission-reward" id="mission-reward">✨ Complete para ganhar uma conquista</div>
+      </div>
+
+      <div class="balance-card">
+        <div class="balance-label">Saldo disponível</div>
+        <div class="balance-value" id="bal-free">R$ 0,00</div>
+        <div class="balance-details">
+          <div class="balance-detail">
+            <div class="balance-detail-label">Salário</div>
+            <div class="balance-detail-value income" id="bal-in">R$ 0,00</div>
+          </div>
+          <div class="balance-detail">
+            <div class="balance-detail-label">Contas pagas</div>
+            <div class="balance-detail-value expense" id="bal-out">R$ 0,00</div>
+          </div>
+          <div class="balance-detail">
+            <div class="balance-detail-label">Comprometido</div>
+            <div class="balance-detail-value" id="bal-pct">0%</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--green-bg)"><i class="fas fa-check-circle" style="color:var(--green)"></i></div>
-        <div class="stat-label">Contas pagas</div>
-        <div class="stat-value" id="stat-paid" style="color:var(--green)">0</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--green-bg)"><i class="fas fa-check-circle" style="color:var(--green)"></i></div>
+          <div class="stat-label">Contas pagas</div>
+          <div class="stat-value" id="stat-paid" style="color:var(--green)">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--amber-bg)"><i class="fas fa-clock" style="color:var(--amber)"></i></div>
+          <div class="stat-label">Pendentes</div>
+          <div class="stat-value" id="stat-pend" style="color:var(--amber)">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--red-bg)"><i class="fas fa-exclamation-triangle" style="color:var(--red)"></i></div>
+          <div class="stat-label">Atrasadas</div>
+          <div class="stat-value" id="stat-late" style="color:var(--red)">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--blue-bg)"><i class="fas fa-receipt" style="color:var(--blue)"></i></div>
+          <div class="stat-label">Total contas</div>
+          <div class="stat-value" id="stat-total" style="color:var(--blue)">0</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--amber-bg)"><i class="fas fa-clock" style="color:var(--amber)"></i></div>
-        <div class="stat-label">Pendentes</div>
-        <div class="stat-value" id="stat-pend" style="color:var(--amber)">0</div>
+
+      <div class="section-header">
+        <h3>Próximas contas</h3>
+        <a onclick="navTo('bills')">Ver todas →</a>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--red-bg)"><i class="fas fa-exclamation-triangle" style="color:var(--red)"></i></div>
-        <div class="stat-label">Atrasadas</div>
-        <div class="stat-value" id="stat-late" style="color:var(--red)">0</div>
+      <div id="home-bills-list"><div style="text-align:center;padding:2rem;color:var(--text-secondary)">Carregando...</div></div>
+    </div>
+
+    <!-- CONTAS -->
+    <div id="tab-bills" class="content" style="display:none">
+      <div class="section-header"><h3>Contas</h3><a onclick="filterBills(this,'all')">Filtrar</a></div>
+      <div style="display:flex;gap:0.5rem;margin-bottom:1rem;overflow-x:auto" id="bills-filters">
+        <button class="chip chip-green" onclick="filterBills(this,'all')">Todas</button>
+        <button class="chip" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer" onclick="filterBills(this,'pending')">Pendentes</button>
+        <button class="chip" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer" onclick="filterBills(this,'paid')">Pagas</button>
+        <button class="chip" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer" onclick="filterBills(this,'late')">Atrasadas</button>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:var(--blue-bg)"><i class="fas fa-receipt" style="color:var(--blue)"></i></div>
-        <div class="stat-label">Total contas</div>
-        <div class="stat-value" id="stat-total" style="color:var(--blue)">0</div>
+      <div id="bills-list-main"><div style="text-align:center;padding:2rem;color:var(--text-secondary)">Carregando...</div></div>
+      <button class="btn-primary" style="margin-top:.75rem" onclick="openModal()"><i class="fas fa-plus"></i> Adicionar conta</button>
+    </div>
+
+    <!-- INVESTIMENTOS -->
+    <div id="tab-investments" class="content" style="display:none">
+      <div class="section-header"><h3>Investimentos</h3></div>
+      <div class="stats-grid" style="margin-bottom:1rem">
+        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total Investido</div><div class="stat-value" id="total-invested">R$ 0</div></div>
+        <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-label">Rentabilidade</div><div class="stat-value" id="profit-loss">0%</div></div>
+      </div>
+      <button class="btn-primary" onclick="showAddInvestmentModal()" style="margin-bottom:1rem"><i class="fas fa-plus"></i> Adicionar Investimento</button>
+      <div id="investments-list-container"></div>
+    </div>
+
+    <!-- FINANCIAMENTOS -->
+    <div id="tab-loans" class="content" style="display:none">
+      <div class="section-header"><h3>Dívidas e Financiamentos</h3></div>
+      <div class="stats-grid" style="margin-bottom:1rem">
+        <div class="stat-card"><div class="stat-icon">💸</div><div class="stat-label">Total de Dívidas</div><div class="stat-value" id="total-debt">R$ 0</div></div>
+        <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Prestação Mensal</div><div class="stat-value" id="total-monthly">R$ 0</div></div>
+      </div>
+      <button class="btn-primary" onclick="showAddLoanModal()" style="margin-bottom:1rem"><i class="fas fa-plus"></i> Adicionar Financiamento</button>
+      <div id="loans-list-container"></div>
+    </div>
+
+    <!-- PATRIMÔNIO -->
+    <div id="tab-wealth" class="content" style="display:none">
+      <div class="section-header"><h3>Patrimônio Líquido</h3></div>
+      <div class="balance-card" style="text-align:center;margin-bottom:1rem">
+        <div class="balance-label">SEU PATRIMÔNIO</div>
+        <div class="balance-value" id="net-worth">R$ 0</div>
+        <div class="balance-details">
+          <div class="balance-detail"><div class="balance-detail-label">Ativos</div><div class="balance-detail-value income" id="total-assets">R$ 0</div></div>
+          <div class="balance-detail"><div class="balance-detail-label">Passivos</div><div class="balance-detail-value expense" id="total-liabilities">R$ 0</div></div>
+        </div>
+      </div>
+      <div class="section-header"><h3>Seus Bens</h3></div>
+      <button class="btn-primary" onclick="showAddAssetModal()" style="margin-bottom:.5rem"><i class="fas fa-plus"></i> Adicionar Bem</button>
+      <div id="assets-list-container"></div>
+    </div>
+
+    <!-- IA -->
+    <div id="tab-ai" class="content" style="display:none">
+      <div class="ai-header">
+        <div class="ai-orb">🤖</div>
+        <div class="ai-title">Assistente Tobby IA</div>
+        <div class="ai-sub">Análise inteligente das suas finanças</div>
+      </div>
+      <div class="section-header"><h3>Insights</h3></div>
+      <div id="insights-list"></div>
+      <div class="section-header" style="margin-top:1rem"><h3>Conversar com a IA</h3></div>
+      <div class="chat-msgs" id="chat-msgs">
+        <div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Como posso te ajudar?</div>
+      </div>
+      <div class="typing-ind" id="typing-ind">Tobby IA está digitando...</div>
+      <div class="chat-bar">
+        <input class="chat-input" id="chat-input" placeholder="Pergunte sobre suas finanças..." onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="chat-send" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
       </div>
     </div>
 
-    <div class="section-header">
-      <h3>Próximas contas</h3>
-      <a onclick="navTo('bills')">Ver todas →</a>
-    </div>
-    <div id="home-bills-list"><div style="text-align:center;padding:2rem;color:var(--text-secondary)">Carregando...</div></div>
-  </div>
-
-  <!-- CONTAS -->
-  <div id="tab-bills" class="content" style="display:none">
-    <div class="section-header"><h3>Contas</h3><a onclick="filterBills(this,'all')">Filtrar</a></div>
-    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;overflow-x:auto" id="bills-filters">
-      <button class="chip chip-green" onclick="filterBills(this,'all')">Todas</button>
-      <button class="chip" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer" onclick="filterBills(this,'pending')">Pendentes</button>
-      <button class="chip" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer" onclick="filterBills(this,'paid')">Pagas</button>
-      <button class="chip" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary);cursor:pointer" onclick="filterBills(this,'late')">Atrasadas</button>
-    </div>
-    <div id="bills-list-main"><div style="text-align:center;padding:2rem;color:var(--text-secondary)">Carregando...</div></div>
-    <button class="btn-primary" style="margin-top:.75rem" onclick="openModal()"><i class="fas fa-plus"></i> Adicionar conta</button>
-  </div>
-
-  <!-- INVESTIMENTOS -->
-  <div id="tab-investments" class="content" style="display:none">
-    <div class="section-header"><h3>Investimentos</h3></div>
-    <div class="stats-grid" style="margin-bottom:1rem">
-      <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total Investido</div><div class="stat-value" id="total-invested">R$ 0</div></div>
-      <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-label">Rentabilidade</div><div class="stat-value" id="profit-loss">0%</div></div>
-    </div>
-    <button class="btn-primary" onclick="showAddInvestmentModal()" style="margin-bottom:1rem"><i class="fas fa-plus"></i> Adicionar Investimento</button>
-    <div id="investments-list-container"></div>
-  </div>
-
-  <!-- FINANCIAMENTOS -->
-  <div id="tab-loans" class="content" style="display:none">
-    <div class="section-header"><h3>Dívidas e Financiamentos</h3></div>
-    <div class="stats-grid" style="margin-bottom:1rem">
-      <div class="stat-card"><div class="stat-icon">💸</div><div class="stat-label">Total de Dívidas</div><div class="stat-value" id="total-debt">R$ 0</div></div>
-      <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Prestação Mensal</div><div class="stat-value" id="total-monthly">R$ 0</div></div>
-    </div>
-    <button class="btn-primary" onclick="showAddLoanModal()" style="margin-bottom:1rem"><i class="fas fa-plus"></i> Adicionar Financiamento</button>
-    <div id="loans-list-container"></div>
-  </div>
-
-  <!-- PATRIMÔNIO -->
-  <div id="tab-wealth" class="content" style="display:none">
-    <div class="section-header"><h3>Patrimônio Líquido</h3></div>
-    <div class="balance-card" style="text-align:center;margin-bottom:1rem">
-      <div class="balance-label">SEU PATRIMÔNIO</div>
-      <div class="balance-value" id="net-worth">R$ 0</div>
-      <div class="balance-details">
-        <div class="balance-detail"><div class="balance-detail-label">Ativos</div><div class="balance-detail-value income" id="total-assets">R$ 0</div></div>
-        <div class="balance-detail"><div class="balance-detail-label">Passivos</div><div class="balance-detail-value expense" id="total-liabilities">R$ 0</div></div>
+    <!-- PERFIL -->
+    <div id="tab-profile" class="content" style="display:none">
+      <div class="profile-hero">
+        <div class="avatar-btn" style="width:64px;height:64px;font-size:24px;margin:0 auto .85rem;background:linear-gradient(135deg,var(--purple),var(--pink))" id="prof-av">--</div>
+        <div class="profile-name" id="prof-name">--</div>
+        <div class="profile-email" id="prof-email">--</div>
       </div>
+      <div class="balance-card" style="padding:1rem;margin-bottom:1rem">
+        <div class="balance-label">Salário mensal</div>
+        <div class="balance-value" style="font-size:24px" id="prof-salary">R$ 0,00</div>
+        <div class="salary-edit" onclick="editSalary()">✏️ Editar</div>
+      </div>
+      <div class="section-header"><h3>Ferramentas</h3></div>
+      <div class="stats-grid" style="grid-template-columns:1fr;gap:0.5rem">
+        <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="openReceiptScanner()"><div class="stat-icon" style="background:var(--green-bg)">📸</div><div style="flex:1"><div class="stat-label">Ler Nota Fiscal</div><div class="stat-sub" style="font-size:10px;color:var(--text-muted)">Tire uma foto da nota</div></div><i class="fas fa-chevron-right"></i></div>
+        <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="showHollerithModal()"><div class="stat-icon" style="background:var(--purple-bg)">📄</div><div style="flex:1"><div class="stat-label">Ler Holerite</div><div class="stat-sub" style="font-size:10px;color:var(--text-muted)">Cole o texto do holerite</div></div><i class="fas fa-chevron-right"></i></div>
+        <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="showBankExtractModal()"><div class="stat-icon" style="background:var(--blue-bg)">🏦</div><div style="flex:1"><div class="stat-label">Importar Extrato</div><div class="stat-sub" style="font-size:10px;color:var(--text-muted)">CSV, OFX ou texto</div></div><i class="fas fa-chevron-right"></i></div>
+        <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="showIncomeReport()"><div class="stat-icon" style="background:var(--green-bg)">📊</div><div style="flex:1"><div class="stat-label">Informe de Rendimentos</div><div class="stat-sub" style="font-size:10px;color:var(--text-muted)">Anual para IR</div></div><i class="fas fa-chevron-right"></i></div>
+      </div>
+      <button class="btn-danger" onclick="doLogout()">Sair da conta</button>
     </div>
-    <div class="section-header"><h3>Seus Bens</h3></div>
-    <button class="btn-primary" onclick="showAddAssetModal()" style="margin-bottom:.5rem"><i class="fas fa-plus"></i> Adicionar Bem</button>
-    <div id="assets-list-container"></div>
-  </div>
 
-  <!-- IA -->
-  <div id="tab-ai" class="content" style="display:none">
-    <div style="text-align:center;padding:1rem 0">
-      <div class="toby-avatar" style="width:70px;height:70px;font-size:36px;margin:0 auto 1rem">🤖</div>
-      <div class="ai-title" style="font-family:'DM Serif Display',serif;font-size:20px">Assistente Tobby IA</div>
-      <div class="ai-sub" style="font-size:12px;color:var(--text-secondary)">Análise inteligente das suas finanças</div>
-    </div>
-    <div class="section-header"><h3>Insights</h3></div>
-    <div id="insights-list"></div>
-    <div class="section-header" style="margin-top:1rem"><h3>Conversar com a IA</h3></div>
-    <div class="chat-msgs" id="chat-msgs">
-      <div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Como posso te ajudar?</div>
-    </div>
-    <div class="typing-ind" id="typing-ind">Tobby IA está digitando...</div>
-    <div class="chat-bar">
-      <input class="chat-input" id="chat-input" placeholder="Pergunte sobre suas finanças..." onkeydown="if(event.key==='Enter')sendMsg()">
-      <button class="chat-send" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
-    </div>
+    <nav class="bottom-nav">
+      <div class="nav-container">
+        <div class="nav-item active" id="nav-home" onclick="navTo('home')"><div class="nav-icon"><i class="fas fa-home"></i></div><div class="nav-label">Início</div></div>
+        <div class="nav-item" id="nav-bills" onclick="navTo('bills')"><div class="nav-icon"><i class="fas fa-receipt"></i></div><div class="nav-label">Contas</div></div>
+        <div class="nav-item" id="nav-investments" onclick="navTo('investments')"><div class="nav-icon"><i class="fas fa-chart-line"></i></div><div class="nav-label">Investir</div></div>
+        <div class="nav-item" id="nav-loans" onclick="navTo('loans')"><div class="nav-icon"><i class="fas fa-hand-holding-usd"></i></div><div class="nav-label">Dívidas</div></div>
+        <div class="nav-item" id="nav-wealth" onclick="navTo('wealth')"><div class="nav-icon"><i class="fas fa-building"></i></div><div class="nav-label">Patrimônio</div></div>
+        <div class="nav-item" id="nav-ai" onclick="navTo('ai')"><div class="nav-icon"><i class="fas fa-robot"></i></div><div class="nav-label">IA</div></div>
+      </div>
+    </nav>
   </div>
-
-  <!-- PERFIL -->
-  <div id="tab-profile" class="content" style="display:none">
-    <div style="text-align:center;padding:1rem 0">
-      <div class="avatar-btn" style="width:64px;height:64px;font-size:24px;margin:0 auto .85rem;background:linear-gradient(135deg,var(--purple),var(--pink))" id="prof-av">--</div>
-      <div class="profile-name" style="font-family:'DM Serif Display',serif;font-size:20px" id="prof-name">--</div>
-      <div class="profile-email" style="font-size:12px;color:var(--text-secondary)" id="prof-email">--</div>
-    </div>
-    <div class="balance-card" style="padding:1rem;margin-bottom:1rem">
-      <div class="balance-label">Salário mensal</div>
-      <div class="balance-value" style="font-size:24px" id="prof-salary">R$ 0,00</div>
-      <div class="salary-edit" style="text-align:right;font-size:12px;color:var(--green);cursor:pointer" onclick="editSalary()">✏️ Editar</div>
-    </div>
-    <div class="section-header"><h3>Ferramentas</h3></div>
-    <div class="stats-grid" style="grid-template-columns:1fr;gap:0.5rem">
-      <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="openReceiptScanner()"><div class="stat-icon" style="background:var(--green-bg)">📸</div><div style="flex:1"><div class="stat-label">Ler Nota Fiscal</div><div class="stat-sub" style="font-size:10px;color:var(--text-muted)">Tire uma foto da nota</div></div><i class="fas fa-chevron-right"></i></div>
-      <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="showHollerithModal()"><div class="stat-icon" style="background:var(--purple-bg)">📄</div><div style="flex:1"><div class="stat-label">Ler Holerite</div><div class="stat-sub" style="font-size:10px;color:var(--text-muted)">Cole o texto do holerite</div></div><i class="fas fa-chevron-right"></i></div>
-      <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="showBankExtractModal()"><div class="stat-icon" style="background:var(--blue-bg)">🏦</div><div style="flex:1"><div class="stat-label">Importar Extrato</div><div class="stat-sub" style="font-size:10px;color:var(--text-muted)">CSV, OFX ou texto</div></div><i class="fas fa-chevron-right"></i></div>
-      <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="showIncomeReport()"><div class="stat-icon" style="background:var(--green-bg)">📊</div><div style="flex:1"><div class="stat-label">Informe de Rendimentos</div><div class="stat-sub" style="font-size:10px;color:var(--text-muted)">Anual para IR</div></div><i class="fas fa-chevron-right"></i></div>
-    </div>
-    <button class="btn-danger" onclick="doLogout()" style="width:100%;padding:14px;margin-top:1rem;background:var(--red-bg);border:1px solid var(--border);border-radius:30px;color:var(--red);font-weight:700;cursor:pointer">Sair da conta</button>
-  </div>
-
-  <nav class="bottom-nav">
-    <div class="nav-item active" id="nav-home" onclick="navTo('home')"><div class="nav-icon"><i class="fas fa-home"></i></div><div class="nav-label">Início</div></div>
-    <div class="nav-item" id="nav-bills" onclick="navTo('bills')"><div class="nav-icon"><i class="fas fa-receipt"></i></div><div class="nav-label">Contas</div></div>
-    <div class="nav-item" id="nav-investments" onclick="navTo('investments')"><div class="nav-icon"><i class="fas fa-chart-line"></i></div><div class="nav-label">Investir</div></div>
-    <div class="nav-item" id="nav-loans" onclick="navTo('loans')"><div class="nav-icon"><i class="fas fa-hand-holding-usd"></i></div><div class="nav-label">Dívidas</div></div>
-    <div class="nav-item" id="nav-wealth" onclick="navTo('wealth')"><div class="nav-icon"><i class="fas fa-building"></i></div><div class="nav-label">Patrimônio</div></div>
-    <div class="nav-item" id="nav-ai" onclick="navTo('ai')"><div class="nav-icon"><i class="fas fa-robot"></i></div><div class="nav-label">IA</div></div>
-  </nav>
 </div>
 
 <!-- MODAL BASE -->
@@ -1071,8 +1219,10 @@ textarea:focus { outline: none; border-color: var(--green); }
         <div class="field"><label>Status</label><select id="f-status"><option value="pending">Pendente</option><option value="paid">Pago</option><option value="late">Atrasado</option></select></div>
       </div>
       <input type="hidden" id="f-id">
-      <button class="btn-primary" onclick="saveBill()" style="margin-top:.5rem" id="modal-save-btn">Salvar conta</button>
-      <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+      <div style="display:flex;gap:0.5rem;margin-top:1rem">
+        <button class="btn-primary" style="flex:1" onclick="saveBill()" id="modal-save-btn">Salvar conta</button>
+        <button class="btn-ghost" style="flex:1" onclick="closeModal()">Cancelar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1135,7 +1285,7 @@ async function doForgotPassword(){ const email=document.getElementById('forgot-e
 function checkResetToken(){ const urlParams=new URLSearchParams(window.location.search); const token=urlParams.get('token'); if(token){ resetToken=token; document.getElementById('login-card').classList.add('hidden'); document.getElementById('register-card').classList.add('hidden'); document.getElementById('forgot-card').classList.add('hidden'); document.getElementById('reset-card').classList.remove('hidden') } }
 async function doResetPassword(){ const newPassword=document.getElementById('reset-pwd').value, confirmPassword=document.getElementById('reset-pwd-confirm').value; if(!newPassword||!confirmPassword){showError('reset-err','Preencha ambos os campos');return} if(newPassword!==confirmPassword){showError('reset-err','As senhas não coincidem');return} if(newPassword.length<6){showError('reset-err','Mínimo 6 caracteres');return} const btn=event.target; btn.disabled=true; btn.textContent='Redefinindo...'; try{ const data=await api.resetPassword(resetToken,newPassword); alert('✅ '+data.message); window.history.replaceState({},document.title,window.location.pathname); showLogin() }catch(error){showError('reset-err','Erro ao redefinir')}finally{ btn.disabled=false; btn.textContent='Redefinir senha →' } }
 
-function updateUserUI(){ if(!currentUser)return; const initials=currentUser.name.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase(); document.getElementById('top-avatar').textContent=initials; document.getElementById('prof-av').textContent=initials; document.getElementById('prof-name').textContent=currentUser.name; document.getElementById('prof-email').textContent=currentUser.email; document.getElementById('home-name').textContent=currentUser.name.split(' ')[0]; const now=new Date(); document.getElementById('home-month').textContent=MONTHS[now.getMonth()]+' '+now.getFullYear() }
+function updateUserUI(){ if(!currentUser)return; const initials=currentUser.name.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase(); document.getElementById('top-avatar').textContent=initials; document.getElementById('prof-av').textContent=initials; document.getElementById('prof-name').textContent=currentUser.name; document.getElementById('prof-email').textContent=currentUser.email; const now=new Date(); }
 function enterApp(){ showScreen('app'); updateUserUI(); navTo('home'); loadHome() }
 function navTo(tab){ TABS.forEach(t=>{ const el=document.getElementById('tab-'+t); const nav=document.getElementById('nav-'+t); if(el)el.style.display=t===tab?'block':'none'; if(nav)nav.classList.toggle('active',t===tab) }); if(tab==='home')loadHome(); if(tab==='bills')loadBillsTab(); if(tab==='investments')loadInvestments(); if(tab==='loans')loadLoans(); if(tab==='wealth')loadWealth(); if(tab==='ai')loadInsights(); if(tab==='profile')loadProfile() }
 
@@ -1146,7 +1296,7 @@ function renderHomeBills(bills){ const today=new Date().getDate(); const upcomin
 
 async function loadBillsTab(){ try{ const bills=await api.getBills(); allBills=bills||[]; renderBills(currentFilter) }catch(e){showToast('Erro ao carregar contas')} }
 function filterBills(el,filter){ currentFilter=filter; renderBills(filter) }
-function renderBills(filter){ const today=new Date().getDate(); let bills=[...allBills]; if(filter==='pending')bills=bills.filter(b=>b.status==='pending'); else if(filter==='paid')bills=bills.filter(b=>b.status==='paid'); else if(filter==='late')bills=bills.filter(b=>b.status==='late'||(b.status==='pending'&&b.due_day<today)); const el=document.getElementById('bills-list-main'); if(!bills.length){el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhuma conta encontrada</div>';return} el.innerHTML=bills.map(b=>{const cat=CATS[b.category]||CATS.outros; const isLate=b.status==='pending'&&b.due_day<today; const statusClass=b.status==='paid'?'status-paid':isLate?'status-late':'status-pending'; const statusText=b.status==='paid'?'Pago':isLate?'Atrasado':'Pendente'; return `<div class="bill-item"><div class="bill-icon" style="background:${cat.bg}">${cat.e}</div><div class="bill-info"><div class="bill-name">${b.name}</div><div class="bill-meta">Vence dia ${b.due_day} · ${b.category}</div></div><div class="bill-right"><div class="bill-value">${fmt(b.value)}</div><div class="bill-status ${statusClass}">${statusText}</div></div><div class="bill-actions" style="display:flex;gap:8px;margin-left:8px"><div class="bill-action" onclick="toggleStatus('${b.id}','${b.status}')">${b.status==='paid'?'↩️':'✅'}</div><div class="bill-action" onclick="openModal('${b.id}')">✏️</div><div class="bill-action" onclick="deleteBill('${b.id}')">🗑️</div></div></div>` }).join('') }
+function renderBills(filter){ const today=new Date().getDate(); let bills=[...allBills]; if(filter==='pending')bills=bills.filter(b=>b.status==='pending'); else if(filter==='paid')bills=bills.filter(b=>b.status==='paid'); else if(filter==='late')bills=bills.filter(b=>b.status==='late'||(b.status==='pending'&&b.due_day<today)); const el=document.getElementById('bills-list-main'); if(!bills.length){el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhuma conta encontrada</div>';return} el.innerHTML=bills.map(b=>{const cat=CATS[b.category]||CATS.outros; const isLate=b.status==='pending'&&b.due_day<today; const statusClass=b.status==='paid'?'status-paid':isLate?'status-late':'status-pending'; const statusText=b.status==='paid'?'Pago':isLate?'Atrasado':'Pendente'; return `<div class="bill-item"><div class="bill-icon" style="background:${cat.bg}">${cat.e}</div><div class="bill-info"><div class="bill-name">${b.name}</div><div class="bill-meta">Vence dia ${b.due_day} · ${b.category}</div></div><div class="bill-right"><div class="bill-value">${fmt(b.value)}</div><div class="bill-status ${statusClass}">${statusText}</div></div><div class="bill-actions"><div class="bill-action" onclick="toggleStatus('${b.id}','${b.status}')">${b.status==='paid'?'↩️':'✅'}</div><div class="bill-action" onclick="openModal('${b.id}')">✏️</div><div class="bill-action" onclick="deleteBill('${b.id}')">🗑️</div></div></div>` }).join('') }
 function openModal(id){ const modalDiv=document.getElementById('modal'); if(id){ const b=allBills.find(x=>x.id==id); if(!b)return; document.getElementById('modal-title').textContent='Editar Conta'; document.getElementById('f-id').value=b.id; document.getElementById('f-name').value=b.name; document.getElementById('f-val').value=b.value; document.getElementById('f-day').value=b.due_day; document.getElementById('f-cat').value=b.category; document.getElementById('f-status').value=b.status }else{ document.getElementById('modal-title').textContent='Nova Conta'; document.getElementById('f-id').value=''; document.getElementById('f-name').value=''; document.getElementById('f-val').value=''; document.getElementById('f-day').value=''; document.getElementById('f-cat').value='outros'; document.getElementById('f-status').value='pending' } modalDiv.style.display='block' }
 async function saveBill(){ const name=document.getElementById('f-name').value.trim(); const value=parseFloat(document.getElementById('f-val').value); const due_day=parseInt(document.getElementById('f-day').value); if(!name||!value||!due_day){showToast('Preencha todos os campos');return} const category=document.getElementById('f-cat').value; const status=document.getElementById('f-status').value; const eid=document.getElementById('f-id').value; const btn=document.getElementById('modal-save-btn'); btn.disabled=true; btn.textContent='Salvando...'; try{ if(eid)await api.updateBill(eid,name,value,due_day,category,status); else await api.createBill(name,value,due_day,category,status); closeModal(); const bills=await api.getBills(); allBills=bills||[]; renderBills(currentFilter); await loadHome(); showToast('Conta salva com sucesso 🐶') }catch(e){showToast(e.message||'Erro ao salvar')}finally{ btn.disabled=false; btn.textContent='Salvar conta' } }
 async function deleteBill(id){ if(!confirm('Remover esta conta?'))return; try{ await api.deleteBill(id); const bills=await api.getBills(); allBills=bills||[]; renderBills(currentFilter); await loadHome(); showToast('Conta removida') }catch(e){showToast('Erro ao remover')} }
