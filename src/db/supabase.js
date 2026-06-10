@@ -1,29 +1,33 @@
 const { createClient } = require('@supabase/supabase-js');
 
+// Configuração básica, sem opções extras
 const supabaseUrl = process.env.SUPABASE_URL;
-// Tenta diferentes nomes de variável para compatibilidade
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 
-                    process.env.SUPABASE_SECRET_KEY || 
-                    process.env.SUPABASE_ANON_KEY;
-
-console.log('🔌 Conectando ao Supabase...');
-console.log('URL:', supabaseUrl ? '✅ Configurada' : '❌ FALTANDO');
-console.log('KEY:', supabaseKey ? '✅ Configurada' : '❌ FALTANDO');
+const supabaseKey = process.env.SUPABASE_SECRET_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('❌ Variáveis do Supabase não configuradas corretamente!');
+  console.error('❌ Supabase credentials missing!');
+  console.error('SUPABASE_URL:', supabaseUrl ? '✅ Set' : '❌ Missing');
+  console.error('SUPABASE_SECRET_KEY:', supabaseKey ? '✅ Set' : '❌ Missing');
 }
 
+// Criar cliente com configuração padrão
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Teste de conexão
-supabase.from('users').select('count', { count: 'exact', head: true })
-  .then(({ error, count }) => {
+// Teste rápido de conexão
+(async () => {
+  try {
+    const { error, count } = await supabase
+      .from('tobby_users')
+      .select('*', { count: 'exact', head: true });
+    
     if (error) {
-      console.error('❌ Erro de conexão com Supabase:', error.message);
+      console.error(`❌ Supabase connection error: ${error.message} (Code: ${error.code})`);
     } else {
-      console.log('✅ Supabase conectado! Total de usuários:', count);
+      console.log(`✅ Supabase connected successfully! Users count: ${count}`);
     }
-  });
+  } catch (err) {
+    console.error(`❌ Supabase connection exception: ${err.message}`);
+  }
+})();
 
 module.exports = supabase;
