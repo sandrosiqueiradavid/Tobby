@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const supabase = require('../db/supabase');
 
 const authController = {
-  async register(req, res) {
+  register: async (req, res) => {
     try {
       const { name, email, password, salary = 0 } = req.body;
       if (!name || !email || !password) {
@@ -37,7 +37,7 @@ const authController = {
     }
   },
 
-  async login(req, res) {
+  login: async (req, res) => {
     try {
       const { email, password } = req.body;
       if (!email || !password) {
@@ -68,7 +68,7 @@ const authController = {
     }
   },
 
-  async forgotPassword(req, res) {
+  forgotPassword: async (req, res) => {
     try {
       const { email } = req.body;
       if (!email) {
@@ -105,7 +105,7 @@ const authController = {
     }
   },
 
-  async resetPassword(req, res) {
+  resetPassword: async (req, res) => {
     try {
       const { token, newPassword } = req.body;
       if (!token || !newPassword) {
