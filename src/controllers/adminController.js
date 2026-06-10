@@ -14,6 +14,24 @@ const adminController = {
       const dbLatency = Date.now() - start;
       const dbStatus = !error && data !== null;
       
+      // Se for uma chamada interna (sem res), retorna os dados
+      if (!res) {
+        return {
+          status: dbStatus ? 'healthy' : 'degraded',
+          timestamp: new Date().toISOString(),
+          uptime: process.uptime(),
+          database: {
+            connected: dbStatus,
+            latency: dbLatency,
+            error: error ? error.message : null
+          },
+          api: {
+            version: '5.0.0',
+            environment: process.env.NODE_ENV || 'production'
+          }
+        };
+      }
+      
       res.json({
         status: dbStatus ? 'healthy' : 'degraded',
         timestamp: new Date().toISOString(),
@@ -41,6 +59,9 @@ const adminController = {
       });
     } catch (err) {
       console.error('Health check error:', err);
+      if (!res) {
+        return { status: 'unhealthy', error: err.message };
+      }
       res.status(500).json({
         status: 'unhealthy',
         error: err.message,
@@ -53,19 +74,19 @@ const adminController = {
   async getMetrics(req, res) {
     try {
       // Apenas contar quantos registros existem, sem expor valores
-      const [usersCount, billsCount] = await Promise.all([
+      const [usersResult, billsResult] = await Promise.all([
         supabase.from('users').select('*', { count: 'exact', head: true }),
         supabase.from('bills').select('*', { count: 'exact', head: true })
       ]);
       
-      res.json({
+      const result = {
         timestamp: new Date().toISOString(),
         users: {
-          total: usersCount.count || 0,
+          total: usersResult.count || 0,
           note: 'Apenas quantidade de usuários cadastrados'
         },
         bills: {
-          total: billsCount.count || 0,
+          total: billsResult.count || 0,
           note: 'Apenas quantidade de contas cadastradas'
         },
         system: {
@@ -73,9 +94,13 @@ const adminController = {
           platform: process.platform,
           cpuCores: require('os').cpus().length
         }
-      });
+      };
+      
+      if (!res) return result;
+      res.json(result);
     } catch (err) {
       console.error('Metrics error:', err);
+      if (!res) return { error: err.message };
       res.status(500).json({ error: 'Erro ao buscar métricas' });
     }
   },
@@ -99,12 +124,17 @@ const adminController = {
         ? logs 
         : logs.filter(l => l.level === level);
       
-      res.json({
+      const result = {
         logs: filteredLogs.slice(0, limit),
         total: filteredLogs.length,
         note: 'Logs técnicos do sistema - sem informações de usuários'
-      });
+      };
+      
+      if (!res) return result;
+      res.json(result);
     } catch (err) {
+      console.error('Logs error:', err);
+      if (!res) return { error: err.message };
       res.status(500).json({ error: 'Erro ao buscar logs' });
     }
   },
@@ -142,8 +172,11 @@ const adminController = {
         if (error) validations.supabase.error = error.message;
       }
       
+      if (!res) return validations;
       res.json(validations);
     } catch (err) {
+      console.error('Validate system error:', err);
+      if (!res) return { error: err.message };
       res.status(500).json({ error: 'Erro ao validar sistema: ' + err.message });
     }
   },
@@ -164,24 +197,28 @@ const adminController = {
       results.push({ route: '/health', status: 'error', error: err.message });
     }
     
-    res.json({
+    const result = {
       apiStatus: 'operational',
       testedAt: new Date().toISOString(),
       results: results
-    });
+    };
+    
+    if (!res) return result;
+    res.json(result);
   },
   
   // Dashboard técnico (sem dados sensíveis)
   async getFullDashboard(req, res) {
     try {
+      // Chamar as funções internamente sem os objetos req/res
       const [health, metrics, logs, system] = await Promise.all([
-        adminController.healthCheck({}, { json: (data) => data }),
-        adminController.getMetrics({}, { json: (data) => data }),
-        adminController.getLogs({ query: { limit: 10 } }, { json: (data) => data }),
-        adminController.validateSystem({}, { json: (data) => data })
+        adminController.healthCheck(),
+        adminController.getMetrics(),
+        adminController.getLogs({ query: { limit: 10 } }),
+        adminController.validateSystem()
       ]);
       
-      res.json({
+      const result = {
         summary: {
           status: health?.status || 'unknown',
           timestamp: new Date().toISOString(),
@@ -191,7 +228,9 @@ const adminController = {
         metrics: metrics,
         recentLogs: logs?.logs || [],
         system: system
-      });
+      };
+      
+      res.json(result);
     } catch (err) {
       console.error('Dashboard error:', err);
       res.status(500).json({ error: 'Erro ao carregar dashboard' });
