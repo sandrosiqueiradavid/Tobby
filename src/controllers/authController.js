@@ -10,8 +10,9 @@ const authController = {
         return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios' });
       }
 
+      // Verificar se usuário já existe na tabela tobby_users
       const { data: existing } = await supabase
-        .from('users')
+        .from('tobby_users')
         .select('id')
         .eq('email', email)
         .single();
@@ -22,18 +23,21 @@ const authController = {
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const { data: user, error } = await supabase
-        .from('users')
+        .from('tobby_users')
         .insert({ name, email, password: hashedPassword, salary })
         .select('id, name, email, salary')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw error;
+      }
 
       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
       res.status(201).json({ token, user });
     } catch (err) {
       console.error('Register error:', err);
-      res.status(500).json({ error: 'Erro ao criar conta' });
+      res.status(500).json({ error: 'Erro ao criar conta: ' + err.message });
     }
   },
 
@@ -45,7 +49,7 @@ const authController = {
       }
 
       const { data: user, error } = await supabase
-        .from('users')
+        .from('tobby_users')
         .select('id, name, email, password, salary')
         .eq('email', email)
         .single();
@@ -76,7 +80,7 @@ const authController = {
       }
 
       const { data: user, error } = await supabase
-        .from('users')
+        .from('tobby_users')
         .select('id, email, name')
         .eq('email', email)
         .single();
@@ -92,7 +96,7 @@ const authController = {
       );
 
       await supabase
-        .from('users')
+        .from('tobby_users')
         .update({ reset_token: resetToken, reset_expires: new Date(Date.now() + 3600000) })
         .eq('id', user.id);
 
@@ -128,7 +132,7 @@ const authController = {
       }
 
       const { data: user, error } = await supabase
-        .from('users')
+        .from('tobby_users')
         .select('id')
         .eq('id', decoded.userId)
         .single();
@@ -139,7 +143,7 @@ const authController = {
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       await supabase
-        .from('users')
+        .from('tobby_users')
         .update({ password: hashedPassword, reset_token: null, reset_expires: null })
         .eq('id', user.id);
 

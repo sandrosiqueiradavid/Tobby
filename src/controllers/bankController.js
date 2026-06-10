@@ -23,7 +23,7 @@ const bankController = {
       const bills = [];
       for (const exp of expenses.slice(0, 20)) {
         const { data: bill, error } = await supabase
-          .from('bills')
+          .from('tobby_bills')
           .insert({
             user_id: req.userId,
             name: exp.name,
@@ -34,7 +34,7 @@ const bankController = {
           })
           .select()
           .single();
-        if (!error) bills.push(bill);
+        if (!error && bill) bills.push(bill);
       }
 
       res.json({

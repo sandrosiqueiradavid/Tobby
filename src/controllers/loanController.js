@@ -11,14 +11,15 @@ const loanController = {
 
       if (error) throw error;
 
-      const totalDebt = loans.reduce((sum, l) => sum + l.outstanding_balance, 0);
-      const totalMonthlyPayment = loans.reduce((sum, l) => sum + (l.monthly_payment || 0), 0);
+      const totalDebt = loans?.reduce((sum, l) => sum + l.outstanding_balance, 0) || 0;
+      const totalMonthlyPayment = loans?.reduce((sum, l) => sum + (l.monthly_payment || 0), 0) || 0;
 
       res.json({
-        loans,
+        loans: loans || [],
         summary: { totalDebt, totalMonthlyPayment }
       });
     } catch (err) {
+      console.error('Get loans error:', err);
       res.status(500).json({ error: 'Erro ao buscar financiamentos' });
     }
   },
@@ -115,6 +116,7 @@ const loanController = {
       if (error) throw error;
       res.json({ success: true });
     } catch (err) {
+      console.error('Delete loan error:', err);
       res.status(500).json({ error: 'Erro ao deletar financiamento' });
     }
   }

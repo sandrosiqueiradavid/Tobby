@@ -19,7 +19,7 @@ const wealthController = {
         .eq('user_id', req.userId);
 
       const { data: user } = await supabase
-        .from('users')
+        .from('tobby_users')
         .select('salary')
         .eq('id', req.userId)
         .single();
@@ -80,6 +80,7 @@ const wealthController = {
       if (error) throw error;
       res.json({ assets: data || [] });
     } catch (err) {
+      console.error('Get assets error:', err);
       res.status(500).json({ error: 'Erro ao buscar bens' });
     }
   },
@@ -123,6 +124,7 @@ const wealthController = {
       if (error) throw error;
       res.json({ success: true });
     } catch (err) {
+      console.error('Delete asset error:', err);
       res.status(500).json({ error: 'Erro ao deletar bem' });
     }
   }

@@ -16,7 +16,7 @@ const hollerithController = {
       const bills = [];
       for (const item of parsedData.bills) {
         const { data: bill, error } = await supabase
-          .from('bills')
+          .from('tobby_bills')
           .insert({
             user_id: req.userId,
             name: item.name,
@@ -27,7 +27,7 @@ const hollerithController = {
           })
           .select()
           .single();
-        if (!error) bills.push(bill);
+        if (!error && bill) bills.push(bill);
       }
 
       res.json({
@@ -48,18 +48,18 @@ const hollerithController = {
       const currentYear = year || new Date().getFullYear();
 
       const { data: user } = await supabase
-        .from('users')
+        .from('tobby_users')
         .select('name, salary')
         .eq('id', req.userId)
         .single();
 
       const { data: paidBills } = await supabase
-        .from('bills')
+        .from('tobby_bills')
         .select('*')
         .eq('user_id', req.userId)
         .eq('status', 'paid');
 
-      const monthlyIncome = user.salary || 0;
+      const monthlyIncome = user?.salary || 0;
       const totalIncome = monthlyIncome * 12;
       const totalExpenses = paidBills ? paidBills.reduce((sum, b) => sum + parseFloat(b.value), 0) : 0;
       const inss = calculateINSS(monthlyIncome);
@@ -69,7 +69,7 @@ const hollerithController = {
       const netIncome = (monthlyIncome - inss - irrf) * 12;
 
       res.json({
-        user: user.name,
+        user: user?.name || 'Usuário',
         year: currentYear,
         monthlyIncome,
         totalIncome,
@@ -92,12 +92,12 @@ const hollerithController = {
       const currentYear = year || new Date().getFullYear();
 
       const { data: user } = await supabase
-        .from('users')
+        .from('tobby_users')
         .select('name, email, salary')
         .eq('id', req.userId)
         .single();
 
-      const monthlySalary = user.salary || 0;
+      const monthlySalary = user?.salary || 0;
       const annualIncome = monthlySalary * 12;
       const inss = calculateINSS(monthlySalary);
       const irrf = calculateIRRF(monthlySalary);
@@ -105,7 +105,7 @@ const hollerithController = {
       const annualIRRF = irrf * 12;
 
       const { data: bills } = await supabase
-        .from('bills')
+        .from('tobby_bills')
         .select('*')
         .eq('user_id', req.userId)
         .eq('status', 'paid');
@@ -124,7 +124,7 @@ const hollerithController = {
 
       res.json({
         year: currentYear,
-        taxpayer: { name: user.name, email: user.email },
+        taxpayer: { name: user?.name || 'Usuário', email: user?.email || '' },
         annualIncome,
         annualINSS,
         annualIRRF,

@@ -11,13 +11,13 @@ const investmentController = {
 
       if (error) throw error;
 
-      const totalInvested = investments.reduce((sum, inv) => sum + (inv.quantity * inv.purchase_price), 0);
-      const totalCurrent = investments.reduce((sum, inv) => sum + (inv.quantity * (inv.current_price || inv.purchase_price)), 0);
+      const totalInvested = investments?.reduce((sum, inv) => sum + (inv.quantity * inv.purchase_price), 0) || 0;
+      const totalCurrent = investments?.reduce((sum, inv) => sum + (inv.quantity * (inv.current_price || inv.purchase_price)), 0) || 0;
       const totalProfitLoss = totalCurrent - totalInvested;
       const totalProfitLossPercent = totalInvested > 0 ? (totalProfitLoss / totalInvested) * 100 : 0;
 
       res.json({
-        investments,
+        investments: investments || [],
         summary: {
           totalInvested,
           totalCurrent,
@@ -26,6 +26,7 @@ const investmentController = {
         }
       });
     } catch (err) {
+      console.error('Get investments error:', err);
       res.status(500).json({ error: 'Erro ao buscar investimentos' });
     }
   },
@@ -72,6 +73,7 @@ const investmentController = {
       if (error) throw error;
       res.json({ success: true });
     } catch (err) {
+      console.error('Delete investment error:', err);
       res.status(500).json({ error: 'Erro ao deletar investimento' });
     }
   }
