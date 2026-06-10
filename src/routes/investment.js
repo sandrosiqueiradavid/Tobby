@@ -5,7 +5,9 @@ const authMiddleware = require('../middleware/auth');
 
 router.use(authMiddleware);
 
-router.get('/news', investmentController.getNews);
-router.get('/recommendations', investmentController.getRecommendations);
+router.get('/', investmentController.getInvestments);
+router.post('/', investmentController.createInvestment);
+router.put('/:id', investmentController.updateInvestment);
+router.delete('/:id', investmentController.deleteInvestment);
 
 module.exports = router;

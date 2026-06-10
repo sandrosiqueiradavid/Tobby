@@ -19,11 +19,14 @@ app.use('/api/hollerith', require('./routes/hollerith'));
 app.use('/api/investment', require('./routes/investment'));
 app.use('/api/bank', require('./routes/bank'));
 app.use('/api/ai-document', require('./routes/aiDocument'));
+app.use('/api/investments', require('./routes/investment'));
+app.use('/api/loans', require('./routes/loan'));
+app.use('/api/wealth', require('./routes/wealth'));
 
 // Health check
 app.get('/', (req, res) => res.json({
   status: 'ok',
-  app: '🐶 Tobby API v4.0',
+  app: '🐶 Tobby API v5.0',
   supabase: !!process.env.SUPABASE_URL,
   ai: !!process.env.CLAUDE_API_KEY
 }));
