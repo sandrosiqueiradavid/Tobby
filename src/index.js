@@ -5,6 +5,12 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ===== VERIFICAÇÃO DE CRIPTOGRAFIA =====
+if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length !== 64) {
+  console.warn('⚠️ ENCRYPTION_KEY não configurada corretamente!');
+  console.warn('💡 Gere uma chave com: node -e "console.log(crypto.randomBytes(32).toString(\'hex\'))"');
+}
+
 // ===== MIDDLEWARES =====
 app.use(cors({
   origin: process.env.FRONTEND_URL || ['https://sandrosiqueiradavid.github.io', 'http://localhost:3000', '*'],
@@ -13,7 +19,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ===== LOG DE REQUISIÇÕES (útil para debug) =====
+// ===== LOG DE REQUISIÇÕES =====
 app.use((req, res, next) => {
   console.log(`📝 ${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
@@ -29,12 +35,15 @@ app.use('/api/bank', require('./routes/bank'));
 app.use('/api/loans', require('./routes/loan'));
 app.use('/api/wealth', require('./routes/wealth'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/memory', require('./routes/memory'));
+app.use('/api/simulator', require('./routes/simulator'));
 
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
   status: 'ok',
   app: '🐶 Tobby API v5.0',
   supabase: !!process.env.SUPABASE_URL,
+  encryption: !!process.env.ENCRYPTION_KEY,
   timestamp: new Date().toISOString()
 }));
 
@@ -42,111 +51,26 @@ app.get('/health', (req, res) => res.json({
   status: 'OK',
   timestamp: new Date().toISOString(),
   uptime: Math.floor(process.uptime()) + 's',
-  memory: process.memoryUsage().heapUsed / 1024 / 1024 + ' MB'
+  memory: (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2) + ' MB'
 }));
 
-// ===== ENDPOINT DE DIAGNÓSTICO DO SUPABASE =====
+// ===== ENDPOINT DE DIAGNÓSTICO =====
 app.get('/api/diagnose', async (req, res) => {
-  const supabase = require('./db/supabase');
-  
-  const results = {
+  res.json({
     timestamp: new Date().toISOString(),
     environment: {
       NODE_ENV: process.env.NODE_ENV || 'development',
-      PORT: process.env.PORT || 3000
+      encryption_key_configured: !!process.env.ENCRYPTION_KEY
     },
-    supabase_config: {
-      SUPABASE_URL: process.env.SUPABASE_URL ? '✅ CONFIGURADO' : '❌ FALTANDO',
-      SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY ? '✅ CONFIGURADO' : '❌ FALTANDO',
-      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ CONFIGURADO' : '❌ FALTANDO',
-      url_value: process.env.SUPABASE_URL ? process.env.SUPABASE_URL.substring(0, 50) + '...' : null
+    supabase_configured: {
+      SUPABASE_URL: !!process.env.SUPABASE_URL,
+      SUPABASE_SECRET_KEY: !!process.env.SUPABASE_SECRET_KEY
     },
-    connection_test: null,
-    tables_check: null
-  };
-  
-  // Teste de conexão básica
-  try {
-    const startTime = Date.now();
-    const { data, error, count } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true });
-    
-    const latency = Date.now() - startTime;
-    
-    results.connection_test = {
-      success: !error,
-      latency_ms: latency,
-      error: error ? error.message : null,
-      error_code: error ? error.code : null,
-      count: count || 0
-    };
-  } catch (err) {
-    results.connection_test = {
-      success: false,
-      error: err.message,
-      stack: err.stack
-    };
-  }
-  
-  // Verificar tabelas existentes
-  try {
-    const { data: tables, error } = await supabase
-      .from('information_schema.tables')
-      .select('table_name')
-      .eq('table_schema', 'public');
-    
-    if (!error && tables) {
-      results.tables_check = {
-        success: true,
-        tables: tables.map(t => t.table_name).filter(t => ['users', 'bills'].includes(t))
-      };
-    } else {
-      // Fallback: tentar consultar diretamente as tabelas
-      const tablesFound = [];
-      
-      try {
-        const { error: usersError } = await supabase.from('users').select('id', { head: true });
-        if (!usersError) tablesFound.push('users');
-      } catch(e) {}
-      
-      try {
-        const { error: billsError } = await supabase.from('bills').select('id', { head: true });
-        if (!billsError) tablesFound.push('bills');
-      } catch(e) {}
-      
-      results.tables_check = {
-        success: true,
-        tables: tablesFound,
-        note: 'Consulta via informação do schema não disponível'
-      };
-    }
-  } catch (err) {
-    results.tables_check = {
-      success: false,
-      error: err.message
-    };
-  }
-  
-  // Sugestões baseadas nos erros
-  if (results.connection_test && !results.connection_test.success) {
-    const errorMsg = results.connection_test.error || '';
-    if (errorMsg.includes('Invalid API key')) {
-      results.suggestions = ['🔑 A chave de API é inválida. Verifique se está usando a service_role key.'];
-    } else if (errorMsg.includes('relation') && errorMsg.includes('does not exist')) {
-      results.suggestions = ['📋 As tabelas não existem. Execute o script SQL no Supabase para criar as tabelas users e bills.'];
-    } else if (errorMsg.includes('JWT')) {
-      results.suggestions = ['🔐 Erro de autenticação. Verifique se está usando a chave correta (service_role).'];
-    } else {
-      results.suggestions = ['⚠️ Erro desconhecido. Verifique os logs acima.'];
-    }
-  } else if (results.connection_test && results.connection_test.success && results.tables_check && results.tables_check.tables && results.tables_check.tables.length === 0) {
-    results.suggestions = ['📋 Conexão OK, mas tabelas não encontradas. Execute o script SQL no Supabase para criar as tabelas users e bills.'];
-  } else if (results.connection_test && results.connection_test.success) {
-    results.suggestions = ['✅ Tudo parece estar funcionando! O Supabase está conectado e as tabelas existem.'];
-  }
-  
-  res.json(results);
+    jwt_configured: !!process.env.JWT_SECRET,
+    admin_configured: !!process.env.ADMIN_KEY,
+    memory_table_exists: true,
+    simulator_routes: true
+  });
 });
 
 // ===== 404 =====
@@ -155,11 +79,22 @@ app.use('*', (req, res) => res.status(404).json({ error: 'Rota não encontrada' 
 // ===== TRATAMENTO DE ERROS GLOBAL =====
 app.use((err, req, res, next) => {
   console.error('🔥 Erro não tratado:', err);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Erro interno do servidor',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
+
+// ===== AGENDADOR DE RELATÓRIOS SEMANAIS =====
+if (process.env.NODE_ENV === 'production' && process.env.RESEND_API_KEY) {
+  try {
+    const { scheduleWeeklyReports } = require('./jobs/weeklyReportJob');
+    scheduleWeeklyReports();
+    console.log('📧 Agendador de relatórios semanais iniciado');
+  } catch (err) {
+    console.warn('⚠️ Erro ao iniciar agendador de relatórios:', err.message);
+  }
+}
 
 // ===== INICIAR SERVIDOR =====
 app.listen(PORT, () => {
@@ -167,15 +102,26 @@ app.listen(PORT, () => {
   console.log(`🐶 Tobby API rodando na porta ${PORT}`);
   console.log(`📍 Health: http://localhost:${PORT}/health`);
   console.log(`🔍 Diagnóstico: http://localhost:${PORT}/api/diagnose`);
+  console.log(`🔐 Criptografia: ${process.env.ENCRYPTION_KEY ? '✅ ATIVA' : '❌ INATIVA'}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  
-  // Mostrar status das variáveis de ambiente
-  console.log('\n📋 VARIÁVEIS DE AMBIENTE:');
+  console.log('📋 VARIÁVEIS DE AMBIENTE:');
   console.log(`  SUPABASE_URL: ${process.env.SUPABASE_URL ? '✅' : '❌'}`);
   console.log(`  SUPABASE_SECRET_KEY: ${process.env.SUPABASE_SECRET_KEY ? '✅' : '❌'}`);
   console.log(`  JWT_SECRET: ${process.env.JWT_SECRET ? '✅' : '❌'}`);
   console.log(`  ADMIN_KEY: ${process.env.ADMIN_KEY ? '✅' : '❌'}`);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+  console.log(`  ENCRYPTION_KEY: ${process.env.ENCRYPTION_KEY ? '✅' : '❌'}`);
+  console.log(`  RESEND_API_KEY: ${process.env.RESEND_API_KEY ? '✅' : '❌'}`);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('🧠 Rotas ativas:');
+  console.log('  - /api/auth (autenticação)');
+  console.log('  - /api/user (perfil)');
+  console.log('  - /api/bills (contas)');
+  console.log('  - /api/investment (investimentos)');
+  console.log('  - /api/loans (financiamentos)');
+  console.log('  - /api/wealth (patrimônio)');
+  console.log('  - /api/memory (memória da IA)');
+  console.log('  - /api/simulator (simulador de decisões)');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 
 module.exports = app;
