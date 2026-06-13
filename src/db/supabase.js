@@ -4,19 +4,24 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SECRET_KEY;
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-console.log('🔌 INICIANDO CLIENTE SUPABASE (VERSÃO SIMPLIFICADA)');
+console.log('🔌 INICIANDO CLIENTE SUPABASE');
 console.log(`📡 URL: ${supabaseUrl}`);
 console.log(`🔑 KEY: ${supabaseKey ? supabaseKey.substring(0, 15) + '...' : '❌'}`);
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-// Cliente sem opções extras para evitar problemas
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Cliente Supabase
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
-// Teste rápido para confirmar que está funcionando
+// Teste rápido
 (async () => {
   try {
     const { data, error, count } = await supabase
-      .from('tobby_users')
+      .from('users')
       .select('*', { count: 'exact', head: true });
     
     if (error) {
