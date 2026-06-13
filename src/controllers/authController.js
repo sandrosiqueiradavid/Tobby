@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const supabase = require('../db/supabase');
+const { encryptNumber, decryptNumber } = require('../utils/crypto');
 
 const authController = {
   register: async (req, res) => {
@@ -10,9 +11,9 @@ const authController = {
         return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios' });
       }
 
-      // Verificar se usuário já existe na tabela tobby_users
+      // Verificar se usuário já existe na tabela 'users'
       const { data: existing } = await supabase
-        .from('tobby_users')
+        .from('users')
         .select('id')
         .eq('email', email)
         .single();
@@ -22,10 +23,20 @@ const authController = {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      const encryptedSalary = encryptNumber(salary);
+
       const { data: user, error } = await supabase
-        .from('tobby_users')
-        .insert({ name, email, password: hashedPassword, salary })
-        .select('id, name, email, salary')
+        .from('users')
+        .insert({ 
+          name, 
+          email, 
+          password: hashedPassword, 
+          salary_encrypted: encryptedSalary,
+          salary: salary, // campo original (pode ser removido depois)
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+        .select('id, name, email')
         .single();
 
       if (error) {
@@ -34,7 +45,7 @@ const authController = {
       }
 
       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-      res.status(201).json({ token, user });
+      res.status(201).json({ token, user: { ...user, salary } });
     } catch (err) {
       console.error('Register error:', err);
       res.status(500).json({ error: 'Erro ao criar conta: ' + err.message });
@@ -49,8 +60,8 @@ const authController = {
       }
 
       const { data: user, error } = await supabase
-        .from('tobby_users')
-        .select('id, name, email, password, salary')
+        .from('users')
+        .select('id, name, email, password, salary_encrypted, salary')
         .eq('email', email)
         .single();
 
@@ -63,9 +74,21 @@ const authController = {
         return res.status(401).json({ error: 'E-mail ou senha inválidos' });
       }
 
+      // Descriptografar salário se existir
+      let salary = user.salary || 0;
+      if (user.salary_encrypted) {
+        const decrypted = decryptNumber(user.salary_encrypted);
+        if (decrypted !== null && !isNaN(decrypted)) {
+          salary = decrypted;
+        }
+      }
+
       delete user.password;
+      delete user.salary_encrypted;
+      delete user.salary;
+
       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
-      res.json({ token, user });
+      res.json({ token, user: { ...user, salary } });
     } catch (err) {
       console.error('Login error:', err);
       res.status(500).json({ error: 'Erro ao fazer login' });
@@ -80,13 +103,16 @@ const authController = {
       }
 
       const { data: user, error } = await supabase
-        .from('tobby_users')
+        .from('users')
         .select('id, email, name')
         .eq('email', email)
         .single();
 
       if (error || !user) {
-        return res.json({ message: 'Se o e-mail existir, você receberá as instruções de recuperação' });
+        // Por segurança, não informamos se o email existe ou não
+        return res.json({ 
+          message: 'Se o e-mail existir, você receberá as instruções de recuperação' 
+        });
       }
 
       const resetToken = jwt.sign(
@@ -95,14 +121,21 @@ const authController = {
         { expiresIn: '1h' }
       );
 
+      // Atualizar os campos de recuperação
       await supabase
-        .from('tobby_users')
-        .update({ reset_token: resetToken, reset_expires: new Date(Date.now() + 3600000) })
+        .from('users')
+        .update({ 
+          reset_token: resetToken, 
+          reset_expires: new Date(Date.now() + 3600000) 
+        })
         .eq('id', user.id);
 
       console.log(`🔐 Token de redefinição para ${email}: ${resetToken}`);
+      console.log(`🔗 Link: ${process.env.FRONTEND_URL || 'https://sandrosiqueiradavid.github.io/Tobby'}?token=${resetToken}`);
 
-      res.json({ message: 'Se o e-mail existir, você receberá as instruções de recuperação' });
+      res.json({ 
+        message: 'Se o e-mail existir, você receberá as instruções de recuperação'
+      });
     } catch (err) {
       console.error('Forgot password error:', err);
       res.status(500).json({ error: 'Erro ao processar solicitação' });
@@ -112,6 +145,7 @@ const authController = {
   resetPassword: async (req, res) => {
     try {
       const { token, newPassword } = req.body;
+      
       if (!token || !newPassword) {
         return res.status(400).json({ error: 'Token e nova senha são obrigatórios' });
       }
@@ -132,7 +166,7 @@ const authController = {
       }
 
       const { data: user, error } = await supabase
-        .from('tobby_users')
+        .from('users')
         .select('id')
         .eq('id', decoded.userId)
         .single();
@@ -143,11 +177,15 @@ const authController = {
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       await supabase
-        .from('tobby_users')
-        .update({ password: hashedPassword, reset_token: null, reset_expires: null })
+        .from('users')
+        .update({ 
+          password: hashedPassword, 
+          reset_token: null, 
+          reset_expires: null 
+        })
         .eq('id', user.id);
 
-      res.json({ message: 'Senha redefinida com sucesso! Faça login.' });
+      res.json({ message: 'Senha redefinida com sucesso! Faça login com sua nova senha.' });
     } catch (err) {
       console.error('Reset password error:', err);
       res.status(500).json({ error: 'Erro ao redefinir senha' });

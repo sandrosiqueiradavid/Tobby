@@ -1,34 +1,35 @@
 const supabase = require('../db/supabase');
+const { encryptNumber, decryptNumber } = require('../utils/crypto');
 
 const wealthController = {
   getWealthSummary: async (req, res) => {
     try {
       const { data: investments } = await supabase
         .from('investments')
-        .select('*')
+        .select('quantity, purchase_price_encrypted')
         .eq('user_id', req.userId);
 
       const { data: loans } = await supabase
         .from('loans')
-        .select('*')
+        .select('outstanding_balance_encrypted')
         .eq('user_id', req.userId);
 
       const { data: assets } = await supabase
         .from('assets')
-        .select('*')
+        .select('estimated_value_encrypted')
         .eq('user_id', req.userId);
 
       const { data: user } = await supabase
         .from('tobby_users')
-        .select('salary')
+        .select('salary_encrypted')
         .eq('id', req.userId)
         .single();
 
-      const investmentsValue = investments?.reduce((sum, inv) => sum + (inv.quantity * inv.purchase_price), 0) || 0;
-      const loansValue = loans?.reduce((sum, loan) => sum + loan.outstanding_balance, 0) || 0;
-      const assetsValue = assets?.reduce((sum, asset) => sum + asset.estimated_value, 0) || 0;
+      const investmentsValue = investments?.reduce((sum, inv) => sum + (inv.quantity * decryptNumber(inv.purchase_price_encrypted)), 0) || 0;
+      const loansValue = loans?.reduce((sum, loan) => sum + decryptNumber(loan.outstanding_balance_encrypted), 0) || 0;
+      const assetsValue = assets?.reduce((sum, asset) => sum + decryptNumber(asset.estimated_value_encrypted), 0) || 0;
 
-      const totalAssets = investmentsValue + assetsValue + (user?.salary || 0);
+      const totalAssets = investmentsValue + assetsValue + (decryptNumber(user?.salary_encrypted) || 0);
       const totalLiabilities = loansValue;
       const netWorth = totalAssets - totalLiabilities;
 
@@ -41,7 +42,7 @@ const wealthController = {
           action: 'Ver dívidas'
         });
       }
-      
+
       if (investmentsValue < netWorth * 0.2 && netWorth > 0) {
         recommendations.push({
           type: 'investment',
@@ -59,7 +60,7 @@ const wealthController = {
           investmentsValue,
           loansValue,
           assetsValue,
-          monthlyIncome: user?.salary || 0
+          monthlyIncome: decryptNumber(user?.salary_encrypted) || 0
         },
         recommendations
       });
@@ -75,10 +76,19 @@ const wealthController = {
         .from('assets')
         .select('*')
         .eq('user_id', req.userId)
-        .order('estimated_value', { ascending: false });
+        .order('estimated_value_encrypted', { ascending: false });
 
       if (error) throw error;
-      res.json({ assets: data || [] });
+
+      const decryptedAssets = (data || []).map(asset => ({
+        ...asset,
+        estimated_value: decryptNumber(asset.estimated_value_encrypted),
+        acquisition_value: decryptNumber(asset.acquisition_value_encrypted),
+        estimated_value_encrypted: undefined,
+        acquisition_value_encrypted: undefined
+      }));
+
+      res.json({ assets: decryptedAssets });
     } catch (err) {
       console.error('Get assets error:', err);
       res.status(500).json({ error: 'Erro ao buscar bens' });
@@ -99,13 +109,14 @@ const wealthController = {
           user_id: req.userId,
           name,
           asset_type: assetType || 'other',
-          estimated_value: estimatedValue
+          estimated_value_encrypted: encryptNumber(estimatedValue)
         })
         .select()
         .single();
 
       if (error) throw error;
-      res.status(201).json(data);
+
+      res.status(201).json({ ...data, estimated_value: estimatedValue, estimated_value_encrypted: undefined });
     } catch (err) {
       console.error('Create asset error:', err);
       res.status(500).json({ error: 'Erro ao cadastrar bem' });
@@ -120,7 +131,7 @@ const wealthController = {
         .delete()
         .eq('id', id)
         .eq('user_id', req.userId);
-      
+
       if (error) throw error;
       res.json({ success: true });
     } catch (err) {
