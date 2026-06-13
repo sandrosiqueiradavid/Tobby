@@ -211,7 +211,7 @@ body {
   cursor: pointer;
 }
 
-/* Balance Card (inspirado nas imagens) */
+/* Balance Card */
 .balance-card {
   background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
   border-radius: var(--radius-xl);
@@ -910,17 +910,6 @@ body {
   to { transform: rotate(360deg); }
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
@@ -1304,46 +1293,9 @@ function updateThemeIcon(theme) {
 }
 initTheme();
 
-// ===== API REQUEST =====
-async function apiRequest(endpoint, options = {}) {
-  const token = localStorage.getItem('token');
-  const headers = { 'Content-Type': 'application/json', ...(token && { 'Authorization': `Bearer ${token}` }) };
-  const response = await fetch(`https://tobby-api.onrender.com/api${endpoint}`, { ...options, headers });
-  if (response.status === 401) { localStorage.removeItem('token'); showScreen('auth'); throw new Error('Sessão expirada'); }
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Erro na requisição');
-  return data;
-}
-
-const api = {
-  token: localStorage.getItem('token'),
-  setToken(token) { this.token = token; localStorage.setItem('token', token); },
-  clearToken() { this.token = null; localStorage.removeItem('token'); },
-  async login(email, password) { const data = await apiRequest('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }); if (data.token) this.setToken(data.token); return data.user; },
-  async register(name, email, password, salary) { const data = await apiRequest('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password, salary }) }); if (data.token) this.setToken(data.token); return data.user; },
-  async forgotPassword(email) { return apiRequest('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }); },
-  async resetPassword(token, newPassword) { return apiRequest('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, newPassword }) }); },
-  async getBills(status) { const url = status ? `/bills?status=${status}` : '/bills'; const data = await apiRequest(url); return data.data || []; },
-  async createBill(name, value, due_day, category, status) { return apiRequest('/bills', { method: 'POST', body: JSON.stringify({ name, value, due_day, category, status }) }); },
-  async updateBill(id, name, value, due_day, category, status) { return apiRequest(`/bills/${id}`, { method: 'PUT', body: JSON.stringify({ name, value, due_day, category, status }) }); },
-  async deleteBill(id) { return apiRequest(`/bills/${id}`, { method: 'DELETE' }); },
-  async updateBillStatus(id, status) { return apiRequest(`/bills/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }); },
-  async getDashboard() { return apiRequest('/bills/dashboard/summary'); },
-  async getProfile() { return apiRequest('/user/profile'); },
-  async updateSalary(salary) { return apiRequest('/user/salary', { method: 'PUT', body: JSON.stringify({ salary }) }); },
-  async getInvestments() { return apiRequest('/investments'); },
-  async createInvestment(data) { return apiRequest('/investments', { method: 'POST', body: JSON.stringify(data) }); },
-  async deleteInvestment(id) { return apiRequest(`/investments/${id}`, { method: 'DELETE' }); },
-  async getLoans() { return apiRequest('/loans'); },
-  async createLoan(data) { return apiRequest('/loans', { method: 'POST', body: JSON.stringify(data) }); },
-  async deleteLoan(id) { return apiRequest(`/loans/${id}`, { method: 'DELETE' }); },
-  async getWealthSummary() { return apiRequest('/wealth/summary'); },
-  async getAssets() { return apiRequest('/wealth/assets'); },
-  async createAsset(data) { return apiRequest('/wealth/assets', { method: 'POST', body: JSON.stringify(data) }); },
-  async deleteAsset(id) { return apiRequest(`/wealth/assets/${id}`, { method: 'DELETE' }); },
-  async processHollerith(hollerithText) { return apiRequest('/hollerith/process', { method: 'POST', body: JSON.stringify({ hollerithText }) }); },
-  async processBankExtract(extractText, format) { return apiRequest('/bank/process', { method: 'POST', body: JSON.stringify({ extractText, format }) }); }
-};
+// ===== API REQUEST (usa o api do api.js) =====
+// O objeto 'api' já está disponível via api.js
+// Não redeclarar 'api' aqui!
 
 // ===== SCREENS =====
 function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
