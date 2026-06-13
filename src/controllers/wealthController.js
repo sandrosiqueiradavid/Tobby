@@ -20,7 +20,7 @@ const wealthController = {
         .eq('user_id', req.userId);
 
       const { data: user } = await supabase
-        .from('tobby_users')
+        .from('users')
         .select('salary_encrypted')
         .eq('id', req.userId)
         .single();
@@ -28,8 +28,9 @@ const wealthController = {
       const investmentsValue = investments?.reduce((sum, inv) => sum + (inv.quantity * decryptNumber(inv.purchase_price_encrypted)), 0) || 0;
       const loansValue = loans?.reduce((sum, loan) => sum + decryptNumber(loan.outstanding_balance_encrypted), 0) || 0;
       const assetsValue = assets?.reduce((sum, asset) => sum + decryptNumber(asset.estimated_value_encrypted), 0) || 0;
+      const salary = decryptNumber(user?.salary_encrypted) || 0;
 
-      const totalAssets = investmentsValue + assetsValue + (decryptNumber(user?.salary_encrypted) || 0);
+      const totalAssets = investmentsValue + assetsValue + salary;
       const totalLiabilities = loansValue;
       const netWorth = totalAssets - totalLiabilities;
 
@@ -60,7 +61,7 @@ const wealthController = {
           investmentsValue,
           loansValue,
           assetsValue,
-          monthlyIncome: decryptNumber(user?.salary_encrypted) || 0
+          monthlyIncome: salary
         },
         recommendations
       });

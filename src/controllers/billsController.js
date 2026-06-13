@@ -6,7 +6,7 @@ const billsController = {
     try {
       const { status } = req.query;
       let query = supabase
-        .from('tobby_bills')
+        .from('bills')
         .select('*')
         .eq('user_id', req.userId)
         .order('due_day', { ascending: true });
@@ -32,7 +32,7 @@ const billsController = {
   getBill: async (req, res) => {
     try {
       const { data, error } = await supabase
-        .from('tobby_bills')
+        .from('bills')
         .select('*')
         .eq('id', req.params.id)
         .eq('user_id', req.userId)
@@ -64,7 +64,7 @@ const billsController = {
       const encryptedValue = encryptNumber(value);
 
       const { data, error } = await supabase
-        .from('tobby_bills')
+        .from('bills')
         .insert({
           user_id: req.userId,
           name,
@@ -95,7 +95,7 @@ const billsController = {
       }
 
       const { data, error } = await supabase
-        .from('tobby_bills')
+        .from('bills')
         .update(updateData)
         .eq('id', req.params.id)
         .eq('user_id', req.userId)
@@ -114,7 +114,7 @@ const billsController = {
   deleteBill: async (req, res) => {
     try {
       const { error } = await supabase
-        .from('tobby_bills')
+        .from('bills')
         .delete()
         .eq('id', req.params.id)
         .eq('user_id', req.userId);
@@ -135,7 +135,7 @@ const billsController = {
       }
 
       const { data, error } = await supabase
-        .from('tobby_bills')
+        .from('bills')
         .update({ status, updated_at: new Date() })
         .eq('id', req.params.id)
         .eq('user_id', req.userId)
@@ -154,14 +154,14 @@ const billsController = {
   getDashboardSummary: async (req, res) => {
     try {
       const { data: user } = await supabase
-        .from('tobby_users')
+        .from('users')
         .select('salary_encrypted')
         .eq('id', req.userId)
         .single();
 
       const { data: bills, error } = await supabase
-        .from('tobby_bills')
-        .select('value_encrypted, status')
+        .from('bills')
+        .select('value_encrypted, status, due_day')
         .eq('user_id', req.userId);
 
       if (error) throw error;
