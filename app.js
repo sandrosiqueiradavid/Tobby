@@ -207,6 +207,109 @@ function navTo(tab) {
   }
 }
 
+// ===== BILLS =====
+async function loadBills() {
+  try {
+    var bills = await api.getBills(currentFilter === 'all' ? null : currentFilter);
+    allBills = bills;
+    renderBills();
+  } catch (e) { showToast('Erro ao carregar contas'); }
+}
+
+function filterBills(el, filter) {
+  currentFilter = filter;
+  var chips = document.querySelectorAll('.filter-chip');
+  for (var i = 0; i < chips.length; i++) {
+    chips[i].classList.remove('active');
+  }
+  if (el) el.classList.add('active');
+  loadBills();
+}
+
+function renderBills() {
+  var today = new Date().getDate();
+  var bills = [...allBills];
+  if (currentFilter === 'pending') bills = bills.filter(function(b) { return b.status === 'pending'; });
+  else if (currentFilter === 'paid') bills = bills.filter(function(b) { return b.status === 'paid'; });
+  else if (currentFilter === 'late') bills = bills.filter(function(b) { return b.status === 'late' || (b.status === 'pending' && b.due_day < today); });
+  var el = document.getElementById('bills-list-main');
+  if (!bills.length) { el.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary)">Nenhuma transação encontrada</div>'; return; }
+  var html = '';
+  for (var i = 0; i < bills.length; i++) {
+    var b = bills[i];
+    var cat = CATS[b.category] || CATS.outros;
+    var isLate = b.status === 'pending' && b.due_day < today;
+    var statusClass = b.status === 'paid' ? 'status-paid' : (isLate ? 'status-late' : 'status-pending');
+    var statusText = b.status === 'paid' ? 'Pago' : (isLate ? 'Atrasado' : 'Pendente');
+    html += '<div class="transaction-item"><div class="transaction-icon" style="background: ' + cat.bg + '">' + cat.e + '</div><div class="transaction-info"><div class="transaction-name">' + b.name + '</div><div class="transaction-meta">' + b.due_day + ' de cada mês · ' + b.category + '</div></div><div class="transaction-right"><div class="transaction-value expense">' + fmt(b.value) + '</div><div class="transaction-status ' + statusClass + '">' + statusText + '</div></div><div class="transaction-actions"><div class="transaction-action" onclick="event.stopPropagation(); toggleStatus(\'' + b.id + '\',\'' + b.status + '\')">' + (b.status === 'paid' ? '↩️' : '✅') + '</div><div class="transaction-action" onclick="event.stopPropagation(); openBillModal(\'' + b.id + '\')">✏️</div><div class="transaction-action" onclick="event.stopPropagation(); deleteBill(\'' + b.id + '\')">🗑️</div></div></div>';
+  }
+  el.innerHTML = html;
+}
+
+async function toggleStatus(id, currentStatus) {
+  var newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
+  try {
+    await api.updateBillStatus(id, newStatus);
+    await loadBills();
+    await loadHome();
+    showToast(newStatus === 'paid' ? '✅ Marcada como paga' : '↩️ Marcada como pendente');
+  } catch (e) { showToast('Erro ao atualizar'); }
+}
+
+async function deleteBill(id) {
+  if (!confirm('Remover esta conta?')) return;
+  try {
+    await api.deleteBill(id);
+    await loadBills();
+    await loadHome();
+    showToast('Conta removida');
+  } catch (e) { showToast('Erro ao remover'); }
+}
+
+function openBillModal(id) {
+  var modalDiv = document.getElementById('modal');
+  if (!modalDiv) return;
+  if (id) {
+    var b = allBills.find(function(x) { return x.id == id; });
+    if (!b) return;
+    document.getElementById('modal-title').textContent = 'Editar Conta';
+    document.getElementById('f-id').value = b.id;
+    document.getElementById('f-name').value = b.name;
+    document.getElementById('f-val').value = b.value;
+    document.getElementById('f-day').value = b.due_day;
+    document.getElementById('f-cat').value = b.category;
+    document.getElementById('f-status').value = b.status;
+  } else {
+    document.getElementById('modal-title').textContent = 'Nova Conta';
+    document.getElementById('f-id').value = '';
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-val').value = '';
+    document.getElementById('f-day').value = '';
+    document.getElementById('f-cat').value = 'outros';
+    document.getElementById('f-status').value = 'pending';
+  }
+  modalDiv.style.display = 'block';
+  setTimeout(function() { loadCategoryOptions(); }, 100);
+}
+
+async function saveBill() {
+  var name = document.getElementById('f-name').value.trim();
+  var value = parseFloat(document.getElementById('f-val').value);
+  var due_day = parseInt(document.getElementById('f-day').value);
+  if (!name || !value || !due_day) { showToast('Preencha todos os campos'); return; }
+  var category = document.getElementById('f-cat').value;
+  var status = document.getElementById('f-status').value;
+  var eid = document.getElementById('f-id').value;
+  try {
+    if (eid) await api.updateBill(eid, name, value, due_day, category, status);
+    else await api.createBill(name, value, due_day, category, status);
+    closeModal();
+    await loadBills();
+    await loadHome();
+    showToast('Conta salva com sucesso 🐶');
+  } catch (e) { showToast(e.message || 'Erro ao salvar'); }
+}
+
 async function loadFinancialScore() {
   try {
     var response = await api.request('/score');
@@ -516,7 +619,314 @@ function renderHomeBills(bills) {
   el.innerHTML = html;
 }
 
-// Exportar funções para o escopo global
+async function loadInvestments() {
+  try {
+    var data = await api.getInvestments();
+    var investments = data.investments || [];
+    var totalInvested = investments.reduce(function(s, i) { return s + (i.quantity * i.purchase_price); }, 0);
+    var totalCurrent = investments.reduce(function(s, i) { return s + (i.quantity * (i.current_price || i.purchase_price)); }, 0);
+    document.getElementById('total-invested').textContent = fmt(totalInvested);
+    document.getElementById('current-value').textContent = fmt(totalCurrent);
+    var container = document.getElementById('investments-list-container');
+    if (!investments.length) { container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary)">Nenhum investimento cadastrado</div>'; return; }
+    var html = '';
+    for (var i = 0; i < investments.length; i++) {
+      var inv = investments[i];
+      html += '<div class="transaction-item"><div class="transaction-icon">' + (inv.asset_type === 'crypto' ? '₿' : '📈') + '</div><div class="transaction-info"><div class="transaction-name">' + inv.symbol + '</div><div class="transaction-meta">' + inv.quantity + ' unidades · Preço: ' + fmt(inv.purchase_price) + '</div></div><div class="transaction-right"><div class="transaction-value">' + fmt(inv.quantity * (inv.current_price || inv.purchase_price)) + '</div><div class="transaction-action" onclick="deleteInvestment(\'' + inv.id + '\')">🗑️</div></div></div>';
+    }
+    container.innerHTML = html;
+  } catch (e) { console.error(e); }
+}
+
+async function deleteInvestment(id) {
+  if (!confirm('Remover este investimento?')) return;
+  try { await api.deleteInvestment(id); loadInvestments(); showToast('Investimento removido'); } catch (e) { showToast('Erro ao remover'); }
+}
+
+function showAddInvestmentModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Investimento</h3><div class="field"><label>Símbolo</label><input type="text" id="inv-symbol" placeholder="PETR4, BTC, ITSA4"></div><div class="field"><label>Tipo</label><select id="inv-type"><option value="stock">Ação (B3)</option><option value="crypto">Criptomoeda</option><option value="fii">FII</option></select></div><div class="field-row"><div class="field"><label>Quantidade</label><input type="number" id="inv-quantity" step="0.00001"></div><div class="field"><label>Preço médio (R$)</label><input type="number" id="inv-price" step="0.01"></div></div><div class="field"><label>Data da compra</label><input type="date" id="inv-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveInvestment()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveInvestment() {
+  var symbol = document.getElementById('inv-symbol').value.toUpperCase();
+  var quantity = parseFloat(document.getElementById('inv-quantity').value);
+  var price = parseFloat(document.getElementById('inv-price').value);
+  var date = document.getElementById('inv-date').value;
+  var assetType = document.getElementById('inv-type').value;
+  if (!symbol || !quantity || !price || !date) { showToast('Preencha todos os campos'); return; }
+  try {
+    await api.createInvestment({ symbol: symbol, quantity: quantity, purchasePrice: price, purchaseDate: date, assetType: assetType });
+    showToast('Investimento cadastrado!');
+    document.querySelector('.modal-overlay').remove();
+    loadInvestments();
+  } catch (e) { showToast(e.message || 'Erro ao cadastrar'); }
+}
+
+async function loadLoans() {
+  try {
+    var data = await api.getLoans();
+    var loans = data.loans || [];
+    var summary = data.summary || { totalDebt: 0, totalMonthlyPayment: 0 };
+    document.getElementById('total-debt').textContent = fmt(summary.totalDebt);
+    document.getElementById('total-monthly').textContent = fmt(summary.totalMonthlyPayment);
+    var container = document.getElementById('loans-list-container');
+    if (!loans.length) { container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary)">Nenhum financiamento cadastrado</div>'; return; }
+    var html = '';
+    for (var i = 0; i < loans.length; i++) {
+      var loan = loans[i];
+      html += '<div class="transaction-item"><div class="transaction-icon">🏠</div><div class="transaction-info"><div class="transaction-name">' + loan.name + '</div><div class="transaction-meta">' + loan.remaining_installments + ' parcelas · ' + loan.interest_rate + '% a.m.</div></div><div class="transaction-right"><div class="transaction-value expense">' + fmt(loan.outstanding_balance) + '</div><div class="transaction-action" onclick="deleteLoan(\'' + loan.id + '\')">🗑️</div></div></div>';
+    }
+    container.innerHTML = html;
+  } catch (e) { console.error(e); }
+}
+
+async function deleteLoan(id) {
+  if (!confirm('Remover este financiamento?')) return;
+  try { await api.deleteLoan(id); loadLoans(); showToast('Financiamento removido'); } catch (e) { showToast('Erro ao remover'); }
+}
+
+function showAddLoanModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Financiamento</h3><div class="field"><label>Nome</label><input type="text" id="loan-name" placeholder="Ex: Financiamento Casa"></div><div class="field"><label>Tipo</label><select id="loan-type"><option value="mortgage">Financiamento Imobiliário</option><option value="car">Financiamento Veículo</option><option value="personal">Empréstimo Pessoal</option></select></div><div class="field-row"><div class="field"><label>Valor Total</label><input type="number" id="loan-total" step="0.01"></div><div class="field"><label>Saldo Devedor</label><input type="number" id="loan-balance" step="0.01"></div></div><div class="field-row"><div class="field"><label>Taxa Juros (% mês)</label><input type="number" id="loan-rate" step="0.01"></div><div class="field"><label>Parcelas Restantes</label><input type="number" id="loan-installments"></div></div><div class="field"><label>Data Início</label><input type="date" id="loan-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveLoan()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveLoan() {
+  var name = document.getElementById('loan-name').value;
+  var type = document.getElementById('loan-type').value;
+  var totalPrincipal = parseFloat(document.getElementById('loan-total').value);
+  var outstandingBalance = parseFloat(document.getElementById('loan-balance').value);
+  var interestRate = parseFloat(document.getElementById('loan-rate').value);
+  var remainingInstallments = parseInt(document.getElementById('loan-installments').value);
+  var startDate = document.getElementById('loan-date').value;
+  if (!name || !totalPrincipal || !outstandingBalance || !interestRate || !remainingInstallments || !startDate) { showToast('Preencha todos os campos'); return; }
+  try {
+    await api.createLoan({ name: name, type: type, totalPrincipal: totalPrincipal, outstandingBalance: outstandingBalance, interestRate: interestRate, remainingInstallments: remainingInstallments, startDate: startDate });
+    showToast('Financiamento cadastrado!');
+    document.querySelector('.modal-overlay').remove();
+    loadLoans();
+  } catch (e) { showToast(e.message); }
+}
+
+async function loadWealth() {
+  try {
+    var summary = await api.getWealthSummary();
+    var wealthSummary = summary.summary || {};
+    document.getElementById('net-worth').textContent = fmt(wealthSummary.netWorth || 0);
+    document.getElementById('total-assets').textContent = fmt(wealthSummary.totalAssets || 0);
+    document.getElementById('total-liabilities').textContent = fmt(wealthSummary.totalLiabilities || 0);
+    var assets = await api.getAssets();
+    var assetsList = assets.assets || [];
+    var container = document.getElementById('assets-list-container');
+    if (!assetsList.length) { container.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary)">Nenhum bem cadastrado</div>'; return; }
+    var html = '';
+    for (var i = 0; i < assetsList.length; i++) {
+      var a = assetsList[i];
+      html += '<div class="transaction-item"><div class="transaction-icon">🏠</div><div class="transaction-info"><div class="transaction-name">' + a.name + '</div><div class="transaction-meta">' + (a.asset_type === 'real_estate' ? 'Imóvel' : a.asset_type === 'vehicle' ? 'Veículo' : 'Outro') + '</div></div><div class="transaction-right"><div class="transaction-value">' + fmt(a.estimated_value) + '</div><div class="transaction-action" onclick="deleteAsset(\'' + a.id + '\')">🗑️</div></div></div>';
+    }
+    container.innerHTML = html;
+  } catch (e) { showToast('Erro ao carregar patrimônio'); }
+}
+
+async function deleteAsset(id) {
+  if (!confirm('Remover este bem?')) return;
+  try { await api.deleteAsset(id); loadWealth(); showToast('Bem removido'); } catch (e) { showToast('Erro ao remover'); }
+}
+
+function showAddAssetModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Bem</h3><div class="field"><label>Nome</label><input type="text" id="asset-name" placeholder="Ex: Apartamento, Carro"></div><div class="field"><label>Tipo</label><select id="asset-type"><option value="real_estate">Imóvel</option><option value="vehicle">Veículo</option><option value="savings">Reserva Financeira</option><option value="other">Outro</option></select></div><div class="field"><label>Valor Estimado (R$)</label><input type="number" id="asset-value" step="0.01"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveAsset()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveAsset() {
+  var name = document.getElementById('asset-name').value;
+  var assetType = document.getElementById('asset-type').value;
+  var estimatedValue = parseFloat(document.getElementById('asset-value').value);
+  if (!name || !estimatedValue) { showToast('Preencha todos os campos'); return; }
+  try {
+    await api.createAsset({ name: name, assetType: assetType, estimatedValue: estimatedValue });
+    showToast('Bem cadastrado!');
+    document.querySelector('.modal-overlay').remove();
+    loadWealth();
+  } catch (e) { showToast(e.message || 'Erro ao cadastrar bem'); }
+}
+
+function loadInsights() {
+  var bills = allBills;
+  var salary = currentUser?.salary || 0;
+  var today = new Date().getDate();
+  var late = bills.filter(function(b) { return b.status === 'late' || (b.status === 'pending' && b.due_day < today); });
+  var free = salary - bills.filter(function(b) { return b.status === 'paid'; }).reduce(function(s, b) { return s + b.value; }, 0);
+  var pct = salary > 0 ? Math.round((bills.reduce(function(s, b) { return s + b.value; }, 0) / salary) * 100) : 0;
+  var el = document.getElementById('insights-list');
+  if (!bills.length) { el.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary)">Cadastre contas para receber análises</div>'; return; }
+  var cards = [];
+  if (late.length > 0) cards.push('<div class="indicator-card" style="text-align:left; cursor:pointer" onclick="navTo(\'bills\')"><div class="indicator-label">⚠️ Contas atrasadas</div><div class="indicator-value small" style="color: var(--red)">' + late.length + ' conta(s)</div><div style="font-size: 10px; color: var(--text-muted)">Regularize para evitar juros</div></div>');
+  if (pct > 70) cards.push('<div class="indicator-card" style="text-align:left" onclick="navTo(\'bills\')"><div class="indicator-label">📊 Comprometimento</div><div class="indicator-value small" style="color: var(--orange)">' + pct + '% da renda</div><div style="font-size: 10px; color: var(--text-muted)">Ideal é abaixo de 50%</div></div>');
+  if (free > 500) cards.push('<div class="indicator-card" style="text-align:left" onclick="navTo(\'investments\')"><div class="indicator-label">💰 Saldo disponível</div><div class="indicator-value small" style="color: var(--green)">' + fmt(free) + '</div><div style="font-size: 10px; color: var(--text-muted)">Considere investir!</div></div>');
+  if (!cards.length) cards.push('<div class="indicator-card" style="text-align:left" onclick="navTo(\'bills\')"><div class="indicator-label">🐶 Continue assim!</div><div class="indicator-value small">' + bills.length + ' contas cadastradas</div><div style="font-size: 10px; color: var(--text-muted)">Adicione mais contas para melhores análises</div></div>');
+  el.innerHTML = '<div class="stats-grid" style="grid-template-columns: 1fr; gap: 0.5rem">' + cards.map(function(c) { return '<div class="stat-card">' + c + '</div>'; }).join('') + '</div>';
+}
+
+function showPrivacyMessage() {
+  var msgs = document.getElementById('chat-msgs');
+  if (document.getElementById('privacy-msg')) return;
+  var privacyMsg = '<div class="msg msg-ai" id="privacy-msg" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--green);"><span class="msg-ai-label">🔒 PRIVACIDADE E SEGURANÇA</span>Seus dados são protegidos! 🔐<br><br>• Seus dados financeiros NÃO são armazenados pela IA<br>• Apenas o contexto da sua pergunta é enviado para análise<br>• A IA responde e tudo é descartado imediatamente<br>• Suas informações pessoais (nome, e-mail) NUNCA são compartilhadas<br><br><span style="font-size: 11px; color: var(--text-muted);">✓ Chat 100% seguro e privado</span></div>';
+  msgs.innerHTML = privacyMsg + msgs.innerHTML;
+}
+
+function clearChat() {
+  var msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML = '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Como posso te ajudar?</div>';
+  showPrivacyMessage();
+  showToast('Conversa limpa! 🧹');
+}
+
+async function sendMsg() {
+  var input = document.getElementById('chat-input');
+  var q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+  var msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML += '<div class="msg msg-user">' + escapeHtml(q) + '</div>';
+  msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('typing-ind').style.display = 'block';
+  try {
+    var pendingBills = allBills.filter(function(b) { return b.status === 'pending'; }).length;
+    var lateBills = allBills.filter(function(b) { return b.status === 'late'; }).length;
+    var totalCommitted = allBills.reduce(function(s, b) { return s + b.value; }, 0);
+    var salary = currentUser?.salary || 0;
+    var commitmentPercent = salary > 0 ? (totalCommitted / salary) * 100 : 0;
+    var freeMoney = salary - totalCommitted;
+    var response = await api.request('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: q,
+        context: {
+          salary: salary,
+          billsCount: allBills.length,
+          pendingBills: pendingBills,
+          lateBills: lateBills,
+          totalCommitted: totalCommitted,
+          commitmentPercent: commitmentPercent.toFixed(1),
+          freeMoney: freeMoney
+        }
+      })
+    });
+    var reply = response.reply || 'Desculpe, não consegui processar sua mensagem.';
+    document.getElementById('typing-ind').style.display = 'none';
+    msgs.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>' + reply + '</div>';
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch (e) {
+    console.error('Erro no chat:', e);
+    document.getElementById('typing-ind').style.display = 'none';
+    msgs.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Desculpe, estou com dificuldades técnicas. Tente novamente em alguns instantes!</div>';
+  }
+}
+
+async function editSalary() {
+  var cur = currentUser?.salary || 0;
+  var novo = prompt('Informe seu salário mensal (R$):', cur);
+  if (novo === null) return;
+  var val = parseFloat(novo);
+  if (isNaN(val) || val < 0) { showToast('Valor inválido'); return; }
+  try {
+    var updated = await api.updateSalary(val);
+    currentUser.salary = updated.salary;
+    document.getElementById('prof-salary').textContent = fmt(updated.salary);
+    loadHome();
+    showToast('Salário atualizado 💰');
+  } catch (e) { showToast('Erro ao atualizar salário'); }
+}
+
+function openReceiptScanner() { showToast('📸 Câmera - Funcionalidade em desenvolvimento'); }
+
+function showHollerithModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>📄 Leitor de Holerite</h3><textarea id="holerite-text" rows="6" placeholder="Cole aqui o texto do seu holerite..."></textarea><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="processHollerith()">Processar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div><div id="holerite-result" style="margin-top:1rem;display:none"></div></div>';
+  document.body.appendChild(modal);
+}
+
+async function processHollerith() {
+  var text = document.getElementById('holerite-text')?.value;
+  if (!text) { showToast('Cole o texto do holerite'); return; }
+  try {
+    var data = await api.processHollerith(text);
+    showToast(data.message);
+    document.querySelector('.modal-overlay').remove();
+    loadHome();
+  } catch (e) { showToast(e.message || 'Erro ao processar'); }
+}
+
+function showBankExtractModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>🏦 Importar Extrato</h3><select id="extract-format"><option value="text">📝 Texto simples</option><option value="csv">📊 CSV</option><option value="ofx">🏦 OFX</option></select><textarea id="extract-text" rows="6" placeholder="Cole aqui o texto do seu extrato..." style="margin-top:1rem"></textarea><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="processBankExtract()">Processar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
+  document.body.appendChild(modal);
+}
+
+async function processBankExtract() {
+  var text = document.getElementById('extract-text')?.value;
+  var format = document.getElementById('extract-format')?.value || 'text';
+  if (!text) { showToast('Cole o texto do extrato'); return; }
+  try {
+    var data = await api.processBankExtract(text, format);
+    showToast(data.message);
+    document.querySelector('.modal-overlay').remove();
+    loadHome();
+  } catch (e) { showToast(e.message || 'Erro ao processar'); }
+}
+
+async function showIncomeReport() {
+  try {
+    var report = await api.request('/hollerith/report');
+    alert('📊 INFORME DE RENDIMENTOS\n\nUsuário: ' + report.user + '\nAno: ' + report.year + '\nRendimentos Totais: ' + fmt(report.totalIncome) + '\nDespesas Dedutíveis: ' + fmt(report.totalExpenses) + '\nIRRF Retido: ' + fmt(report.annualIRRF));
+  } catch (e) { showToast('Erro ao gerar informe'); }
+}
+
+function checkResetToken() {
+  var urlParams = new URLSearchParams(window.location.search);
+  var token = urlParams.get('token');
+  if (token) {
+    resetToken = token;
+    showScreen('auth');
+    document.getElementById('login-card').style.display = 'none';
+    document.getElementById('register-card').style.display = 'none';
+    document.getElementById('forgot-card').style.display = 'none';
+    document.getElementById('reset-card').style.display = 'block';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
+  initTheme();
+  var token = localStorage.getItem('token');
+  if (token) {
+    try {
+      var profile = await api.getProfile();
+      currentUser = profile;
+      enterApp();
+    } catch (e) {
+      localStorage.removeItem('token');
+      showScreen('auth');
+      showLogin();
+      checkResetToken();
+    }
+  } else {
+    showScreen('auth');
+    showLogin();
+    checkResetToken();
+  }
+  document.getElementById('loading').classList.add('hidden');
+});
+
+// ===== EXPORTAÇÕES GLOBAIS =====
 window.fmt = fmt;
 window.showToast = showToast;
 window.closeModal = closeModal;
