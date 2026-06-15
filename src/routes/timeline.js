@@ -95,4 +95,5 @@ router.get('/summary', async (req, res) => {
   }
 });
 
-module.exports = { router, addTimelineEvent };
+// EXPORTAÇÃO CORRETA - apenas o router
+module.exports = router;

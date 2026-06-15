@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 10000;
 
 // ===== MIDDLEWARES BÁSICOS =====
 app.use(cors({
-  origin: process.env.FRONTEND_URL || ['https://sandrosiqueiradavid.github.io', 'http://localhost:3000', '*'],
+  origin: true,  // Temporário para teste
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -46,7 +46,7 @@ app.use('/api/categories', require('./routes/categories'));
 app.use('/api/market-indicators', require('./routes/marketIndicators'));
 app.use('/api/cash-forecast', require('./routes/cashForecast'));
 app.use('/api/monthly-report', require('./routes/monthlyReport'));
-app.use('/api/timeline', require('./routes/timeline').router);
+app.use('/api/timeline', require('./routes/timeline'));  // ← SEM .router
 app.use('/api/radar', require('./routes/radar'));
 app.use('/api/dream-simulator', require('./routes/dreamSimulator'));
 app.use('/api/family', require('./routes/family'));
