@@ -17,7 +17,7 @@ async function getGroqReply(message, context) {
 
   const systemPrompt = `Você é o Tobby IA, um assistente financeiro especialista do aplicativo Tobby.
 
-DADOS REAIS DO USUÁRIO:
+DADOS REAIS DO USUÁRIO (use estes dados para análises personalizadas):
 - Salário mensal: R$ ${salary.toLocaleString('pt-BR')}
 - Total de contas: ${billsCount}
 - Contas pendentes: ${pendingBills}
@@ -26,15 +26,13 @@ DADOS REAIS DO USUÁRIO:
 - Comprometimento: ${commitmentPercent}%
 - Saldo livre: R$ ${freeMoney.toLocaleString('pt-BR')}
 
-REGRAS DE FORMATAÇÃO (IMPORTANTE!):
-1. Use HTML para formatação: <strong>texto</strong> para negrito, <br> para quebra de linha
-2. Use emojis: 🐶, 💰, 📊, ✅, ⚠️, 📈
-3. Estruture a resposta com:
-   - Títulos: <strong>📊 TÍTULO</strong>
-   - Listas: use • ou <br>• item
-   - Seções: use <br><br> entre seções
-4. Seja acolhedor e prático
-5. Use OS DADOS REAIS do usuário acima
+REGRAS DE FORMATAÇÃO:
+1. Use texto puro com emojis (não use HTML)
+2. Use quebras de linha com \\n\\n para separar seções
+3. Use • para listas
+4. Use **texto** para enfatizar
+5. Seja acolhedor e prático
+6. Use OS DADOS REAIS do usuário acima
 
 Pergunta: ${message}`;
 
@@ -75,87 +73,83 @@ function getFallbackReply(message, context) {
   
   if (msg.includes('analise') || msg.includes('análise') || msg.includes('finanças') || msg.includes('contas')) {
     if (lateBills > 0) {
-      return `<strong>🐶 ANÁLISE FINANCEIRA COMPLETA</strong><br><br>
-<strong>⚠️ ALERTA CRÍTICO:</strong> Você tem ${lateBills} conta(s) atrasada(s)!<br><br>
-<strong>📊 SEU PANORAMA ATUAL:</strong><br>
-• Salário: <strong>R$ ${salary.toLocaleString('pt-BR')}</strong><br>
-• Contas no total: ${billsCount}<br>
-• Contas atrasadas: <strong style="color:#EF4444">${lateBills}</strong><br>
-• Contas pendentes: ${pendingBills}<br>
-• Gastos mensais: R$ ${totalCommitted.toLocaleString('pt-BR')}<br>
-• Comprometimento da renda: <strong>${commitmentPercent}%</strong><br>
-• Saldo livre: R$ ${freeMoney.toLocaleString('pt-BR')}<br><br>
+      return `🐶 ANALISE FINANCEIRA COMPLETA
 
-<strong>🎯 PLANO DE AÇÃO:</strong><br>
-1. <strong>PRIORIDADE MÁXIMA:</strong> Pague as ${lateBills} contas atrasadas imediatamente<br>
-2. <strong>NEGOCIAÇÃO:</strong> Entre em contato com os credores para renegociar multas<br>
-3. <strong>CORTE DE GASTOS:</strong> Reduza despesas não essenciais pelos próximos 30 dias<br>
-4. <strong>REORGANIZAÇÃO:</strong> Use o Tobby para agendar todas as contas do próximo mês<br><br>
+⚠️ ALERTA CRITICO: Você tem ${lateBills} conta(s) atrasada(s)!
 
-💡 <strong>Previsão:</strong> Se seguir este plano, em 60 dias sua situação estará regularizada.<br><br>
+📊 SEU PANORAMA ATUAL:
+• Salário: R$ ${salary.toLocaleString('pt-BR')}
+• Contas no total: ${billsCount}
+• Contas atrasadas: ${lateBills}
+• Contas pendentes: ${pendingBills}
+• Gastos mensais: R$ ${totalCommitted.toLocaleString('pt-BR')}
+• Comprometimento da renda: ${commitmentPercent}%
+• Saldo livre: R$ ${freeMoney.toLocaleString('pt-BR')}
+
+🎯 PLANO DE ACAO:
+1. PRIORIDADE MAXIMA: Pague as ${lateBills} contas atrasadas imediatamente
+2. NEGOCIACAO: Entre em contato com os credores para renegociar multas
+3. CORTE DE GASTOS: Reduza despesas não essenciais pelos próximos 30 dias
+4. REORGANIZACAO: Use o Tobby para agendar todas as contas do próximo mês
+
+💡 Previsão: Se seguir este plano, em 60 dias sua situação estará regularizada.
 
 🐶 Precisa de ajuda para priorizar quais contas pagar primeiro?`;
     }
     
     if (billsCount === 0) {
-      return `<strong>🐶 VAMOS COMEÇAR!</strong><br><br>
-📊 <strong>VOCÊ AINDA NÃO TEM CONTAS CADASTRADAS</strong><br><br>
-• Salário: <strong>R$ ${salary.toLocaleString('pt-BR')}</strong><br>
-• Contas cadastradas: 0<br><br>
+      return `🐶 VAMOS COMECAR!
 
-<strong>🎯 PRIMEIROS PASSOS:</strong><br>
-1. Vá na aba <strong>"Contas"</strong> e cadastre suas despesas fixas (aluguel, energia, internet)<br>
-2. Adicione gastos variáveis (supermercado, transporte, lazer)<br>
-3. Quanto mais dados você cadastrar, melhores serão minhas análises!<br><br>
+📊 VOCE AINDA NAO TEM CONTAS CADASTRADAS
+
+• Salário: R$ ${salary.toLocaleString('pt-BR')}
+• Contas cadastradas: 0
+
+🎯 PRIMEIROS PASSOS:
+1. Vá na aba "Contas" e cadastre suas despesas fixas (aluguel, energia, internet)
+2. Adicione gastos variáveis (supermercado, transporte, lazer)
+3. Quanto mais dados você cadastrar, melhores serão minhas análises!
 
 🐶 Vamos nessa? Estou aqui para te ajudar em cada passo!`;
     }
     
-    if (freeMoney > salary * 0.3 && salary > 0) {
-      return `<strong>🐶 ANÁLISE FINANCEIRA - PARABÉNS!</strong><br><br>
-<strong>✅ DIAGNÓSTICO EXCELENTE!</strong><br><br>
-• Salário: <strong>R$ ${salary.toLocaleString('pt-BR')}</strong><br>
-• Gastos mensais: R$ ${totalCommitted.toLocaleString('pt-BR')}<br>
-• Comprometimento: <strong style="color:#10B981">${commitmentPercent}%</strong> da renda<br>
-• Sobra mensal: <strong>R$ ${freeMoney.toLocaleString('pt-BR')}</strong><br><br>
+    return `🐶 RESUMO FINANCEIRO
 
-<strong>📈 OPORTUNIDADES:</strong><br>
-Com essa sobra saudável, que tal começar a investir?<br><br>
+📊 SEUS NUMEROS:
+• Salário: R$ ${salary.toLocaleString('pt-BR')}
+• Contas cadastradas: ${billsCount}
+• Pendentes: ${pendingBills}
+• Atrasadas: ${lateBills}
+• Gastos mensais: R$ ${totalCommitted.toLocaleString('pt-BR')}
+• Comprometimento: ${commitmentPercent}%
+• Saldo livre: R$ ${freeMoney.toLocaleString('pt-BR')}
 
-🐶 Quer dicas de investimentos para iniciantes?`;
-    }
-    
-    return `<strong>🐶 RESUMO FINANCEIRO</strong><br><br>
-<strong>📊 SEUS NÚMEROS:</strong><br>
-• Salário: <strong>R$ ${salary.toLocaleString('pt-BR')}</strong><br>
-• Contas cadastradas: ${billsCount}<br>
-• Pendentes: ${pendingBills}<br>
-• Atrasadas: ${lateBills}<br>
-• Gastos mensais: R$ ${totalCommitted.toLocaleString('pt-BR')}<br>
-• Comprometimento: ${commitmentPercent}%<br>
-• Saldo livre: <strong>R$ ${freeMoney.toLocaleString('pt-BR')}</strong><br><br>
+🎯 CLASSIFICACAO: ${commitmentPercent <= 50 ? '✅ Financeiro Saudavel' : (commitmentPercent <= 70 ? '⚠️ Atencao Necessaria' : '🔴 Risco Financeiro')}
 
-🐶 Como posso te ajudar a melhorar sua saúde financeira?`;
+🐶 Como posso te ajudar a melhorar sua saude financeira?`;
   }
   
   if (msg.includes('investir') || msg.includes('investimento')) {
-    return `<strong>🐶 GUIA DE INVESTIMENTOS PARA INICIANTES</strong><br><br>
-💰 <strong>COM SEU PERFIL (Sobra: R$ ${freeMoney.toLocaleString('pt-BR')}/mês)</strong><br><br>
+    return `🐶 GUIA DE INVESTIMENTOS PARA INICIANTES
 
-<strong>📊 POR ONDE COMEÇAR:</strong><br>
-1. <strong>Tesouro Selic</strong> (segurança máxima, liquidez diária)<br>
-2. <strong>CDB 100% CDI</strong> (proteção FGC, rendimento bom)<br>
-3. <strong>LCI/LCA</strong> (isentos de IR, seguros)<br><br>
+💰 COM SEU PERFIL (Sobra: R$ ${freeMoney.toLocaleString('pt-BR')}/mes)
+
+📊 POR ONDE COMECAR:
+1. Tesouro Selic (segurança máxima, liquidez diaria)
+2. CDB 100% CDI (proteção FGC, rendimento bom)
+3. LCI/LCA (isentos de IR, seguros)
 
 🐶 Quer simular quanto seu dinheiro renderia?`;
   }
   
-  return `<strong>🐶 Olá! Sou o Tobby, seu assistente financeiro!</strong><br><br>
-💰 Tenho acesso aos seus dados: salário de <strong>R$ ${salary.toLocaleString('pt-BR')}</strong>, ${billsCount} contas cadastradas.<br><br>
-📊 <strong>O que posso fazer por você?</strong><br>
-• <strong>"Analise minhas finanças"</strong> - diagnóstico completo<br>
-• <strong>"Como economizar?"</strong> - dicas personalizadas<br>
-• <strong>"Dicas de investimentos"</strong> - guia para iniciantes<br><br>
+  return `🐶 Ola! Sou o Tobby, seu assistente financeiro!
+
+💰 Tenho acesso aos seus dados: salario de R$ ${salary.toLocaleString('pt-BR')}, ${billsCount} contas cadastradas.
+
+📊 O que posso fazer por voce?
+• "Analise minhas finanças" - diagnóstico completo
+• "Como economizar?" - dicas personalizadas
+• "Dicas de investimentos" - guia para iniciantes
 
 🐶 O que você gostaria de saber hoje?`;
 }
@@ -170,21 +164,16 @@ router.post('/chat', async (req, res) => {
     
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
     
-    console.log('🔍 GROQ_API_KEY configurada:', GROQ_API_KEY ? 'SIM' : 'NÃO');
-    console.log('🔍 É a chave fake?', GROQ_API_KEY === '12345' ? 'SIM' : 'NÃO');
-    
     if (!GROQ_API_KEY || GROQ_API_KEY === '12345') {
-      console.log('⚠️ Usando fallback (GROQ_API_KEY não configurada ou é fake)');
       const reply = getFallbackReply(message, context);
       return res.json({ reply });
     }
     
-    console.log('✅ Usando Groq API com chave real');
     const reply = await getGroqReply(message, context);
     res.json({ reply });
     
   } catch (error) {
-    console.error('❌ Erro no chat:', error);
+    console.error('Erro no chat:', error);
     const reply = getFallbackReply(req.body.message, req.body.context);
     res.json({ reply });
   }

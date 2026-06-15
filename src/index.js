@@ -38,12 +38,12 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/memory', require('./routes/memory'));
 app.use('/api/simulator', require('./routes/simulator'));
 app.use('/api/ai', require('./routes/ai'));
-app.use('/api/market', require('./routes/market'));
+// app.use('/api/market', require('./routes/market')); // REMOVIDO - Não utilizado
 
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
   status: 'ok',
-  app: '🐶 Tobby API v5.0',
+  app: '🐶 Tobby API v5.1',
   supabase: !!process.env.SUPABASE_URL,
   encryption: !!process.env.ENCRYPTION_KEY,
   groq: !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345',
@@ -125,8 +125,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('  - /api/wealth (patrimônio)');
   console.log('  - /api/memory (memória da IA)');
   console.log('  - /api/simulator (simulador de decisões)');
-  console.log('  - /api/ai (chat com IA)');
-  console.log('  - /api/market (indicadores de mercado)');
+  console.log('  - /api/ai (chat com Groq)');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 

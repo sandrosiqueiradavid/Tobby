@@ -1,489 +1,199 @@
 🐶 TOBBY - DOCUMENTAÇÃO COMPLETA DO PROJETO
-Versão 5.0 - Com Criptografia AES-256
+Versão 5.1 - Com Criptografia AES-256 e IA Groq
+
 📌 1. VISÃO GERAL DO PROJETO
 Tobby é um organizador financeiro pessoal com personalidade, projetado para ser um "companheiro financeiro". O nome é uma homenagem ao cachorro Tobby Maguire.
 
 Filosofia
-Não é um app bancário (não faz transferências, pagamentos reais)
-
-É um organizador e acompanhante financeiro
-
-Foco em personalidade e conexão emocional com o usuário
-
-IA que conversa de forma natural e personalizada
-
-Privacidade em primeiro lugar (dados criptografados)
+- Não é um app bancário (não faz transferências, pagamentos reais)
+- É um organizador e acompanhante financeiro
+- Foco em personalidade e conexão emocional com o usuário
+- IA que conversa de forma natural e personalizada
+- Privacidade em primeiro lugar (dados criptografados)
 
 🏗️ 2. ARQUITETURA
 Stack Tecnológico
-Camada	Tecnologia	Descrição
-Frontend	HTML/CSS/JS Puro	Aplicação PWA instalável
-Backend	Node.js + Express	API RESTful
-Banco de Dados	Supabase (PostgreSQL)	Armazenamento principal
-Autenticação	JWT + bcrypt	Tokens com validade de 30 dias
-Criptografia	AES-256-CBC	Dados financeiros protegidos
-IA	Claude API (Anthropic)	Assistente financeiro
-Hospedagem	Render (backend) + GitHub Pages (frontend)	Deploy contínuo
+Camada          | Tecnologia           | Descrição
+----------------|----------------------|================================
+Frontend        | HTML/CSS/JS Puro     | Aplicação PWA instalável
+Backend         | Node.js + Express    | API RESTful
+Banco de Dados  | Supabase (PostgreSQL)| Armazenamento principal
+Autenticação    | JWT + bcrypt         | Tokens com validade de 30 dias
+Criptografia    | AES-256-CBC          | Dados financeiros protegidos
+IA              | Groq API (Llama 3.3) | Assistente financeiro gratuito
+Hospedagem      | Render + GitHub Pages| Deploy contínuo
+
 URLs do Projeto
-Ambiente	URL
-Frontend	https://sandrosiqueiradavid.github.io/Tobby
-Backend API	https://tobby-api.onrender.com
-Admin Dashboard	https://sandrosiqueiradavid.github.io/Tobby/admin/
-Repositório	https://github.com/sandrosiqueiradavid/Tobby
+- Frontend: https://sandrosiqueiradavid.github.io/Tobby
+- Backend API: https://tobby-api.onrender.com
+- Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/
+- Repositório: https://github.com/sandrosiqueiradavid/Tobby
+
 📁 3. ESTRUTURA DE PASTAS
-text
 Tobby/
 ├── src/
 │   ├── controllers/
 │   │   ├── authController.js      # Login, registro, recuperação de senha
-│   │   ├── userController.js       # Perfil, salário
-│   │   ├── billsController.js      # CRUD de contas, dashboard
-│   │   ├── hollerithController.js  # Leitura de holerite
-│   │   ├── investmentController.js # Investimentos (ações, FIIs, crypto)
-│   │   ├── bankController.js       # Importação de extrato
-│   │   ├── loanController.js       # Financiamentos e dívidas
-│   │   ├── wealthController.js     # Patrimônio e bens
-│   │   └── adminController.js      # Dashboard administrativo
-│   ├── routes/                     # Todas as rotas da API
+│   │   ├── userController.js      # Perfil, salário
+│   │   ├── billsController.js     # CRUD de contas, dashboard
+│   │   ├── hollerithController.js # Leitura de holerite
+│   │   ├── investmentController.js# Investimentos
+│   │   ├── bankController.js      # Importação de extrato
+│   │   ├── loanController.js      # Financiamentos
+│   │   ├── wealthController.js    # Patrimônio
+│   │   └── adminController.js     # Dashboard administrativo
+│   ├── routes/                    # Rotas da API
 │   ├── middleware/
-│   │   └── auth.js                 # Verificação de token JWT
+│   │   └── auth.js                # Verificação JWT
 │   ├── db/
-│   │   └── supabase.js             # Cliente Supabase
+│   │   └── supabase.js            # Cliente Supabase
 │   ├── utils/
-│   │   └── crypto.js               # Funções de criptografia AES-256
-│   └── index.js                    # Servidor Express
+│   │   └── crypto.js              # AES-256
+│   └── index.js                   # Servidor Express
 ├── admin/
-│   └── index.html                  # Painel administrativo
-├── api.js                          # Cliente frontend para API
-├── index.html                      # Interface principal do Tobby
-├── manifest.json                   # Configuração PWA
-├── sw.js                           # Service Worker
-└── package.json                    # Dependências
-🗄️ 4. BANCO DE DADOS (SUPABASE)
-Script SQL Completo para Criar Todas as Tabelas
-sql
--- ============================================
--- BANCO DE DADOS DO TOBBY - CRIAÇÃO COMPLETA
--- Versão 5.0 com Criptografia
--- ============================================
+│   └── index.html                 # Painel administrativo
+├── api.js                         # Cliente frontend
+├── index.html                     # Interface principal
+├── manifest.json                  # PWA
+├── sw.js                          # Service Worker
+└── package.json                   # Dependências
 
--- ============================================
--- 1. TABELA DE USUÁRIOS (users)
--- Nota: Esta tabela já existe no Supabase Auth
--- Apenas adicionamos colunas extras
--- ============================================
-
--- Adicionar colunas extras na tabela users (se não existirem)
-ALTER TABLE users 
-ADD COLUMN IF NOT EXISTS salary_encrypted TEXT,
-ADD COLUMN IF NOT EXISTS reset_token TEXT,
-ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMP;
-
--- ============================================
--- 2. TABELA DE CONTAS (bills)
--- ============================================
-DROP TABLE IF EXISTS bills CASCADE;
-CREATE TABLE bills (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name VARCHAR(200) NOT NULL,
-  value_encrypted TEXT NOT NULL,
-  due_day INTEGER NOT NULL CHECK (due_day BETWEEN 1 AND 31),
-  category VARCHAR(50) DEFAULT 'outros',
-  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'late')),
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- ============================================
--- 3. TABELA DE INVESTIMENTOS (investments)
--- ============================================
-DROP TABLE IF EXISTS investments CASCADE;
-CREATE TABLE investments (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  symbol VARCHAR(20) NOT NULL,
-  asset_type VARCHAR(20) DEFAULT 'stock' CHECK (asset_type IN ('stock', 'fii', 'crypto', 'fixed_income')),
-  quantity DECIMAL(10,4) NOT NULL,
-  purchase_price_encrypted TEXT NOT NULL,
-  purchase_date DATE NOT NULL,
-  current_price_encrypted TEXT,
-  broker VARCHAR(50),
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- ============================================
--- 4. TABELA DE FINANCIAMENTOS (loans)
--- ============================================
-DROP TABLE IF EXISTS loans CASCADE;
-CREATE TABLE loans (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name VARCHAR(100) NOT NULL,
-  type VARCHAR(20) DEFAULT 'personal' CHECK (type IN ('mortgage', 'car', 'personal', 'student', 'credit_card')),
-  total_principal_encrypted TEXT NOT NULL,
-  outstanding_balance_encrypted TEXT NOT NULL,
-  interest_rate DECIMAL(8,4) NOT NULL,
-  monthly_payment_encrypted TEXT,
-  remaining_installments INTEGER,
-  amortization_type VARCHAR(10) DEFAULT 'price' CHECK (amortization_type IN ('sac', 'price')),
-  start_date DATE NOT NULL,
-  extra_payment DECIMAL(10,2) DEFAULT 0,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- ============================================
--- 5. TABELA DE BENS/PATRIMÔNIO (assets)
--- ============================================
-DROP TABLE IF EXISTS assets CASCADE;
-CREATE TABLE assets (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  name VARCHAR(100) NOT NULL,
-  asset_type VARCHAR(30) DEFAULT 'other' CHECK (asset_type IN ('real_estate', 'vehicle', 'savings', 'other')),
-  estimated_value_encrypted TEXT NOT NULL,
-  acquisition_value_encrypted TEXT,
-  acquisition_date DATE,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- ============================================
--- 6. TABELA DE TICKETS (meal_vouchers) - Benefícios
--- ============================================
-DROP TABLE IF EXISTS meal_vouchers CASCADE;
-CREATE TABLE meal_vouchers (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  voucher_type VARCHAR(20) CHECK (voucher_type IN ('meal', 'food')),
-  provider VARCHAR(50),
-  monthly_amount DECIMAL(10,2) NOT NULL,
-  current_balance DECIMAL(10,2) NOT NULL,
-  reset_day INTEGER DEFAULT 1,
-  last_reset DATE,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- ============================================
--- 7. TABELA DE MEMÓRIA DA IA (conversation_memory)
--- ============================================
-DROP TABLE IF EXISTS conversation_memory CASCADE;
-CREATE TABLE conversation_memory (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  key VARCHAR(100),
-  value TEXT,
-  confidence DECIMAL(3,2),
-  last_updated TIMESTAMP DEFAULT NOW()
-);
-
--- ============================================
--- 8. TABELA DE TRANSAÇÕES DE TICKETS (voucher_transactions)
--- ============================================
-DROP TABLE IF EXISTS voucher_transactions CASCADE;
-CREATE TABLE voucher_transactions (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  voucher_id UUID NOT NULL REFERENCES meal_vouchers(id) ON DELETE CASCADE,
-  amount DECIMAL(10,2) NOT NULL,
-  establishment VARCHAR(100),
-  transaction_date DATE NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- ============================================
--- CRIAÇÃO DE ÍNDICES PARA PERFORMANCE
--- ============================================
-
--- Índices para users (já existem, garantimos)
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-
--- Índices para bills
-CREATE INDEX IF NOT EXISTS idx_bills_user_id ON bills(user_id);
-CREATE INDEX IF NOT EXISTS idx_bills_status ON bills(status);
-CREATE INDEX IF NOT EXISTS idx_bills_due_day ON bills(due_day);
-
--- Índices para investments
-CREATE INDEX IF NOT EXISTS idx_investments_user_id ON investments(user_id);
-CREATE INDEX IF NOT EXISTS idx_investments_symbol ON investments(symbol);
-
--- Índices para loans
-CREATE INDEX IF NOT EXISTS idx_loans_user_id ON loans(user_id);
-
--- Índices para assets
-CREATE INDEX IF NOT EXISTS idx_assets_user_id ON assets(user_id);
-
--- Índices para meal_vouchers
-CREATE INDEX IF NOT EXISTS idx_meal_vouchers_user_id ON meal_vouchers(user_id);
-
--- Índices para conversation_memory
-CREATE INDEX IF NOT EXISTS idx_conversation_memory_user_id ON conversation_memory(user_id);
-
--- ============================================
--- INSERIR USUÁRIO DEMO (opcional)
--- ============================================
-INSERT INTO users (id, name, email, password, salary_encrypted) 
-VALUES (
-  gen_random_uuid(),
-  'Usuário Demo',
-  'demo@tobby.com',
-  '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-  NULL
-) ON CONFLICT (email) DO NOTHING;
-
--- ============================================
--- VERIFICAR TABELAS CRIADAS
--- ============================================
-SELECT 
-  table_name, 
-  (SELECT COUNT(*) FROM information_schema.columns WHERE table_name = t.table_name) as column_count
-FROM information_schema.tables t
-WHERE table_schema = 'public' 
-  AND table_name IN ('users', 'bills', 'investments', 'loans', 'assets', 'meal_vouchers', 'conversation_memory')
-ORDER BY table_name;
 🔐 5. CRIPTOGRAFIA
-Como Funciona
-Algoritmo: AES-256-CBC
+- Algoritmo: AES-256-CBC
+- Chave: 32 bytes (64 caracteres hex) via ENCRYPTION_KEY
+- Campos criptografados: salary_encrypted, value_encrypted, purchase_price_encrypted, current_price_encrypted, total_principal_encrypted, outstanding_balance_encrypted, monthly_payment_encrypted, estimated_value_encrypted
 
-Chave: 32 bytes (64 caracteres hex) via variável ENCRYPTION_KEY
+Gerar chave: node -e "console.log(crypto.randomBytes(32).toString('hex'))"
 
-Campos criptografados: Todos os valores financeiros sensíveis
-
-Campos Criptografados por Tabela
-Tabela	Campos Criptografados
-users	salary_encrypted
-bills	value_encrypted
-investments	purchase_price_encrypted, current_price_encrypted
-loans	total_principal_encrypted, outstanding_balance_encrypted, monthly_payment_encrypted
-assets	estimated_value_encrypted, acquisition_value_encrypted
-Gerar Chave de Criptografia
-bash
-# Node.js
-node -e "console.log(crypto.randomBytes(32).toString('hex'))"
-
-# Ou use: https://www.random.org/cgi-bin/randbyte?format=hex&nbytes=32
 🔌 6. ENDPOINTS DA API
-Rotas Públicas (sem autenticação)
-Método	Endpoint	Descrição
-POST	/api/auth/register	Criar nova conta
-POST	/api/auth/login	Fazer login
-POST	/api/auth/forgot-password	Solicitar recuperação de senha
-POST	/api/auth/reset-password	Redefinir senha com token
-GET	/health	Status do servidor
-GET	/api/diagnose	Diagnóstico do sistema
-Rotas Protegidas (requerem token JWT no header Authorization: Bearer {token})
-Usuário (/api/user)
-Método	Endpoint	Descrição
-GET	/profile	Obter perfil do usuário
-PUT	/salary	Atualizar salário
-Contas (/api/bills)
-Método	Endpoint	Descrição
-GET	/	Listar todas as contas
-GET	/:id	Obter uma conta específica
-POST	/	Criar nova conta
-PUT	/:id	Atualizar conta
-DELETE	/:id	Deletar conta
-PATCH	/:id/status	Alternar status (pago/pendente)
-GET	/dashboard/summary	Resumo para dashboard
-Investimentos (/api/investments)
-Método	Endpoint	Descrição
-GET	/	Listar investimentos com cotações atualizadas
-POST	/	Criar novo investimento
-DELETE	/:id	Remover investimento
-Financiamentos (/api/loans)
-Método	Endpoint	Descrição
-GET	/	Listar financiamentos
-POST	/	Criar novo financiamento
-POST	/:id/simulate	Simular amortização extra
-DELETE	/:id	Remover financiamento
-Patrimônio (/api/wealth)
-Método	Endpoint	Descrição
-GET	/summary	Resumo do patrimônio líquido
-GET	/assets	Listar bens
-POST	/assets	Adicionar bem
-DELETE	/assets/:id	Remover bem
-Utilitários
-Método	Endpoint	Descrição
-POST	/hollerith/process	Processar texto de holerite
-GET	/hollerith/report	Informe de rendimentos anual
-GET	/hollerith/ir-declaration	Declaração IR simplificada
-POST	/bank/process	Processar extrato bancário
-Admin (/api/admin) - requer header x-admin-key: tobbyadmin2024
-Método	Endpoint	Descrição
-GET	/health	Saúde do sistema
-GET	/metrics	Métricas (apenas contagens)
-GET	/logs	Logs técnicos
-GET	/dashboard	Dashboard administrativo
+Rotas Públicas:
+POST   /api/auth/register
+POST   /api/auth/login
+POST   /api/auth/forgot-password
+POST   /api/auth/reset-password
+GET    /health
+GET    /api/diagnose
+
+Rotas Protegidas (requer token JWT):
+GET    /api/user/profile
+PUT    /api/user/salary
+GET    /api/bills
+POST   /api/bills
+PUT    /api/bills/:id
+DELETE /api/bills/:id
+PATCH  /api/bills/:id/status
+GET    /api/bills/dashboard/summary
+GET    /api/investments
+POST   /api/investments
+DELETE /api/investments/:id
+GET    /api/loans
+POST   /api/loans
+DELETE /api/loans/:id
+GET    /api/wealth/summary
+GET    /api/wealth/assets
+POST   /api/wealth/assets
+DELETE /api/wealth/assets/:id
+POST   /api/hollerith/process
+GET    /api/hollerith/report
+GET    /api/hollerith/ir-declaration
+POST   /api/bank/process
+POST   /api/ai/chat
+
+Admin (requer header x-admin-key: tobbyadmin2024):
+GET /api/admin/health
+GET /api/admin/metrics
+GET /api/admin/logs
+GET /api/admin/dashboard
+
 🎨 7. FUNCIONALIDADES DO FRONTEND
-Telas (Tabs)
-Ícone	Nome	Função
-🏠	Início	Dashboard financeiro com resumo
-📋	Contas	Gerenciamento de despesas
-📈	Investir	Acompanhamento de investimentos
-💸	Dívidas	Controle de financiamentos
-🏆	Patrimônio	Bens e ativos
-🤖	IA	Assistente financeiro com IA
-Componentes Especiais
-TobyMood - Cachorro que muda de expressão:
+Telas (Tabs): Início, Contas, Investir, Dívidas, Patrimônio, IA
 
-😟 Preocupado (contas atrasadas)
-
-🧐 Atento (saldo baixo)
-
-😊 Feliz (saldo alto)
-
-🏆 Orgulhoso (todas contas pagas)
-
-🐶 Normal (situação estável)
-
-Missão da Semana - Gamificação leve
-
-Tema Claro/Escuro - Alternância com persistência
-
-Design Responsivo - Funciona em web e mobile
-
-PWA - Instalável no celular
+Componentes Especiais:
+- TobyMood: Cachorro que muda de expressão (😟 preocupado, 🧐 atento, 😊 feliz, 🏆 orgulhoso, 🐶 normal)
+- Missão da Semana: Gamificação leve
+- Tema Claro/Escuro: Alternância com persistência
+- Design Responsivo: Web e mobile
+- PWA: Instalável no celular
+- Chat com IA Groq: Assistente financeiro gratuito e rápido
 
 🔧 8. VARIÁVEIS DE AMBIENTE (RENDER)
-env
-# Obrigatórias
+Obrigatórias:
 SUPABASE_URL = https://seu-projeto.supabase.co
 SUPABASE_SECRET_KEY = sua_service_role_key
 JWT_SECRET = sua_chave_jwt_segura
 ADMIN_KEY = tobbyadmin2024
 
-# Criptografia (recomendado)
+Recomendadas:
 ENCRYPTION_KEY = 64_caracteres_hex_aqui
+GROQ_API_KEY = sua_chave_groq (grátis em console.groq.com)
 
-# Opcionais
+Opcionais:
 FRONTEND_URL = https://sandrosiqueiradavid.github.io
-CLAUDE_API_KEY = sua_chave_claude (para IA)
+RESEND_API_KEY = chave_para_emails
+
 🚀 9. DEPLOY
-Backend (Render)
-bash
-# Build Command
-npm install
+Backend (Render):
+- Build Command: npm install
+- Start Command: node src/index.js
+- Root Directory: (deixar vazio)
+- Variáveis de ambiente: configurar no dashboard
 
-# Start Command
-node src/index.js
+Frontend (GitHub Pages):
+- Branch: main
+- Pasta: / (root)
 
-# Root Directory
-(deixar vazio)
-Frontend (GitHub Pages)
-Branch: main
-
-Pasta: / (root)
-
-Comandos Git
-bash
-# Enviar alterações
-git add .
-git commit -m "descrição da alteração"
-git push origin main
-
-# Verificar status
-git status
-git log -1 --oneline
 🔍 10. DIAGNÓSTICO E TESTES
-Verificar se o backend está online
-bash
-curl https://tobby-api.onrender.com/health
-Verificar se a criptografia está ativa
-bash
-curl https://tobby-api.onrender.com/
-# Deve retornar "encryption": true
-Testar registro de usuário
-bash
-curl -X POST https://tobby-api.onrender.com/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Teste","email":"teste@email.com","password":"123456","salary":5000}'
-Testar login
-bash
-curl -X POST https://tobby-api.onrender.com/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"teste@email.com","password":"123456"}'
-Acessar Admin Dashboard
-text
-https://sandrosiqueiradavid.github.io/Tobby/admin/
-# Chave: tobbyadmin2024
+Verificar backend: curl https://tobby-api.onrender.com/health
+Verificar criptografia: curl https://tobby-api.onrender.com/ (deve mostrar "encryption": true)
+Testar registro: POST para /api/auth/register
+Testar login: POST para /api/auth/login
+Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: tobbyadmin2024)
+
 🐛 11. PROBLEMAS CONHECIDOS E SOLUÇÕES
-Problema	Causa	Solução
-Supabase desconectado	URL com /rest/v1/ no final	Remover o caminho extra da URL
-Erro PGRST125	Tabela não encontrada	Verificar nome da tabela (users, não tobby_users)
-Timeout no Supabase	Projeto gratuito hiberna	Primeira requisição após pausa demora alguns segundos
-Criptografia não funciona	ENCRYPTION_KEY não configurada	Adicionar variável no Render
-Erro 401 no admin	Chave ADMIN_KEY incorreta	Usar tobbyadmin2024 no header x-admin-key
+- Supabase desconectado: Remover /rest/v1/ da URL
+- Erro PGRST125: Verificar nome da tabela (users, não tobby_users)
+- Timeout no Supabase: Projeto gratuito hiberna
+- Criptografia não funciona: Adicionar ENCRYPTION_KEY no Render
+- Erro 401 no admin: Usar tobbyadmin2024 no header x-admin-key
+- IA não responde: Configurar GROQ_API_KEY no Render
+
 📦 12. DEPENDÊNCIAS (package.json)
-json
-{
-  "name": "tobby-backend",
-  "version": "5.0.0",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1",
-    "pdf-parse": "^1.1.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
-  }
-}
-📝 13. FUNCIONALIDADES IMPLEMENTADAS (CHECKLIST)
-✅ Concluído
-Autenticação JWT completa (registro, login, recuperação de senha)
+- @supabase/supabase-js: ^2.39.0
+- bcryptjs: ^2.4.3
+- cors: ^2.8.5
+- dotenv: ^16.3.1
+- express: ^4.18.2
+- jsonwebtoken: ^9.0.2
+- multer: ^1.4.5-lts.1
+- pdf-parse: ^1.1.1
 
-CRUD de contas a pagar/receber
-
-Dashboard financeiro com saldo e percentuais
-
-Investimentos com cotações em tempo real (ações, FIIs, criptomoedas)
-
-Financiamentos com simulação de amortização extra
-
-Patrimônio líquido (ativos vs passivos)
-
-Cadastro de bens (imóveis, veículos, reservas)
-
-Leitura de nota fiscal via câmera
-
-Leitura de holerite via texto
-
-Importação de extrato bancário (CSV, OFX, texto)
-
-Informe de rendimentos para IR
-
-Chat com IA (Claude API)
-
-Tema claro/escuro com persistência
-
-Design responsivo (web + mobile)
-
-Tobby reativo (muda de expressão)
-
-Missão da semana (gamificação)
-
-Painel administrativo com métricas
-
-PWA (instalável no celular)
-
-Criptografia AES-256 para dados sensíveis
+📝 13. FUNCIONALIDADES IMPLEMENTADAS
+✅ Autenticação JWT completa
+✅ CRUD de contas
+✅ Dashboard financeiro
+✅ Investimentos
+✅ Financiamentos com simulação
+✅ Patrimônio líquido
+✅ Cadastro de bens
+✅ Leitura de nota fiscal via câmera
+✅ Leitura de holerite via texto
+✅ Importação de extrato bancário
+✅ Informe de rendimentos para IR
+✅ Chat com IA Groq (gratuito e rápido)
+✅ Tema claro/escuro
+✅ Design responsivo
+✅ Tobby reativo
+✅ Missão da semana
+✅ Painel administrativo
+✅ PWA
+✅ Criptografia AES-256
 
 🚧 Em andamento / Pendentes
-Envio de notificações WhatsApp (estrutura pronta)
-
-Leitura de PDF com IA (estrutura pronta)
-
-Domínio personalizado (tobby.js.org - Pull Request enviado)
+- Envio de notificações WhatsApp
+- Leitura de PDF com IA
+- Domínio personalizado
 
 🎯 14. RESUMO PARA IA
-Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS). Autenticação JWT. Criptografia AES-256 para dados sensíveis. Funcionalidades: controle de contas, investimentos (ações com cotações em tempo real via Brapi e CoinGecko), financiamentos (simulação de amortização), patrimônio (bens), leitura de nota fiscal por foto, leitura de holerite, importação de extrato (CSV/OFX/texto), informe de IR, chat com IA (Claude API). Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Tabela principal: users (do Supabase Auth) com colunas extras para criptografia. Tabelas de dados: bills, investments, loans, assets, meal_vouchers, conversation_memory. Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcional: ENCRYPTION_KEY (para criptografia), CLAUDE_API_KEY (para IA).
+Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS). Autenticação JWT. Criptografia AES-256 para dados sensíveis. Funcionalidades: controle de contas, investimentos, financiamentos (simulação de amortização), patrimônio (bens), leitura de nota fiscal por foto, leitura de holerite, importação de extrato (CSV/OFX/texto), informe de IR, chat com IA Groq (gratuito, modelo Llama 3.3 70B). Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcionais: ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA).
 
 Com este documento, qualquer IA pode entender exatamente o que foi construído e continuar o desenvolvimento! 🐶📚
-

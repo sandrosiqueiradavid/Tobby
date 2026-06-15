@@ -192,7 +192,6 @@ function navTo(tab) {
   });
   if (tab === 'home') {
     loadHome();
-    loadMarketData();
   }
   if (tab === 'bills') loadBills();
   if (tab === 'investments') loadInvestments();

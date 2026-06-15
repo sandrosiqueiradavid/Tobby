@@ -1,344 +1,139 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-<meta name="theme-color" content="#10B981">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Tobby">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<title>Tobby 🐶 — Organizador Financeiro</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tobby Admin Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: #0B0F1C;
+      color: #E2E8F0;
+      padding: 2rem;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+    .header h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 0.5rem; }
+    .badge { background: #1E293B; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 500; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card { background: #111827; border: 1px solid #1F2937; border-radius: 1rem; padding: 1.25rem; transition: all 0.2s; }
+    .stat-card:hover { border-color: #374151; transform: translateY(-2px); }
+    .stat-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #94A3B8; margin-bottom: 0.5rem; }
+    .stat-value { font-size: 2.2rem; font-weight: 700; color: #F1F5F9; margin-bottom: 0.25rem; }
+    .stat-sub { font-size: 0.75rem; color: #64748B; }
+    .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .status-card { background: #111827; border: 1px solid #1F2937; border-radius: 1rem; padding: 1.25rem; }
+    .status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid #1F2937; padding-bottom: 0.5rem; }
+    .status-name { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    .status-badge { font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 500; }
+    .status-on { background: #05966920; color: #10B981; border: 1px solid #10B98130; }
+    .status-off { background: #DC262620; color: #F87171; border: 1px solid #EF444430; }
+    .status-warning { background: #F59E0B20; color: #F59E0B; border: 1px solid #F59E0B30; }
+    .status-detail { font-size: 0.85rem; color: #94A3B8; margin-top: 0.5rem; }
+    .refresh-btn { background: #1E293B; border: 1px solid #334155; padding: 0.4rem 1rem; border-radius: 0.5rem; color: #E2E8F0; cursor: pointer; transition: all 0.2s; font-size: 0.8rem; }
+    .refresh-btn:hover { background: #334155; }
+    .loading { display: flex; justify-content: center; align-items: center; gap: 0.5rem; color: #94A3B8; padding: 2rem; }
+    .spinner { width: 20px; height: 20px; border: 2px solid #1E293B; border-top-color: #3B82F6; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
-
-<div class="app-container">
-  <!-- LOADING -->
-  <div id="loading" class="screen active">
-    <div style="text-align: center">
-      <div class="spinner" style="margin: 0 auto"></div>
-      <div style="margin-top: 1rem; font-size: 13px; color: var(--text-secondary)">Carregando Tobby...</div>
+<div class="container">
+  <div class="header">
+    <h1>🐶 Tobby Admin Dashboard</h1>
+    <div style="display: flex; gap: 0.5rem;">
+      <span class="badge" id="api-status-text">🔌 Conectando...</span>
+      <button class="refresh-btn" onclick="carregarTodosOsDados()">🔄 Atualizar</button>
     </div>
   </div>
 
-  <!-- AUTH -->
-  <div id="auth" class="screen">
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-logo">
-          <div class="logo-mark">🐶</div>
-          <div class="logo-title">Tobby</div>
-          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">Organizador Financeiro</div>
-        </div>
-        
-        <div id="login-card">
-          <div class="field">
-            <label>E-mail</label>
-            <input type="email" id="login-email" placeholder="seu@email.com">
-          </div>
-          <div class="field">
-            <label>Senha</label>
-            <input type="password" id="login-pwd" placeholder="••••••••">
-          </div>
-          <div style="text-align: right; margin-bottom: 1rem">
-            <span style="font-size: 12px; color: var(--green); cursor: pointer" onclick="window.showForgotPassword()">Esqueci minha senha?</span>
-          </div>
-          <div id="login-err" style="display: none; font-size: 12px; color: var(--red); margin-bottom: 1rem; padding: 8px; background: rgba(239,68,68,0.1); border-radius: 8px">E-mail ou senha inválidos</div>
-          <button class="btn-primary" onclick="window.doLogin()">Entrar →</button>
-          <div style="text-align: center; margin-top: 1rem; font-size: 13px; color: var(--text-secondary)">
-            Não tem conta? <span style="color: var(--green); cursor: pointer; font-weight: 600" onclick="window.showRegister()">Criar conta</span>
-          </div>
-        </div>
-
-        <div id="register-card" style="display: none">
-          <div class="field"><label>Nome completo</label><input type="text" id="reg-name" placeholder="Seu nome"></div>
-          <div class="field"><label>E-mail</label><input type="email" id="reg-email" placeholder="seu@email.com"></div>
-          <div class="field"><label>Senha</label><input type="password" id="reg-pwd" placeholder="Mínimo 6 caracteres"></div>
-          <div class="field"><label>Salário mensal (R$)</label><input type="number" id="reg-salary" placeholder="Ex: 5000" step="0.01"></div>
-          <div id="reg-err" style="display: none; font-size: 12px; color: var(--red); margin-bottom: 1rem"></div>
-          <button class="btn-primary" onclick="window.doRegister()" style="background: linear-gradient(135deg, var(--purple), var(--pink))">Criar conta →</button>
-          <div style="text-align: center; margin-top: 1rem; font-size: 13px; color: var(--text-secondary)">
-            Já tem conta? <span style="color: var(--green); cursor: pointer; font-weight: 600" onclick="window.showLogin()">Entrar</span>
-          </div>
-        </div>
-
-        <div id="forgot-card" style="display: none">
-          <div class="field"><label>E-mail</label><input type="email" id="forgot-email" placeholder="seu@email.com"></div>
-          <div id="forgot-err" style="display: none; font-size: 12px; color: var(--red); margin-bottom: 1rem"></div>
-          <div id="forgot-success" style="display: none; font-size: 12px; color: var(--green); margin-bottom: 1rem"></div>
-          <button class="btn-primary" onclick="window.doForgotPassword()">Enviar instruções →</button>
-          <button class="btn-secondary" onclick="window.showLogin()" style="margin-top: 0.5rem">Voltar ao login</button>
-        </div>
-
-        <div id="reset-card" style="display: none">
-          <div class="field"><label>Nova senha</label><input type="password" id="reset-pwd" placeholder="Mínimo 6 caracteres"></div>
-          <div class="field"><label>Confirmar senha</label><input type="password" id="reset-pwd-confirm" placeholder="Digite novamente"></div>
-          <div id="reset-err" style="display: none; font-size: 12px; color: var(--red); margin-bottom: 1rem"></div>
-          <button class="btn-primary" onclick="window.doResetPassword()">Redefinir senha →</button>
-          <button class="btn-secondary" onclick="window.showLogin()" style="margin-top: 0.5rem">Voltar ao login</button>
-        </div>
-      </div>
-    </div>
+  <div class="stats-grid" id="metrics-grid">
+    <div class="stat-card"><div class="stat-title">👥 Total de Usuários</div><div class="stat-value" id="total-users">--</div><div class="stat-sub" id="active-users">Ativos últimos 7 dias: --</div></div>
+    <div class="stat-card"><div class="stat-title">📋 Total de Contas</div><div class="stat-value" id="total-bills">--</div><div class="stat-sub" id="bills-value">Valor total: --</div></div>
+    <div class="stat-card"><div class="stat-title">📈 Investimentos</div><div class="stat-value" id="total-investments">--</div><div class="stat-sub">Ativos cadastrados</div></div>
+    <div class="stat-card"><div class="stat-title">🏦 Financiamentos</div><div class="stat-value" id="total-loans">--</div><div class="stat-sub">Dívidas registradas</div></div>
   </div>
 
-  <!-- APP -->
-  <div id="app" class="screen">
-    <div class="topbar">
-      <div class="topbar-left">
-        <div class="topbar-logo">🐶</div>
-        <div class="topbar-name">Tobby</div>
-      </div>
-      <div class="topbar-right">
-        <div class="icon-btn" id="theme-toggle-btn" onclick="window.toggleTheme()">
-          <i class="fas fa-moon" id="theme-icon"></i>
-        </div>
-        <div class="avatar-btn" id="top-avatar" onclick="window.navTo('profile')">--</div>
-      </div>
-    </div>
-
-    <!-- HOME -->
-    <div id="tab-home" class="content">
-      <div class="toby-card">
-        <div class="toby-avatar" id="toby-avatar">🐶</div>
-        <div class="toby-message">
-          <p id="toby-message">Carregando...</p>
-          <small id="toby-small">Analisando suas finanças...</small>
-        </div>
-        <div class="toby-badge" id="toby-badge">🐶</div>
-      </div>
-
-      <div class="balance-card">
-        <div class="balance-label">SALDO DISPONÍVEL</div>
-        <div class="balance-value" id="bal-free">R$ 0,00</div>
-        <div class="balance-date" id="bal-date"></div>
-        <div class="balance-details">
-          <div class="balance-detail">
-            <div class="balance-detail-label">Salário</div>
-            <div class="balance-detail-value positive" id="bal-in">R$ 0,00</div>
-          </div>
-          <div class="balance-detail">
-            <div class="balance-detail-label">Despesas pagas</div>
-            <div class="balance-detail-value negative" id="bal-out">R$ 0,00</div>
-          </div>
-          <div class="balance-detail">
-            <div class="balance-detail-label">Comprometido</div>
-            <div class="balance-detail-value" id="bal-pct">0%</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon" style="background: rgba(16,185,129,0.1)"><i class="fas fa-check-circle" style="color: var(--green)"></i></div>
-          <div class="stat-label">Pagas</div>
-          <div class="stat-value" id="stat-paid" style="color: var(--green)">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: rgba(245,158,11,0.1)"><i class="fas fa-clock" style="color: var(--orange)"></i></div>
-          <div class="stat-label">Pendentes</div>
-          <div class="stat-value" id="stat-pend" style="color: var(--orange)">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: rgba(239,68,68,0.1)"><i class="fas fa-exclamation-triangle" style="color: var(--red)"></i></div>
-          <div class="stat-label">Atrasadas</div>
-          <div class="stat-value" id="stat-late" style="color: var(--red)">0</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background: rgba(59,130,246,0.1)"><i class="fas fa-receipt" style="color: var(--blue)"></i></div>
-          <div class="stat-label">Total</div>
-          <div class="stat-value" id="stat-total" style="color: var(--blue)">0</div>
-        </div>
-      </div>
-
-      <div class="chart-card">
-        <div class="chart-title">
-          <span>Despesas por categoria</span>
-          <span style="font-size: 11px; color: var(--text-muted)">Junho</span>
-        </div>
-        <div class="chart-container">
-          <div class="donut"></div>
-          <div class="chart-legend" id="category-legend"></div>
-        </div>
-      </div>
-
-      <div class="indicators">
-        <div class="indicator-card">
-          <div class="indicator-label">Média diária</div>
-          <div class="indicator-value small" id="daily-avg">R$ 0,00</div>
-        </div>
-        <div class="indicator-card">
-          <div class="indicator-label">Saldo seguro</div>
-          <div class="indicator-value small" id="safe-balance">R$ 0,00</div>
-        </div>
-      </div>
-
-      <div class="section-header">
-        <h3>Próximas contas</h3>
-        <a onclick="window.navTo('bills')">Ver todas →</a>
-      </div>
-      <div id="home-bills-list"></div>
-    </div>
-
-    <!-- BILLS -->
-    <div id="tab-bills" class="content" style="display: none">
-      <div class="section-header"><h3>Transações</h3></div>
-      <div class="filters" id="bills-filters">
-        <button class="filter-chip active" onclick="window.filterBills(this,'all')">Todas</button>
-        <button class="filter-chip" onclick="window.filterBills(this,'pending')">Pendentes</button>
-        <button class="filter-chip" onclick="window.filterBills(this,'paid')">Pagas</button>
-        <button class="filter-chip" onclick="window.filterBills(this,'late')">Atrasadas</button>
-      </div>
-      <div id="bills-list-main"></div>
-      <button class="btn-primary" style="margin-top: 0.75rem" onclick="window.openBillModal()"><i class="fas fa-plus"></i> Adicionar conta</button>
-    </div>
-
-    <!-- INVESTMENTS -->
-    <div id="tab-investments" class="content" style="display: none">
-      <div class="section-header"><h3>Investimentos</h3></div>
-      <div class="stats-grid" style="margin-bottom: 1rem">
-        <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total Investido</div><div class="stat-value" id="total-invested">R$ 0</div></div>
-        <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-label">Valor Atual</div><div class="stat-value" id="current-value">R$ 0</div></div>
-      </div>
-      <button class="btn-primary" onclick="window.showAddInvestmentModal()" style="margin-bottom: 1rem"><i class="fas fa-plus"></i> Adicionar Investimento</button>
-      <div id="investments-list-container"></div>
-    </div>
-
-    <!-- LOANS -->
-    <div id="tab-loans" class="content" style="display: none">
-      <div class="section-header"><h3>Financiamentos</h3></div>
-      <div class="stats-grid" style="margin-bottom: 1rem">
-        <div class="stat-card"><div class="stat-icon">💸</div><div class="stat-label">Total de Dívidas</div><div class="stat-value" id="total-debt">R$ 0</div></div>
-        <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Prestação Mensal</div><div class="stat-value" id="total-monthly">R$ 0</div></div>
-      </div>
-      <button class="btn-primary" onclick="window.showAddLoanModal()" style="margin-bottom: 1rem"><i class="fas fa-plus"></i> Adicionar Financiamento</button>
-      <div id="loans-list-container"></div>
-    </div>
-
-    <!-- WEALTH -->
-    <div id="tab-wealth" class="content" style="display: none">
-      <div class="balance-card" style="text-align: center">
-        <div class="balance-label">PATRIMÔNIO LÍQUIDO</div>
-        <div class="balance-value" id="net-worth" style="font-size: 32px">R$ 0</div>
-        <div class="balance-details">
-          <div class="balance-detail"><div class="balance-detail-label">Ativos</div><div class="balance-detail-value positive" id="total-assets">R$ 0</div></div>
-          <div class="balance-detail"><div class="balance-detail-label">Passivos</div><div class="balance-detail-value negative" id="total-liabilities">R$ 0</div></div>
-        </div>
-      </div>
-      <div class="section-header"><h3>Seus Bens</h3></div>
-      <button class="btn-primary" onclick="window.showAddAssetModal()" style="margin-bottom: 0.5rem"><i class="fas fa-plus"></i> Adicionar Bem</button>
-      <div id="assets-list-container"></div>
-    </div>
-
-    <!-- AI -->
-    <div id="tab-ai" class="content" style="display: none">
-      <div style="text-align: center; margin-bottom: 1rem">
-        <div style="width: 60px; height: 60px; margin: 0 auto 0.5rem; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); display: flex; align-items: center; justify-content: center; font-size: 28px">🤖</div>
-        <div style="font-size: 18px; font-weight: 700">Assistente Tobby</div>
-        <div style="font-size: 12px; color: var(--text-secondary)">Análise inteligente das suas finanças</div>
-      </div>
-      <div class="section-header"><h3>Insights</h3></div>
-      <div id="insights-list"></div>
-      <div class="section-header" style="margin-top: 1rem">
-        <h3>Conversar</h3>
-        <button onclick="window.clearChat()" style="background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer;">
-          <i class="fas fa-trash-alt"></i> Limpar
-        </button>
-      </div>
-      <div class="chat-msgs" id="chat-msgs">
-        <div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Como posso te ajudar?</div>
-      </div>
-      <div class="typing-ind" id="typing-ind" style="display: none; font-size: 12px; color: var(--text-secondary); padding: 0.4rem 0">Tobby está digitando...</div>
-      <div class="chat-bar">
-        <input class="chat-input" id="chat-input" placeholder="Pergunte sobre suas finanças..." onkeydown="if(event.key==='Enter')window.sendMsg()">
-        <button class="chat-send" onclick="window.sendMsg()"><i class="fas fa-paper-plane"></i></button>
-      </div>
-    </div>
-
-    <!-- PROFILE -->
-    <div id="tab-profile" class="content" style="display: none">
-      <div style="text-align: center; margin-bottom: 1.5rem">
-        <div class="avatar-btn" style="width: 64px; height: 64px; font-size: 24px; margin: 0 auto 0.75rem; background: linear-gradient(135deg, var(--purple), var(--pink))" id="prof-av">--</div>
-        <div style="font-size: 18px; font-weight: 700" id="prof-name">--</div>
-        <div style="font-size: 12px; color: var(--text-secondary)" id="prof-email">--</div>
-      </div>
-      <div class="balance-card" style="padding: 1rem">
-        <div class="balance-label">SALÁRIO MENSAL</div>
-        <div class="balance-value" style="font-size: 24px" id="prof-salary">R$ 0,00</div>
-        <div style="text-align: right; margin-top: 0.5rem">
-          <span style="font-size: 12px; color: var(--green); cursor: pointer" onclick="window.editSalary()">✏️ Editar</span>
-        </div>
-      </div>
-      <div class="section-header"><h3>Ferramentas</h3></div>
-      <div style="display: flex; flex-direction: column; gap: 0.5rem">
-        <div class="stat-card" style="display: flex; align-items: center; gap: 1rem; cursor: pointer" onclick="window.openReceiptScanner()">
-          <div class="stat-icon" style="background: rgba(16,185,129,0.1)">📸</div>
-          <div style="flex: 1"><div class="stat-label">Ler Nota Fiscal</div><div class="stat-sub">Tire uma foto da nota</div></div>
-          <i class="fas fa-chevron-right"></i>
-        </div>
-        <div class="stat-card" style="display: flex; align-items: center; gap: 1rem; cursor: pointer" onclick="window.showHollerithModal()">
-          <div class="stat-icon" style="background: rgba(139,92,246,0.1)">📄</div>
-          <div style="flex: 1"><div class="stat-label">Ler Holerite</div><div class="stat-sub">Cole o texto do holerite</div></div>
-          <i class="fas fa-chevron-right"></i>
-        </div>
-        <div class="stat-card" style="display: flex; align-items: center; gap: 1rem; cursor: pointer" onclick="window.showBankExtractModal()">
-          <div class="stat-icon" style="background: rgba(59,130,246,0.1)">🏦</div>
-          <div style="flex: 1"><div class="stat-label">Importar Extrato</div><div class="stat-sub">CSV, OFX ou texto</div></div>
-          <i class="fas fa-chevron-right"></i>
-        </div>
-        <div class="stat-card" style="display: flex; align-items: center; gap: 1rem; cursor: pointer" onclick="window.showIncomeReport()">
-          <div class="stat-icon" style="background: rgba(16,185,129,0.1)">📊</div>
-          <div style="flex: 1"><div class="stat-label">Informe de Rendimentos</div><div class="stat-sub">Anual para IR</div></div>
-          <i class="fas fa-chevron-right"></i>
-        </div>
-      </div>
-      <button class="btn-danger" onclick="window.doLogout()" style="margin-top: 1rem">Sair da conta</button>
-    </div>
-
-    <nav class="bottom-nav">
-      <div class="nav-container">
-        <div class="nav-item active" id="nav-home" onclick="window.navTo('home')"><div class="nav-icon"><i class="fas fa-home"></i></div><div class="nav-label">Início</div></div>
-        <div class="nav-item" id="nav-bills" onclick="window.navTo('bills')"><div class="nav-icon"><i class="fas fa-receipt"></i></div><div class="nav-label">Contas</div></div>
-        <div class="nav-item" id="nav-investments" onclick="window.navTo('investments')"><div class="nav-icon"><i class="fas fa-chart-line"></i></div><div class="nav-label">Investir</div></div>
-        <div class="nav-item" id="nav-loans" onclick="window.navTo('loans')"><div class="nav-icon"><i class="fas fa-hand-holding-usd"></i></div><div class="nav-label">Dívidas</div></div>
-        <div class="nav-item" id="nav-wealth" onclick="window.navTo('wealth')"><div class="nav-icon"><i class="fas fa-building"></i></div><div class="nav-label">Patrimônio</div></div>
-        <div class="nav-item" id="nav-ai" onclick="window.navTo('ai')"><div class="nav-icon"><i class="fas fa-robot"></i></div><div class="nav-label">IA</div></div>
-      </div>
-    </nav>
+  <div class="status-grid" id="integrations-grid">
+    <div class="status-card"><div class="status-header"><span class="status-name">🤖 IA (Groq)</span><span class="status-badge" id="groq-status-badge">Carregando...</span></div><div class="status-detail" id="groq-status-detail">Verificando integração...</div></div>
+    <div class="status-card"><div class="status-header"><span class="status-name">💾 Banco de Dados (Supabase)</span><span class="status-badge" id="supabase-status-badge">Carregando...</span></div><div class="status-detail" id="supabase-status-detail">Conexão: --</div></div>
   </div>
 </div>
 
-<!-- MODAL -->
-<div id="modal" style="display: none">
-  <div class="modal-overlay" onclick="if(event.target===this)window.closeModal()">
-    <div class="modal">
-      <div class="modal-handle"></div>
-      <h3 id="modal-title">Nova Conta</h3>
-      <div class="field"><label>Nome da conta</label><input type="text" id="f-name" placeholder="Ex: Aluguel, Energia..."></div>
-      <div class="field-row">
-        <div class="field"><label>Valor (R$)</label><input type="number" id="f-val" placeholder="0,00" step="0.01"></div>
-        <div class="field"><label>Dia vencimento</label><input type="number" id="f-day" placeholder="1-31" min="1" max="31"></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label>Categoria</label><select id="f-cat"><option value="moradia">🏠 Moradia</option><option value="alimentacao">🍽️ Alimentação</option><option value="saude">🏥 Saúde</option><option value="transporte">🚗 Transporte</option><option value="lazer">🎮 Lazer</option><option value="educacao">📚 Educação</option><option value="tecnologia">💻 Tecnologia</option><option value="financeiro">💳 Financeiro</option><option value="outros">📦 Outros</option></select></div>
-        <div class="field"><label>Status</label><select id="f-status"><option value="pending">Pendente</option><option value="paid">Pago</option><option value="late">Atrasado</option></select></div>
-      </div>
-      <input type="hidden" id="f-id">
-      <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
-        <button class="btn-primary" style="flex: 1" onclick="window.saveBill()">Salvar conta</button>
-        <button class="btn-secondary" style="flex: 1" onclick="window.closeModal()">Cancelar</button>
-      </div>
-    </div>
-  </div>
-</div>
+<script>
+  const API_BASE_URL = 'https://tobby-api.onrender.com/api';
+  const ADMIN_KEY = 'tobbyadmin2024';
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+  async function request(endpoint) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: { 'x-admin-key': ADMIN_KEY }
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error(`Erro ${endpoint}:`, error);
+      return null;
+    }
+  }
 
-<script src="api.js"></script>
-<script src="app.js"></script>
+  async function carregarMetricas() {
+    const metrics = await request('/admin/metrics');
+    if (metrics) {
+      document.getElementById('total-users').innerText = metrics.users?.total ?? '--';
+      document.getElementById('total-bills').innerText = metrics.bills?.total ?? '--';
+      document.getElementById('total-investments').innerText = metrics.investments?.total ?? '--';
+      document.getElementById('total-loans').innerText = metrics.loans?.total ?? '--';
+      if (metrics.users?.activeLast7Days !== undefined) {
+        document.getElementById('active-users').innerHTML = `Ativos últimos 7 dias: ${metrics.users.activeLast7Days}`;
+      }
+    }
+  }
+
+  async function carregarStatusIntegracoes() {
+    const diagnose = await request('/diagnose');
+    const groqConfigured = diagnose?.environment?.groq_key_configured === true;
+    const groqBadge = document.getElementById('groq-status-badge');
+    const groqDetail = document.getElementById('groq-status-detail');
+    if (groqConfigured) {
+      groqBadge.innerText = '✅ Ativa';
+      groqBadge.className = 'status-badge status-on';
+      groqDetail.innerHTML = 'Chave configurada e pronta para uso.';
+    } else {
+      groqBadge.innerText = '⚠️ Inativa';
+      groqBadge.className = 'status-badge status-warning';
+      groqDetail.innerHTML = 'Chave não configurada. Adicione GROQ_API_KEY.';
+    }
+
+    const health = await request('/admin/health');
+    const supabaseOk = health?.database?.connected === true;
+    const supabaseBadge = document.getElementById('supabase-status-badge');
+    const supabaseDetail = document.getElementById('supabase-status-detail');
+    const apiStatusSpan = document.getElementById('api-status-text');
+    if (supabaseOk) {
+      supabaseBadge.innerText = '✅ Online';
+      supabaseBadge.className = 'status-badge status-on';
+      supabaseDetail.innerHTML = `Conexão: Estabelecida. Latência: ${health.database.latency}ms`;
+      apiStatusSpan.innerHTML = '✅ API Online';
+      apiStatusSpan.style.color = '#10B981';
+    } else {
+      supabaseBadge.innerText = '❌ Offline';
+      supabaseBadge.className = 'status-badge status-off';
+      supabaseDetail.innerHTML = 'Conexão: Falhou. Verifique SUPABASE_URL/KEY.';
+      apiStatusSpan.innerHTML = '❌ API Offline';
+      apiStatusSpan.style.color = '#F87171';
+    }
+  }
+
+  async function carregarTodosOsDados() {
+    await Promise.all([carregarMetricas(), carregarStatusIntegracoes()]);
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    carregarTodosOsDados();
+    setInterval(carregarTodosOsDados, 60000);
+  });
+</script>
 </body>
 </html>
