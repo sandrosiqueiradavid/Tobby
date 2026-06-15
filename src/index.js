@@ -5,11 +5,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// ===== MIDDLEWARES DE SEGURANÇA =====
-const { limiter, authLimiter, securityHeaders, adminAudit } = require('./middleware/security');
-
-app.use(securityHeaders);
-app.use(limiter);
+// ===== MIDDLEWARES BÁSICOS =====
 app.use(cors({
   origin: process.env.FRONTEND_URL || ['https://sandrosiqueiradavid.github.io', 'http://localhost:3000', '*'],
   credentials: true
@@ -38,7 +34,7 @@ app.use('/api/investment', require('./routes/investment'));
 app.use('/api/bank', require('./routes/bank'));
 app.use('/api/loans', require('./routes/loan'));
 app.use('/api/wealth', require('./routes/wealth'));
-app.use('/api/admin', adminAudit, require('./routes/admin'));
+app.use('/api/admin', require('./routes/admin'));
 app.use('/api/memory', require('./routes/memory'));
 app.use('/api/simulator', require('./routes/simulator'));
 app.use('/api/ai', require('./routes/ai'));
@@ -54,10 +50,11 @@ app.use('/api/timeline', require('./routes/timeline').router);
 app.use('/api/radar', require('./routes/radar'));
 app.use('/api/dream-simulator', require('./routes/dreamSimulator'));
 app.use('/api/family', require('./routes/family'));
+
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
   status: 'ok',
-  app: '🐶 Tobby API v6.1',
+  app: '🐶 Tobby API v7.0',
   supabase: !!process.env.SUPABASE_URL,
   encryption: !!process.env.ENCRYPTION_KEY,
   groq: !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345',
@@ -115,7 +112,7 @@ if (process.env.NODE_ENV === 'production' && process.env.RESEND_API_KEY) {
 // ===== INICIAR SERVIDOR =====
 app.listen(PORT, '0.0.0.0', () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(`🐶 Tobby API v6.1 rodando na porta ${PORT}`);
+  console.log(`🐶 Tobby API v7.0 rodando na porta ${PORT}`);
   console.log(`📍 Health: http://localhost:${PORT}/health`);
   console.log(`🔍 Diagnóstico: http://localhost:${PORT}/api/diagnose`);
   console.log(`🔐 Criptografia: ${process.env.ENCRYPTION_KEY ? '✅ ATIVA' : '❌ INATIVA'}`);
@@ -149,6 +146,9 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('  - /api/cash-forecast (previsão de caixa)');
   console.log('  - /api/monthly-report (relatório mensal)');
   console.log('  - /api/timeline (linha do tempo)');
+  console.log('  - /api/radar (radar financeiro)');
+  console.log('  - /api/dream-simulator (simulador de sonhos)');
+  console.log('  - /api/family (saúde financeira familiar)');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 
