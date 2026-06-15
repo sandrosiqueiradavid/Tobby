@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 10000;
 
 // ===== MIDDLEWARES BÁSICOS =====
 app.use(cors({
-  origin: true,  // Temporário para teste
+  origin: true,
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -16,7 +16,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // ===== VERIFICAÇÃO DE CRIPTOGRAFIA =====
 if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length !== 64) {
   console.warn('⚠️ ENCRYPTION_KEY não configurada corretamente!');
-  console.warn('💡 Gere uma chave com: node -e "console.log(crypto.randomBytes(32).toString(\'hex\'))"');
 }
 
 // ===== LOG DE REQUISIÇÕES =====
@@ -25,31 +24,49 @@ app.use((req, res, next) => {
   next();
 });
 
-// ===== ROTAS DA API =====
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/user', require('./routes/user'));
-app.use('/api/bills', require('./routes/bills'));
-app.use('/api/hollerith', require('./routes/hollerith'));
-app.use('/api/investment', require('./routes/investment'));
-app.use('/api/bank', require('./routes/bank'));
-app.use('/api/loans', require('./routes/loan'));
-app.use('/api/wealth', require('./routes/wealth'));
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/memory', require('./routes/memory'));
-app.use('/api/simulator', require('./routes/simulator'));
-app.use('/api/ai', require('./routes/ai'));
-app.use('/api/goals', require('./routes/financialGoals'));
-app.use('/api/emergency-fund', require('./routes/emergencyFund'));
-app.use('/api/score', require('./routes/financialScore'));
-app.use('/api/achievements', require('./routes/achievements'));
-app.use('/api/categories', require('./routes/categories'));
-app.use('/api/market-indicators', require('./routes/marketIndicators'));
-app.use('/api/cash-forecast', require('./routes/cashForecast'));
-app.use('/api/monthly-report', require('./routes/monthlyReport'));
-app.use('/api/timeline', require('./routes/timeline'));  // ← SEM .router
-app.use('/api/radar', require('./routes/radar'));
-app.use('/api/dream-simulator', require('./routes/dreamSimulator'));
-app.use('/api/family', require('./routes/family'));
+// ===== FUNÇÃO DE DEPURAÇÃO PARA ROTAS =====
+function addRoute(path, routePath) {
+  try {
+    console.log(`🔧 Carregando rota: ${path} -> ${routePath}`);
+    const route = require(routePath);
+    console.log(`   Tipo: ${typeof route}`);
+    if (typeof route === 'function' || route && typeof route === 'object' && route.handle) {
+      app.use(path, route);
+      console.log(`   ✅ Rota ${path} carregada com sucesso`);
+    } else {
+      console.error(`   ❌ ERRO: Rota ${path} não é uma função middleware válida`);
+      console.error(`   Tipo recebido: ${typeof route}`);
+    }
+  } catch (err) {
+    console.error(`   ❌ ERRO ao carregar ${path}:`, err.message);
+  }
+}
+
+// ===== ROTAS DA API (com depuração) =====
+addRoute('/api/auth', './routes/auth');
+addRoute('/api/user', './routes/user');
+addRoute('/api/bills', './routes/bills');
+addRoute('/api/hollerith', './routes/hollerith');
+addRoute('/api/investment', './routes/investment');
+addRoute('/api/bank', './routes/bank');
+addRoute('/api/loans', './routes/loan');
+addRoute('/api/wealth', './routes/wealth');
+addRoute('/api/admin', './routes/admin');
+addRoute('/api/memory', './routes/memory');
+addRoute('/api/simulator', './routes/simulator');
+addRoute('/api/ai', './routes/ai');
+addRoute('/api/goals', './routes/financialGoals');
+addRoute('/api/emergency-fund', './routes/emergencyFund');
+addRoute('/api/score', './routes/financialScore');
+addRoute('/api/achievements', './routes/achievements');
+addRoute('/api/categories', './routes/categories');
+addRoute('/api/market-indicators', './routes/marketIndicators');
+addRoute('/api/cash-forecast', './routes/cashForecast');
+addRoute('/api/monthly-report', './routes/monthlyReport');
+addRoute('/api/timeline', './routes/timeline');
+addRoute('/api/radar', './routes/radar');
+addRoute('/api/dream-simulator', './routes/dreamSimulator');
+addRoute('/api/family', './routes/family');
 
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
@@ -68,7 +85,6 @@ app.get('/health', (req, res) => res.json({
   memory: (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2) + ' MB'
 }));
 
-// ===== ENDPOINT DE DIAGNÓSTICO =====
 app.get('/api/diagnose', async (req, res) => {
   res.json({
     timestamp: new Date().toISOString(),
@@ -86,10 +102,8 @@ app.get('/api/diagnose', async (req, res) => {
   });
 });
 
-// ===== 404 =====
 app.use('*', (req, res) => res.status(404).json({ error: 'Rota não encontrada' }));
 
-// ===== TRATAMENTO DE ERROS GLOBAL =====
 app.use((err, req, res, next) => {
   console.error('🔥 Erro não tratado:', err);
   res.status(500).json({
@@ -98,7 +112,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ===== AGENDADOR DE RELATÓRIOS SEMANAIS =====
 if (process.env.NODE_ENV === 'production' && process.env.RESEND_API_KEY) {
   try {
     const { scheduleWeeklyReports } = require('./jobs/weeklyReportJob');
@@ -109,46 +122,9 @@ if (process.env.NODE_ENV === 'production' && process.env.RESEND_API_KEY) {
   }
 }
 
-// ===== INICIAR SERVIDOR =====
 app.listen(PORT, '0.0.0.0', () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log(`🐶 Tobby API v7.0 rodando na porta ${PORT}`);
-  console.log(`📍 Health: http://localhost:${PORT}/health`);
-  console.log(`🔍 Diagnóstico: http://localhost:${PORT}/api/diagnose`);
-  console.log(`🔐 Criptografia: ${process.env.ENCRYPTION_KEY ? '✅ ATIVA' : '❌ INATIVA'}`);
-  console.log(`🤖 Groq API: ${process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345' ? '✅ CONFIGURADA' : '⚠️ EM MODO DEMO'}`);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('📋 VARIÁVEIS DE AMBIENTE:');
-  console.log(`  SUPABASE_URL: ${process.env.SUPABASE_URL ? '✅' : '❌'}`);
-  console.log(`  SUPABASE_SECRET_KEY: ${process.env.SUPABASE_SECRET_KEY ? '✅' : '❌'}`);
-  console.log(`  JWT_SECRET: ${process.env.JWT_SECRET ? '✅' : '❌'}`);
-  console.log(`  ADMIN_KEY: ${process.env.ADMIN_KEY ? '✅' : '❌'}`);
-  console.log(`  ENCRYPTION_KEY: ${process.env.ENCRYPTION_KEY ? '✅' : '❌'}`);
-  console.log(`  GROQ_API_KEY: ${process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345' ? '✅' : '❌'}`);
-  console.log(`  RESEND_API_KEY: ${process.env.RESEND_API_KEY ? '✅' : '❌'}`);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🧠 Rotas ativas:');
-  console.log('  - /api/auth (autenticação)');
-  console.log('  - /api/user (perfil)');
-  console.log('  - /api/bills (contas)');
-  console.log('  - /api/investment (investimentos)');
-  console.log('  - /api/loans (financiamentos)');
-  console.log('  - /api/wealth (patrimônio)');
-  console.log('  - /api/memory (memória da IA)');
-  console.log('  - /api/simulator (simulador de decisões)');
-  console.log('  - /api/ai (chat e análise IA)');
-  console.log('  - /api/goals (metas financeiras)');
-  console.log('  - /api/emergency-fund (reserva de emergência)');
-  console.log('  - /api/score (score financeiro)');
-  console.log('  - /api/achievements (conquistas)');
-  console.log('  - /api/categories (categorias)');
-  console.log('  - /api/market-indicators (indicadores de mercado)');
-  console.log('  - /api/cash-forecast (previsão de caixa)');
-  console.log('  - /api/monthly-report (relatório mensal)');
-  console.log('  - /api/timeline (linha do tempo)');
-  console.log('  - /api/radar (radar financeiro)');
-  console.log('  - /api/dream-simulator (simulador de sonhos)');
-  console.log('  - /api/family (saúde financeira familiar)');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 
