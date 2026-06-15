@@ -35,18 +35,21 @@ app.use('/api/bank', require('./routes/bank'));
 app.use('/api/loans', require('./routes/loan'));
 app.use('/api/wealth', require('./routes/wealth'));
 app.use('/api/admin', require('./routes/admin'));
-app.use('/api/memory', require('./routes/memory'));
+app.use('/api/memory', require('./routes/memory'));  // ← apenas UMA vez
 app.use('/api/simulator', require('./routes/simulator'));
 app.use('/api/ai', require('./routes/ai'));
-app.use('/api/memory', require('./routes/memory'));
-app.use('/api/notifications', require('./routes/notifications').router);
 app.use('/api/goals', require('./routes/financialGoals'));
 app.use('/api/emergency-fund', require('./routes/emergencyFund'));
 app.use('/api/score', require('./routes/financialScore'));
+app.use('/api/achievements', require('./routes/achievements').router);
+
+// Opcional - se não tiver o arquivo, comente ou remova
+// app.use('/api/notifications', require('./routes/notifications').router);
+
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
   status: 'ok',
-  app: '🐶 Tobby API v5.1',
+  app: '🐶 Tobby API v6.0',  // ← atualizado para v6.0
   supabase: !!process.env.SUPABASE_URL,
   encryption: !!process.env.ENCRYPTION_KEY,
   groq: !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345',
@@ -104,7 +107,7 @@ if (process.env.NODE_ENV === 'production' && process.env.RESEND_API_KEY) {
 // ===== INICIAR SERVIDOR =====
 app.listen(PORT, '0.0.0.0', () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(`🐶 Tobby API rodando na porta ${PORT}`);
+  console.log(`🐶 Tobby API v6.0 rodando na porta ${PORT}`);
   console.log(`📍 Health: http://localhost:${PORT}/health`);
   console.log(`🔍 Diagnóstico: http://localhost:${PORT}/api/diagnose`);
   console.log(`🔐 Criptografia: ${process.env.ENCRYPTION_KEY ? '✅ ATIVA' : '❌ INATIVA'}`);
@@ -129,6 +132,10 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('  - /api/memory (memória da IA)');
   console.log('  - /api/simulator (simulador de decisões)');
   console.log('  - /api/ai (chat com Groq)');
+  console.log('  - /api/goals (metas financeiras)');
+  console.log('  - /api/emergency-fund (reserva de emergência)');
+  console.log('  - /api/score (score financeiro)');
+  console.log('  - /api/achievements (conquistas)');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 

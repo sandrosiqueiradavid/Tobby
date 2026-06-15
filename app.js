@@ -192,6 +192,9 @@ function navTo(tab) {
   });
   if (tab === 'home') {
     loadHome();
+    loadFinancialScore();
+    loadEmergencyFund();
+    loadGoals();
   }
   if (tab === 'bills') loadBills();
   if (tab === 'investments') loadInvestments();
@@ -203,73 +206,172 @@ function navTo(tab) {
   }
 }
 
-// ===== INDICADORES DE MERCADO =====
-async function loadMarketData() {
+// ===== SCORE FINANCEIRO =====
+async function loadFinancialScore() {
   try {
-    const response = await api.request('/market/indicators');
-    
-    if (!response.success) return;
-    
-    if (response.indicators.selic) {
-      document.getElementById('selic-value').textContent = `${response.indicators.selic.value}%`;
+    const response = await api.request('/score');
+    if (response.score) {
+      document.getElementById('score-value').innerHTML = `${response.score}<span style="font-size: 14px;">/100</span>`;
+      document.getElementById('score-label').innerHTML = response.classification.name;
+      document.getElementById('score-bar').style.width = `${response.score}%`;
+      
+      if (response.score >= 90) document.getElementById('score-emoji').innerHTML = '🏆';
+      else if (response.score >= 70) document.getElementById('score-emoji').innerHTML = '😊';
+      else if (response.score >= 50) document.getElementById('score-emoji').innerHTML = '🐶';
+      else if (response.score >= 30) document.getElementById('score-emoji').innerHTML = '🧐';
+      else document.getElementById('score-emoji').innerHTML = '😟';
     }
-    if (response.indicators.ipca) {
-      document.getElementById('ipca-value').textContent = `${response.indicators.ipca.value}%`;
-    }
-    if (response.indicators.dollar) {
-      document.getElementById('dollar-value').textContent = `R$ ${response.indicators.dollar.value}`;
-    }
-    
-    if (response.crypto) {
-      updateCryptoCard('btc', response.crypto.bitcoin);
-      updateCryptoCard('eth', response.crypto.ethereum);
-      updateCryptoCard('sol', response.crypto.solana);
-    }
-    
-    if (response.news && response.news.length) {
-      const newsContainer = document.getElementById('news-list');
-      newsContainer.innerHTML = response.news.map(news => `
-        <div class="news-item" onclick="window.open('${news.url}', '_blank')">
-          <div class="news-title">${escapeHtml(news.title)}</div>
-          <div class="news-description">${escapeHtml(news.description?.substring(0, 100) || '')}...</div>
-          <div class="news-source">${news.source} • ${new Date(news.publishedAt).toLocaleDateString('pt-BR')}</div>
-        </div>
-      `).join('');
-    }
-    
-    const updateTime = document.getElementById('market-update-time');
-    if (updateTime) {
-      const date = new Date(response.updatedAt);
-      updateTime.textContent = `Atualizado: ${date.toLocaleTimeString('pt-BR')}`;
-    }
-    
   } catch (error) {
-    console.error('Erro ao carregar dados de mercado:', error);
+    console.error('Erro ao carregar score:', error);
   }
 }
 
-function updateCryptoCard(coin, data) {
-  if (!data) return;
-  
-  const valueEl = document.getElementById(`${coin}-value`);
-  const changeEl = document.getElementById(`${coin}-change`);
-  
-  if (valueEl) {
-    valueEl.textContent = `R$ ${data.brl.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-  }
-  
-  if (changeEl) {
-    const change = data.change_24h;
-    const changeClass = change >= 0 ? 'positive' : 'negative';
-    const changeSign = change >= 0 ? '+' : '';
-    changeEl.textContent = `${changeSign}${change}%`;
-    changeEl.className = `stat-sub ${changeClass}`;
+// ===== RESERVA DE EMERGÊNCIA =====
+async function loadEmergencyFund() {
+  try {
+    const response = await api.request('/emergency-fund');
+    if (response) {
+      document.getElementById('emergency-amount').innerHTML = fmt(response.current_amount);
+      document.getElementById('emergency-months').innerHTML = `${response.months_of_safety} meses`;
+      document.getElementById('emergency-progress').style.width = `${response.progress}%`;
+      document.getElementById('emergency-recommended').innerHTML = `Recomendado: ${fmt(response.recommended_amount)}`;
+    }
+  } catch (error) {
+    console.error('Erro ao carregar reserva:', error);
   }
 }
 
-function refreshMarketData() {
-  showToast('🔄 Atualizando dados do mercado...');
-  loadMarketData();
+// ===== METAS FINANCEIRAS =====
+async function loadGoals() {
+  try {
+    const response = await api.request('/goals/goals');
+    const goals = response.goals || [];
+    const container = document.getElementById('goals-list');
+    
+    if (goals.length === 0) {
+      container.innerHTML = `
+        <div class="stat-card" style="text-align: center; cursor: pointer;" onclick="openGoalModal()">
+          <div style="font-size: 24px; margin-bottom: 8px;">🎯</div>
+          <div style="font-size: 13px; color: var(--text-secondary);">Crie sua primeira meta!</div>
+          <div style="font-size: 11px; color: var(--green); margin-top: 4px;">Clique para adicionar →</div>
+        </div>
+      `;
+      return;
+    }
+    
+    container.innerHTML = goals.map(goal => {
+      const progress = goal.progress || 0;
+      const remaining = goal.remaining || 0;
+      const monthlyNeeded = goal.monthly_needed || 0;
+      
+      return `
+        <div class="stat-card" style="margin-bottom: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div>
+              <div style="font-weight: 700;">${escapeHtml(goal.name)}</div>
+              <div style="font-size: 10px; color: var(--text-muted);">${new Date(goal.deadline).toLocaleDateString('pt-BR')}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 700;">${fmt(goal.current_amount)}</div>
+              <div style="font-size: 10px; color: var(--text-muted);">de ${fmt(goal.target_amount)}</div>
+            </div>
+          </div>
+          <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+            <div style="width: ${progress}%; height: 100%; background: var(--green); border-radius: 3px;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 10px;">
+            <span>${progress.toFixed(0)}% concluído</span>
+            <span>Faltam ${fmt(remaining)}</span>
+          </div>
+          ${monthlyNeeded > 0 ? `<div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">💰 Precisaria de ${fmt(monthlyNeeded)}/mês</div>` : ''}
+          <div style="display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end;">
+            <button class="chip" onclick="event.stopPropagation(); updateGoalProgress('${goal.id}')" style="font-size: 10px;">📈 Atualizar</button>
+            <button class="chip" onclick="event.stopPropagation(); deleteGoal('${goal.id}')" style="font-size: 10px; background: var(--red-bg);">🗑️ Remover</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Erro ao carregar metas:', error);
+  }
+}
+
+function openGoalModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3>🎯 Nova Meta Financeira</h3>
+      <div class="field"><label>Nome da meta</label><input type="text" id="goal-name" placeholder="Ex: Comprar moto, Viagem, Casa própria"></div>
+      <div class="field"><label>Valor alvo (R$)</label><input type="number" id="goal-target" step="0.01" placeholder="0,00"></div>
+      <div class="field"><label>Valor já guardado (R$)</label><input type="number" id="goal-current" step="0.01" placeholder="0,00" value="0"></div>
+      <div class="field"><label>Data limite</label><input type="date" id="goal-deadline"></div>
+      <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
+        <button class="btn-primary" style="flex: 1" onclick="saveGoal()">Salvar meta</button>
+        <button class="btn-secondary" style="flex: 1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+async function saveGoal() {
+  const name = document.getElementById('goal-name').value;
+  const target_amount = parseFloat(document.getElementById('goal-target').value);
+  const current_amount = parseFloat(document.getElementById('goal-current').value) || 0;
+  const deadline = document.getElementById('goal-deadline').value;
+  
+  if (!name || !target_amount || !deadline) {
+    showToast('Preencha todos os campos');
+    return;
+  }
+  
+  try {
+    await api.request('/goals/goals', {
+      method: 'POST',
+      body: JSON.stringify({ name, target_amount, current_amount, deadline })
+    });
+    showToast('Meta criada com sucesso! 🎯');
+    document.querySelector('.modal-overlay')?.remove();
+    loadGoals();
+  } catch (error) {
+    showToast('Erro ao criar meta');
+  }
+}
+
+async function updateGoalProgress(goalId) {
+  const newAmount = prompt('Digite o novo valor guardado (R$):');
+  if (newAmount === null) return;
+  
+  const current_amount = parseFloat(newAmount);
+  if (isNaN(current_amount)) {
+    showToast('Valor inválido');
+    return;
+  }
+  
+  try {
+    await api.request(`/goals/goals/${goalId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ current_amount })
+    });
+    showToast('Progresso atualizado! 📈');
+    loadGoals();
+  } catch (error) {
+    showToast('Erro ao atualizar progresso');
+  }
+}
+
+async function deleteGoal(goalId) {
+  if (!confirm('Tem certeza que deseja remover esta meta?')) return;
+  
+  try {
+    await api.request(`/goals/goals/${goalId}`, { method: 'DELETE' });
+    showToast('Meta removida');
+    loadGoals();
+  } catch (error) {
+    showToast('Erro ao remover meta');
+  }
 }
 
 // ===== HOME =====
@@ -650,7 +752,6 @@ async function sendMsg() {
     
     const reply = response.reply || 'Desculpe, não consegui processar sua mensagem.';
     document.getElementById('typing-ind').style.display = 'none';
-    // IMPORTANTE: NÃO usar escapeHtml para permitir formatação HTML da IA
     msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>${reply}</div>`;
     msgs.scrollTop = msgs.scrollHeight;
     
@@ -799,5 +900,7 @@ window.processHollerith = processHollerith;
 window.showBankExtractModal = showBankExtractModal;
 window.processBankExtract = processBankExtract;
 window.showIncomeReport = showIncomeReport;
-window.loadMarketData = loadMarketData;
-window.refreshMarketData = refreshMarketData;
+window.openGoalModal = openGoalModal;
+window.saveGoal = saveGoal;
+window.updateGoalProgress = updateGoalProgress;
+window.deleteGoal = deleteGoal;
