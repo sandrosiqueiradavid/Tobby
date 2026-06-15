@@ -11,7 +11,6 @@ async function generateMonthlyReport(userId, year, month) {
     const startDate = new Date(year, month, 1);
     const endDate = new Date(year, month + 1, 0);
     
-    // Buscar dados do usuário
     const { data: user } = await supabase
       .from('users')
       .select('name, salary_encrypted')
@@ -20,10 +19,9 @@ async function generateMonthlyReport(userId, year, month) {
     
     const salary = decryptNumber(user?.salary_encrypted) || 0;
     
-    // Buscar contas do mês
     const { data: bills } = await supabase
       .from('bills')
-      .select('value_encrypted, status, category')
+      .select('value_encrypted, status, category, created_at')
       .eq('user_id', userId);
     
     const billsWithValues = (bills || []).map(b => ({
@@ -32,18 +30,18 @@ async function generateMonthlyReport(userId, year, month) {
     }));
     
     const totalExpenses = billsWithValues.reduce((sum, b) => sum + b.value, 0);
-    const paidExpenses = billsWithValues
-      .filter(b => b.status === 'paid')
-      .reduce((sum, b) => sum + b.value, 0);
+    const paidExpenses = billsWithValues.filter(b => b.status === 'paid').reduce((sum, b) => sum + b.value, 0);
+    const pendingExpenses = billsWithValues.filter(b => b.status === 'pending').reduce((sum, b) => sum + b.value, 0);
+    const lateExpenses = billsWithValues.filter(b => b.status === 'late').reduce((sum, b) => sum + b.value, 0);
     
-    // Gastos por categoria
     const expensesByCategory = {};
     billsWithValues.forEach(b => {
       const cat = b.category || 'outros';
       expensesByCategory[cat] = (expensesByCategory[cat] || 0) + b.value;
     });
     
-    // Buscar mês anterior para comparação
+    const sortedCategories = Object.entries(expensesByCategory).sort((a, b) => b[1] - a[1]);
+    
     const prevMonth = month === 0 ? 11 : month - 1;
     const prevYear = month === 0 ? year - 1 : year;
     
@@ -55,48 +53,53 @@ async function generateMonthlyReport(userId, year, month) {
     const prevTotal = (prevBills || []).reduce((sum, b) => sum + decryptNumber(b.value_encrypted), 0);
     const expenseChange = prevTotal > 0 ? ((totalExpenses - prevTotal) / prevTotal) * 100 : 0;
     
-    // Buscar score atual
     const { data: scoreData } = await supabase
       .from('financial_score')
       .select('score')
       .eq('user_id', userId)
       .single();
     
-    // Buscar metas
     const { data: goals } = await supabase
       .from('financial_goals')
       .select('name, current_amount, target_amount')
       .eq('user_id', userId)
       .eq('status', 'active');
     
-    // Buscar reserva
     const { data: emergencyFund } = await supabase
       .from('emergency_fund')
       .select('current_amount')
       .eq('user_id', userId)
       .single();
     
-    const savings = emergencyFund?.current_amount || 0;
-    const savingsChange = savings - (emergencyFund?.current_amount || 0);
+    const savingsRate = salary > 0 ? ((salary - totalExpenses) / salary) * 100 : 0;
     
-    // Gerar carta personalizada
     let letter = '';
+    
     if (expenseChange < -5) {
-      letter = `🐶 PARABENS! Você reduziu seus gastos em ${Math.abs(expenseChange).toFixed(1)}% este mês! Continue assim!`;
+      letter = `🐶 PARABÉNS! Você reduziu seus gastos em ${Math.abs(expenseChange).toFixed(1)}% este mês! Continue assim! 🎉`;
     } else if (expenseChange > 5) {
-      letter = `🐶 Atenção: Seus gastos aumentaram ${expenseChange.toFixed(1)}% em relação ao mês passado. Vamos revisar juntos?`;
+      letter = `🐶 Atenção: Seus gastos aumentaram ${expenseChange.toFixed(1)}% em relação ao mês passado. Vamos revisar juntos? 📊`;
     } else {
-      letter = `🐶 Seus gastos estão estáveis. Ótimo trabalho mantendo o controle!`;
+      letter = `🐶 Seus gastos estão estáveis. Ótimo trabalho mantendo o controle! ✅`;
     }
     
-    if (savings > 0 && savingsChange > 0) {
-      letter += `\n\n💰 Sua reserva de emergência cresceu R$ ${savingsChange.toLocaleString('pt-BR')}! 🎉`;
+    if (savingsRate >= 20) {
+      letter += `\n\n💰 Você economizou ${savingsRate.toFixed(0)}% da sua renda este mês. Isso é excelente! 🏆`;
+    } else if (savingsRate < 10 && savingsRate > 0) {
+      letter += `\n\n⚠️ Sua taxa de economia está baixa (${savingsRate.toFixed(0)}%). Tente cortar gastos supérfluos.`;
     }
     
     if (goals && goals.length > 0) {
       const closestGoal = goals[0];
       const progress = (closestGoal.current_amount / closestGoal.target_amount) * 100;
-      letter += `\n\n🎯 Você está ${progress.toFixed(0)}% mais perto da sua meta "${closestGoal.name}"!`;
+      letter += `\n\n🎯 Você está ${progress.toFixed(0)}% mais perto da sua meta "${closestGoal.name}"! Continue assim!`;
+    }
+    
+    if (emergencyFund?.current_amount > 0) {
+      const monthsOfSafety = totalExpenses > 0 ? emergencyFund.current_amount / totalExpenses : 0;
+      if (monthsOfSafety >= 6) {
+        letter += `\n\n🏦 Sua reserva de emergência já cobre ${monthsOfSafety.toFixed(0)} meses de gastos. Parabéns pela segurança financeira!`;
+      }
     }
     
     const report = {
@@ -104,16 +107,20 @@ async function generateMonthlyReport(userId, year, month) {
       salary,
       total_expenses: totalExpenses,
       paid_expenses: paidExpenses,
-      savings_rate: salary > 0 ? ((salary - totalExpenses) / salary) * 100 : 0,
+      pending_expenses: pendingExpenses,
+      late_expenses: lateExpenses,
+      savings_rate: savingsRate.toFixed(1),
       free_balance: salary - totalExpenses,
       expenses_by_category: expensesByCategory,
-      expense_change_vs_last_month: expenseChange,
+      top_category: sortedCategories[0] ? { name: sortedCategories[0][0], value: sortedCategories[0][1] } : null,
+      expense_change_vs_last_month: expenseChange.toFixed(1),
       current_score: scoreData?.score || 0,
+      active_goals: goals?.length || 0,
+      emergency_fund: emergencyFund?.current_amount || 0,
       letter,
       generated_at: new Date().toISOString()
     };
     
-    // Salvar relatório
     await supabase
       .from('monthly_reports')
       .upsert({
@@ -132,10 +139,21 @@ async function generateMonthlyReport(userId, year, month) {
 router.get('/', async (req, res) => {
   try {
     const today = new Date();
-    const report = await generateMonthlyReport(req.userId, today.getFullYear(), today.getMonth());
+    const { year, month } = req.query;
+    
+    const reportYear = year ? parseInt(year) : today.getFullYear();
+    const reportMonth = month ? parseInt(month) : today.getMonth();
+    
+    const report = await generateMonthlyReport(req.userId, reportYear, reportMonth);
+    
+    if (!report) {
+      return res.status(500).json({ error: 'Erro ao gerar relatório' });
+    }
+    
     res.json(report);
   } catch (err) {
-    res.status(500).json({ error: 'Erro ao gerar relatório' });
+    console.error('Get report error:', err);
+    res.status(500).json({ error: 'Erro ao buscar relatório mensal' });
   }
 });
 
@@ -150,6 +168,7 @@ router.get('/history', async (req, res) => {
     
     res.json({ reports: reports?.map(r => r.report_data) || [] });
   } catch (err) {
+    console.error('Get report history error:', err);
     res.status(500).json({ error: 'Erro ao buscar histórico' });
   }
 });

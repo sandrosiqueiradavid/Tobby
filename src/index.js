@@ -5,19 +5,23 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+// ===== MIDDLEWARES DE SEGURANÇA =====
+const { limiter, authLimiter, securityHeaders, adminAudit } = require('./middleware/security');
+
+app.use(securityHeaders);
+app.use(limiter);
+app.use(cors({
+  origin: process.env.FRONTEND_URL || ['https://sandrosiqueiradavid.github.io', 'http://localhost:3000', '*'],
+  credentials: true
+}));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 // ===== VERIFICAÇÃO DE CRIPTOGRAFIA =====
 if (!process.env.ENCRYPTION_KEY || process.env.ENCRYPTION_KEY.length !== 64) {
   console.warn('⚠️ ENCRYPTION_KEY não configurada corretamente!');
   console.warn('💡 Gere uma chave com: node -e "console.log(crypto.randomBytes(32).toString(\'hex\'))"');
 }
-
-// ===== MIDDLEWARES =====
-app.use(cors({
-  origin: process.env.FRONTEND_URL || ['https://sandrosiqueiradavid.github.io', 'http://localhost:3000', '*'],
-  credentials: true
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // ===== LOG DE REQUISIÇÕES =====
 app.use((req, res, next) => {
@@ -34,24 +38,26 @@ app.use('/api/investment', require('./routes/investment'));
 app.use('/api/bank', require('./routes/bank'));
 app.use('/api/loans', require('./routes/loan'));
 app.use('/api/wealth', require('./routes/wealth'));
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/memory', require('./routes/memory'));  // ← apenas UMA vez
+app.use('/api/admin', adminAudit, require('./routes/admin'));
+app.use('/api/memory', require('./routes/memory'));
 app.use('/api/simulator', require('./routes/simulator'));
 app.use('/api/ai', require('./routes/ai'));
 app.use('/api/goals', require('./routes/financialGoals'));
 app.use('/api/emergency-fund', require('./routes/emergencyFund'));
 app.use('/api/score', require('./routes/financialScore'));
-app.use('/api/achievements', require('./routes/achievements').router);
+app.use('/api/achievements', require('./routes/achievements'));
+app.use('/api/categories', require('./routes/categories'));
+app.use('/api/market-indicators', require('./routes/marketIndicators'));
 app.use('/api/cash-forecast', require('./routes/cashForecast'));
 app.use('/api/monthly-report', require('./routes/monthlyReport'));
-app.use('/api/market-indicators', require('./routes/marketIndicators'));
 app.use('/api/timeline', require('./routes/timeline').router);
-app.use('/api/notifications', require('./routes/notifications').router);
-app.use('/api/categories', require('./routes/categories'));
+app.use('/api/radar', require('./routes/radar'));
+app.use('/api/dream-simulator', require('./routes/dreamSimulator'));
+app.use('/api/family', require('./routes/family'));
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
   status: 'ok',
-  app: '🐶 Tobby API v6.0',  // ← atualizado para v6.0
+  app: '🐶 Tobby API v6.1',
   supabase: !!process.env.SUPABASE_URL,
   encryption: !!process.env.ENCRYPTION_KEY,
   groq: !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345',
@@ -109,7 +115,7 @@ if (process.env.NODE_ENV === 'production' && process.env.RESEND_API_KEY) {
 // ===== INICIAR SERVIDOR =====
 app.listen(PORT, '0.0.0.0', () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(`🐶 Tobby API v6.0 rodando na porta ${PORT}`);
+  console.log(`🐶 Tobby API v6.1 rodando na porta ${PORT}`);
   console.log(`📍 Health: http://localhost:${PORT}/health`);
   console.log(`🔍 Diagnóstico: http://localhost:${PORT}/api/diagnose`);
   console.log(`🔐 Criptografia: ${process.env.ENCRYPTION_KEY ? '✅ ATIVA' : '❌ INATIVA'}`);
@@ -133,11 +139,16 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log('  - /api/wealth (patrimônio)');
   console.log('  - /api/memory (memória da IA)');
   console.log('  - /api/simulator (simulador de decisões)');
-  console.log('  - /api/ai (chat com Groq)');
+  console.log('  - /api/ai (chat e análise IA)');
   console.log('  - /api/goals (metas financeiras)');
   console.log('  - /api/emergency-fund (reserva de emergência)');
   console.log('  - /api/score (score financeiro)');
   console.log('  - /api/achievements (conquistas)');
+  console.log('  - /api/categories (categorias)');
+  console.log('  - /api/market-indicators (indicadores de mercado)');
+  console.log('  - /api/cash-forecast (previsão de caixa)');
+  console.log('  - /api/monthly-report (relatório mensal)');
+  console.log('  - /api/timeline (linha do tempo)');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 

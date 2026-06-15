@@ -52,7 +52,6 @@ body {
   transition: var(--transition);
 }
 
-/* Layout */
 .app-container {
   max-width: 500px;
   margin: 0 auto;
@@ -66,7 +65,6 @@ body {
   padding-bottom: 80px;
 }
 
-/* Bottom Navigation */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -122,7 +120,6 @@ body {
   font-weight: 600;
 }
 
-/* Top Bar */
 .topbar {
   display: flex;
   align-items: center;
@@ -197,7 +194,6 @@ body {
   cursor: pointer;
 }
 
-/* Balance Card */
 .balance-card {
   background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
   border-radius: var(--radius-xl);
@@ -260,7 +256,6 @@ body {
   color: var(--red);
 }
 
-/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -303,7 +298,6 @@ body {
   margin-top: 4px;
 }
 
-/* Chart Card */
 .chart-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -368,7 +362,6 @@ body {
   font-weight: 600;
 }
 
-/* Indicators */
 .indicators {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -399,7 +392,6 @@ body {
   font-size: 14px;
 }
 
-/* Transaction Items */
 .transaction-item {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -501,7 +493,6 @@ body {
   transform: scale(0.9);
 }
 
-/* Section Header */
 .section-header {
   display: flex;
   align-items: baseline;
@@ -521,7 +512,6 @@ body {
   font-weight: 600;
 }
 
-/* Toby Card */
 .toby-card {
   background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
   border-radius: var(--radius-xl);
@@ -568,7 +558,6 @@ body {
   color: var(--green);
 }
 
-/* Buttons */
 .btn-primary {
   width: 100%;
   padding: 14px;
@@ -611,7 +600,6 @@ body {
   cursor: pointer;
 }
 
-/* Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -692,7 +680,6 @@ body {
   gap: 0.75rem;
 }
 
-/* Auth */
 .auth-container {
   min-height: 100vh;
   display: flex;
@@ -735,7 +722,6 @@ body {
   color: transparent;
 }
 
-/* Filters */
 .filters {
   display: flex;
   gap: 0.5rem;
@@ -762,7 +748,6 @@ body {
   border-color: var(--green);
 }
 
-/* Chat */
 .chat-msgs {
   display: flex;
   flex-direction: column;
@@ -833,7 +818,6 @@ body {
   cursor: pointer;
 }
 
-/* Toast */
 .toast {
   position: fixed;
   bottom: 80px;
@@ -869,7 +853,6 @@ body {
   display: block;
 }
 
-/* Loading */
 #loading {
   position: fixed;
   top: 0;
@@ -896,7 +879,6 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -912,7 +894,6 @@ body {
   border-radius: 4px;
 }
 
-/* Score Card */
 .score-card {
   background: linear-gradient(135deg, var(--purple), var(--pink));
   margin-bottom: 1rem;
@@ -921,7 +902,6 @@ body {
   color: white;
 }
 
-/* Chips */
 .chip {
   padding: 4px 12px;
   border-radius: 20px;
@@ -938,7 +918,6 @@ body {
   transform: scale(0.95);
 }
 
-/* Category Badges */
 .category-badge {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -953,4 +932,63 @@ body {
 
 .category-badge:active {
   transform: scale(0.95);
+}
+
+.alert-card {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--red);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.alert-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: var(--orange);
+}
+
+.alert-info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: var(--blue);
+}
+
+.family-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.member-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.dream-progress {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.dream-progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 2px;
+  transition: width 0.3s;
 }

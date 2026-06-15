@@ -8,7 +8,6 @@ router.use(authMiddleware);
 
 async function calculateCashForecast(userId) {
   try {
-    // Buscar dados do usuário
     const { data: user } = await supabase
       .from('users')
       .select('salary_encrypted')
@@ -17,10 +16,11 @@ async function calculateCashForecast(userId) {
     
     const salary = decryptNumber(user?.salary_encrypted) || 0;
     
-    // Buscar contas do mês
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
+    const todayDay = today.getDate();
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     
     const { data: bills } = await supabase
       .from('bills')
@@ -32,43 +32,41 @@ async function calculateCashForecast(userId) {
       value: decryptNumber(b.value_encrypted)
     }));
     
-    // Calcular gastos já pagos
     const paidExpenses = billsWithValues
       .filter(b => b.status === 'paid')
       .reduce((sum, b) => sum + b.value, 0);
     
-    // Calcular gastos previstos para o resto do mês
-    const todayDay = today.getDate();
     const upcomingExpenses = billsWithValues
       .filter(b => b.status === 'pending' && b.due_day >= todayDay)
       .reduce((sum, b) => sum + b.value, 0);
     
     const totalExpenses = paidExpenses + upcomingExpenses;
-    
-    // Previsão de saldo final
     const finalBalance = salary - totalExpenses;
     
-    // Status da previsão
     let status = 'safe';
     let message = '';
+    let recommendation = '';
     
     if (finalBalance < 0) {
       status = 'critical';
       message = `⚠️ Atenção! Você pode ficar negativo em R$ ${Math.abs(finalBalance).toLocaleString('pt-BR')}`;
+      recommendation = 'Reduza gastos imediatamente ou busque renda extra.';
     } else if (finalBalance < salary * 0.1) {
       status = 'warning';
       message = `🐶 Cuidado! Seu saldo previsto é de apenas ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalBalance)}`;
+      recommendation = 'Evite compras não essenciais até o fim do mês.';
     } else {
       message = `✅ Previsão positiva! Você deve terminar o mês com ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(finalBalance)}`;
+      recommendation = finalBalance > salary * 0.3 ? 'Que tal investir parte desse valor?' : 'Continue no controle!';
     }
     
-    // Registrar previsão no banco
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const forecastDate = new Date(currentYear, currentMonth, lastDayOfMonth);
+    
     await supabase
       .from('cash_forecast')
       .upsert({
         user_id: userId,
-        forecast_date: lastDay,
+        forecast_date: forecastDate,
         expected_balance: finalBalance,
         confidence: 85
       }, { onConflict: 'user_id,forecast_date' });
@@ -81,8 +79,10 @@ async function calculateCashForecast(userId) {
       final_balance: finalBalance,
       status,
       message,
+      recommendation,
       today: todayDay,
-      days_left: new Date(currentYear, currentMonth + 1, 0).getDate() - todayDay
+      days_left: lastDayOfMonth - todayDay,
+      forecast_date: forecastDate.toISOString().split('T')[0]
     };
   } catch (err) {
     console.error('Cash forecast error:', err);
@@ -93,9 +93,13 @@ async function calculateCashForecast(userId) {
 router.get('/', async (req, res) => {
   try {
     const forecast = await calculateCashForecast(req.userId);
+    if (!forecast) {
+      return res.status(500).json({ error: 'Erro ao calcular previsão' });
+    }
     res.json(forecast);
   } catch (err) {
-    res.status(500).json({ error: 'Erro ao calcular previsão' });
+    console.error('Get forecast error:', err);
+    res.status(500).json({ error: 'Erro ao calcular previsão de caixa' });
   }
 });
 

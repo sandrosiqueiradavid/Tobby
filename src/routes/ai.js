@@ -3,6 +3,7 @@ const router = express.Router();
 const supabase = require('../db/supabase');
 const { decryptNumber } = require('../utils/crypto');
 const authMiddleware = require('../middleware/auth');
+const { addTimelineEvent } = require('./timeline');
 
 router.use(authMiddleware);
 
@@ -157,7 +158,7 @@ router.post('/chat', async (req, res) => {
   }
 });
 
-// ===== ANÁLISE FINANCEIRA PROFUNDA =====
+// ===== ANALISE FINANCEIRA PROFUNDA =====
 router.post('/analyze', async (req, res) => {
   try {
     const { data: user } = await supabase
@@ -246,6 +247,15 @@ ${goals && goals.length > 0 ? goals.map(g => `• ${g.name}: ${((g.current_amoun
       analysis += `📌 Seus gastos com "${mainCategory[0]}" representam ${((mainCategory[1] / totalExpenses) * 100).toFixed(0)}% do total.<br>`;
     }
     
+    await supabase
+      .from('audit_log')
+      .insert({
+        user_id: req.userId,
+        action: 'AI_ANALYSIS',
+        table_name: 'financial_analysis',
+        new_value: { savings_rate: savingsRate, score: scoreData?.score }
+      });
+    
     res.json({ analysis });
   } catch (error) {
     console.error('Erro na análise:', error);
@@ -253,11 +263,11 @@ ${goals && goals.length > 0 ? goals.map(g => `• ${g.name}: ${((g.current_amoun
   }
 });
 
-// ===== REVISÃO MENSAL =====
+// ===== REVISAO MENSAL AUTOMATICA =====
 router.post('/monthly-review', async (req, res) => {
   try {
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const today = new Date();
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     
     const { data: previousScore } = await supabase
       .from('financial_timeline')
@@ -273,7 +283,27 @@ router.post('/monthly-review', async (req, res) => {
       .eq('user_id', req.userId)
       .single();
     
+    const { data: goals } = await supabase
+      .from('financial_goals')
+      .select('name, current_amount, target_amount')
+      .eq('user_id', req.userId)
+      .eq('status', 'active');
+    
+    const { data: bills } = await supabase
+      .from('bills')
+      .select('value_encrypted')
+      .eq('user_id', req.userId);
+    
+    const totalExpenses = (bills || []).reduce((sum, b) => sum + decryptNumber(b.value_encrypted), 0);
+    
     const scoreChange = (currentScore?.score || 0) - (previousScore?.[0]?.score || 0);
+    
+    let progressText = '';
+    if (goals && goals.length > 0) {
+      const closestGoal = goals[0];
+      const progress = (closestGoal.current_amount / closestGoal.target_amount) * 100;
+      progressText = `\n\n🎯 Você está ${progress.toFixed(0)}% mais perto da sua meta "${closestGoal.name}"!`;
+    }
     
     const review = `
 🐶 **REVISÃO MENSAL - ${lastMonth.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}**
@@ -283,24 +313,32 @@ router.post('/monthly-review', async (req, res) => {
 • Score atual: ${currentScore?.score || '--'}
 • Variação: ${scoreChange > 0 ? '+' : ''}${scoreChange}
 
+💰 **GASTOS DO MÊS:**
+• Total: R$ ${totalExpenses.toLocaleString('pt-BR')}
+
+${progressText}
+
 🎯 **PRÓXIMOS PASSOS:**
 ${currentScore?.score >= 70 ? 'Continue com o bom trabalho! 🎉' : 'Foque em reduzir gastos e aumentar sua reserva de emergência.'}
 
 🐶 Tobby
     `;
     
+    await addTimelineEvent(req.userId, 'monthly_review', `Revisão Mensal - ${lastMonth.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`, review, previousScore?.[0]?.score, currentScore?.score, currentScore?.score);
+    
     res.json({ review });
   } catch (err) {
+    console.error('Erro na revisão mensal:', err);
     res.status(500).json({ error: 'Erro ao gerar revisão mensal' });
   }
 });
 
-// ===== INSIGHTS DIÁRIOS =====
+// ===== INSIGHTS DIARIOS =====
 router.post('/daily-insights', async (req, res) => {
   try {
     const { data: bills } = await supabase
       .from('bills')
-      .select('value_encrypted, status, due_day')
+      .select('value_encrypted, status, due_day, name')
       .eq('user_id', req.userId)
       .eq('status', 'pending');
     
@@ -308,15 +346,37 @@ router.post('/daily-insights', async (req, res) => {
     const upcomingBills = (bills || []).filter(b => b.due_day >= today && b.due_day <= today + 3);
     const upcomingTotal = upcomingBills.reduce((sum, b) => sum + decryptNumber(b.value_encrypted), 0);
     
+    const { data: score } = await supabase
+      .from('financial_score')
+      .select('score')
+      .eq('user_id', req.userId)
+      .single();
+    
     let insight = '';
+    
     if (upcomingBills.length > 0) {
-      insight = `🐶 **INSIGHT DO DIA**\n\nVocê tem ${upcomingBills.length} conta(s) a vencer nos próximos 3 dias, totalizando R$ ${upcomingTotal.toLocaleString('pt-BR')}. Programe-se!`;
+      const billNames = upcomingBills.map(b => b.name).slice(0, 3).join(', ');
+      insight = `🐶 **INSIGHT DO DIA**\n\n📋 Você tem ${upcomingBills.length} conta(s) a vencer nos próximos 3 dias:\n${billNames}${upcomingBills.length > 3 ? ` e mais ${upcomingBills.length - 3}` : ''}\n\n💰 Total: R$ ${upcomingTotal.toLocaleString('pt-BR')}\n\n✅ Programe-se para não esquecer!`;
     } else {
-      insight = `🐶 **INSIGHT DO DIA**\n\nNenhuma conta a vencer nos próximos dias. Que tal adiantar uma meta ou investir um pouco hoje?`;
+      const tips = [
+        `🐶 **INSIGHT DO DIA**\n\nNenhuma conta a vencer nos próximos dias. Que tal adiantar uma meta ou investir um pouco hoje? 💰`,
+        `🐶 **INSIGHT DO DIA**\n\nSeu score atual é ${score?.score || 0}/100. Para melhorar, mantenha suas contas em dia e construa uma reserva de emergência! 📈`,
+        `🐶 **INSIGHT DO DIA**\n\nDica rápida: Separe 20% da sua renda para investimentos e emergências antes de qualquer gasto! 🎯`
+      ];
+      insight = tips[Math.floor(Math.random() * tips.length)];
     }
+    
+    await supabase
+      .from('audit_log')
+      .insert({
+        user_id: req.userId,
+        action: 'DAILY_INSIGHT',
+        table_name: 'daily_insights'
+      });
     
     res.json({ insight });
   } catch (err) {
+    console.error('Erro no insight diário:', err);
     res.status(500).json({ error: 'Erro ao gerar insight diário' });
   }
 });

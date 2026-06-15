@@ -1,48 +1,100 @@
 const express = require('express');
 const router = express.Router();
+const authMiddleware = require('../middleware/auth');
 
-// Cache para não sobrecarregar APIs
-let cache = {};
-let lastUpdate = null;
+router.use(authMiddleware);
 
-async function fetchWithCache(url, key, ttl = 3600000) { // 1 hora
-  if (cache[key] && lastUpdate && (Date.now() - lastUpdate) < ttl) {
-    return cache[key];
-  }
-  
+let cache = {
+  indicators: null,
+  lastUpdate: null
+};
+
+const CACHE_TTL = 3600000;
+
+async function fetchWithCache(url, key) {
   try {
     const response = await fetch(url);
     const data = await response.json();
-    cache[key] = data;
-    lastUpdate = Date.now();
     return data;
   } catch (error) {
     console.error(`Erro ao buscar ${key}:`, error);
-    return cache[key] || null;
+    return null;
   }
+}
+
+async function getSelic() {
+  const data = await fetchWithCache('https://api.bcb.gov.br/dados/serie/bcdata.sgs.11/dados?formato=json', 'selic');
+  if (data && data.length > 0) {
+    return parseFloat(data[data.length - 1].valor).toFixed(2);
+  }
+  return '13.25';
+}
+
+async function getIPCA() {
+  const data = await fetchWithCache('https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json', 'ipca');
+  if (data && data.length > 0) {
+    return parseFloat(data[data.length - 1].valor).toFixed(2);
+  }
+  return '4.50';
+}
+
+async function getDollar() {
+  const data = await fetchWithCache('https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados?formato=json', 'dollar');
+  if (data && data.length > 0) {
+    return parseFloat(data[data.length - 1].valor).toFixed(2);
+  }
+  return '5.75';
+}
+
+async function getBitcoin() {
+  const data = await fetchWithCache('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl', 'bitcoin');
+  if (data && data.bitcoin) {
+    return data.bitcoin.brl;
+  }
+  return 350000;
+}
+
+async function getEthereum() {
+  const data = await fetchWithCache('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=brl', 'ethereum');
+  if (data && data.ethereum) {
+    return data.ethereum.brl;
+  }
+  return 18000;
 }
 
 router.get('/', async (req, res) => {
   try {
-    const [selic, ipca, dollar, bitcoin] = await Promise.all([
-      fetchWithCache('https://api.bcb.gov.br/dados/serie/bcdata.sgs.11/dados?formato=json', 'selic'),
-      fetchWithCache('https://api.bcb.gov.br/dados/serie/bcdata.sgs.433/dados?formato=json', 'ipca'),
-      fetchWithCache('https://api.bcb.gov.br/dados/serie/bcdata.sgs.1/dados?formato=json', 'dollar'),
-      fetchWithCache('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl', 'bitcoin')
+    const now = Date.now();
+    
+    if (cache.indicators && cache.lastUpdate && (now - cache.lastUpdate) < CACHE_TTL) {
+      return res.json(cache.indicators);
+    }
+    
+    const [selic, ipca, dollar, bitcoin, ethereum] = await Promise.all([
+      getSelic(),
+      getIPCA(),
+      getDollar(),
+      getBitcoin(),
+      getEthereum()
     ]);
     
     const indicators = {
+      success: true,
       updated_at: new Date().toISOString(),
-      selic: selic && selic.length > 0 ? parseFloat(selic[selic.length - 1].valor).toFixed(2) : '--',
-      ipca: ipca && ipca.length > 0 ? parseFloat(ipca[ipca.length - 1].valor).toFixed(2) : '--',
-      dollar: dollar && dollar.length > 0 ? parseFloat(dollar[dollar.length - 1].valor).toFixed(2) : '--',
-      bitcoin: bitcoin?.bitcoin?.brl ? `R$ ${bitcoin.bitcoin.brl.toLocaleString('pt-BR')}` : '--'
+      selic: `${selic}%`,
+      ipca: `${ipca}%`,
+      dollar: `R$ ${dollar}`,
+      bitcoin: `R$ ${bitcoin.toLocaleString('pt-BR')}`,
+      ethereum: `R$ ${ethereum.toLocaleString('pt-BR')}`
     };
+    
+    cache.indicators = indicators;
+    cache.lastUpdate = now;
     
     res.json(indicators);
   } catch (error) {
     console.error('Erro ao buscar indicadores:', error);
-    res.status(500).json({ error: 'Erro ao buscar indicadores' });
+    res.status(500).json({ error: 'Erro ao buscar indicadores de mercado' });
   }
 });
 
