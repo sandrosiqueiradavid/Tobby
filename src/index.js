@@ -56,7 +56,7 @@ addRoute('/api/memory', './routes/memory');
 addRoute('/api/simulator', './routes/simulator');
 addRoute('/api/ai', './routes/ai');
 addRoute('/api/goals', './routes/financialGoals');
-addRoute('/api/emergency-fund', './routes/emergencyFund');
+addRoute('/api/emergency-fund', './routes/emergency-fund');  // ← CORRIGIDO
 addRoute('/api/score', './routes/financialScore');
 addRoute('/api/achievements', './routes/achievements');
 addRoute('/api/categories', './routes/categories');
