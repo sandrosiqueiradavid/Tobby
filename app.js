@@ -1,959 +1,586 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-:root {
-  --bg-primary: #0F172A;
-  --bg-secondary: #1E293B;
-  --bg-card: #334155;
-  --bg-card-hover: #475569;
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
-  --border: #334155;
-  --green: #10B981;
-  --green-dark: #059669;
-  --red: #EF4444;
-  --red-dark: #DC2626;
-  --blue: #3B82F6;
-  --purple: #8B5CF6;
-  --orange: #F59E0B;
-  --pink: #EC4899;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
-  --transition: all 0.2s ease;
-}
-
-body.light-theme {
-  --bg-primary: #F1F5F9;
-  --bg-secondary: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #F8FAFC;
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
-  --border: #E2E8F0;
-}
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  min-height: 100vh;
-  transition: var(--transition);
-}
-
-/* Layout */
-.app-container {
-  max-width: 500px;
-  margin: 0 auto;
-  position: relative;
-  min-height: 100vh;
-  background: var(--bg-primary);
-}
-
-.content {
-  padding: 1rem;
-  padding-bottom: 80px;
-}
-
-/* Bottom Navigation */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-secondary);
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: center;
-  padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
-  z-index: 100;
-  backdrop-filter: blur(10px);
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-.nav-container {
-  display: flex;
-  gap: 0.25rem;
-  width: 100%;
-  justify-content: space-around;
-}
-
-.nav-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 0.5rem;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition);
-  color: var(--text-muted);
-  max-width: 70px;
-}
-
-.nav-item.active {
-  color: var(--green);
-  background: rgba(16, 185, 129, 0.1);
-}
-
-.nav-item:active {
-  transform: scale(0.95);
-}
-
-.nav-icon {
-  font-size: 22px;
-}
-
-.nav-label {
-  font-size: 10px;
-  font-weight: 600;
-}
-
-/* Top Bar */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.topbar-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--green), var(--blue));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.topbar-name {
-  font-size: 18px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--green), var(--blue));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.icon-btn:active {
-  transform: scale(0.95);
-}
-
-.avatar-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--purple), var(--pink));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-/* Balance Card */
-.balance-card {
-  background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
-  border-radius: var(--radius-xl);
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-lg);
-}
-
-.balance-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.balance-value {
-  font-size: 36px;
-  font-weight: 800;
-  line-height: 1;
-  margin-bottom: 1rem;
-  color: var(--green);
-}
-
-.balance-date {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 1rem;
-}
-
-.balance-details {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  border-top: 1px solid var(--border);
-  padding-top: 1rem;
-}
-
-.balance-detail {
-  flex: 1;
-}
-
-.balance-detail-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-
-.balance-detail-value {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.balance-detail-value.positive {
-  color: var(--green);
-}
-
-.balance-detail-value.negative {
-  color: var(--red);
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1rem;
-}
-
-.stat-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
-  font-size: 18px;
-}
-
-.stat-label {
-  font-size: 10px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-}
-
-.stat-value {
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.stat-sub {
-  font-size: 9px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-/* Chart Card */
-.chart-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.chart-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.chart-container {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.donut {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: conic-gradient(
-    var(--blue) 0deg 198deg,
-    var(--green) 198deg 263deg,
-    var(--orange) 263deg 317deg,
-    var(--purple) 317deg 360deg
-  );
-  flex-shrink: 0;
-}
-
-.chart-legend {
-  flex: 1;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  font-size: 12px;
-}
-
-.legend-color {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.legend-label {
-  flex: 1;
-  color: var(--text-secondary);
-}
-
-.legend-value {
-  font-weight: 600;
-}
-
-/* Indicators */
-.indicators {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.indicator-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 0.75rem;
-  text-align: center;
-}
-
-.indicator-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-
-.indicator-value {
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.indicator-value.small {
-  font-size: 14px;
-}
-
-/* Transaction Items */
-.transaction-item {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 0.875rem;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  transition: var(--transition);
-  cursor: pointer;
-}
-
-.transaction-item:active {
-  transform: scale(0.99);
-  background: var(--bg-card-hover);
-}
-
-.transaction-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.transaction-info {
-  flex: 1;
-}
-
-.transaction-name {
-  font-size: 14px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.transaction-meta {
-  font-size: 10px;
-  color: var(--text-secondary);
-}
-
-.transaction-right {
-  text-align: right;
-}
-
-.transaction-value {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.transaction-value.income {
-  color: var(--green);
-}
-
-.transaction-value.expense {
-  color: var(--red);
-}
-
-.transaction-status {
-  font-size: 9px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  margin-top: 4px;
-  display: inline-block;
-}
-
-.status-paid {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--green);
-}
-
-.status-pending {
-  background: rgba(245, 158, 11, 0.1);
-  color: var(--orange);
-}
-
-.status-late {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--red);
-}
-
-.transaction-actions {
-  display: flex;
-  gap: 8px;
-  margin-left: 8px;
-}
-
-.transaction-action {
-  font-size: 16px;
-  cursor: pointer;
-  padding: 4px;
-  opacity: 0.6;
-}
-
-.transaction-action:active {
-  transform: scale(0.9);
-}
-
-/* Section Header */
-.section-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-}
-
-.section-header h3 {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.section-header a {
-  font-size: 11px;
-  color: var(--green);
-  cursor: pointer;
-  font-weight: 600;
-}
-
-/* Toby Card */
-.toby-card {
-  background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
-  border-radius: var(--radius-xl);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid var(--border);
-}
-
-.toby-avatar {
-  font-size: 48px;
-  background: var(--bg-primary);
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.toby-message {
-  flex: 1;
-}
-
-.toby-message p {
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.toby-message small {
-  font-size: 10px;
-  color: var(--text-secondary);
-}
-
-.toby-badge {
-  background: rgba(16, 185, 129, 0.1);
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--green);
-}
-
-/* Buttons */
-.btn-primary {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--green), var(--green-dark));
-  border: none;
-  border-radius: var(--radius-md);
-  color: white;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.btn-primary:active {
-  transform: scale(0.98);
-}
-
-.btn-secondary {
-  width: 100%;
-  padding: 13px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  font-family: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.btn-danger {
-  width: 100%;
-  padding: 14px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--red);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 200;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.modal {
-  background: var(--bg-secondary);
-  border-radius: 24px 24px 0 0;
-  padding: 1.5rem;
-  width: 100%;
-  max-width: 500px;
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
-@media (min-width: 768px) {
-  .modal-overlay {
-    align-items: center;
-  }
-  .modal {
-    border-radius: 24px;
-    margin: 1rem;
+// TOBBY - APP PRINCIPAL
+// Versao 7.0
+
+// ===== CONSTANTS =====
+const CATS = {
+  moradia: { e: '🏠', bg: '#3D0F14' },
+  alimentacao: { e: '🍽️', bg: '#3D2A0A' },
+  saude: { e: '🏥', bg: '#0D2040' },
+  transporte: { e: '🚗', bg: '#1F1540' },
+  lazer: { e: '🎮', bg: '#0F3D25' },
+  educacao: { e: '📚', bg: '#1F1540' },
+  tecnologia: { e: '💻', bg: '#0D2040' },
+  financeiro: { e: '💳', bg: '#3D0F14' },
+  outros: { e: '📦', bg: '#2A3050' }
+};
+
+let currentUser = null;
+let allBills = [];
+let currentFilter = 'all';
+let resetToken = null;
+let allCategories = [];
+
+// ===== UTILS =====
+function fmt(v) { 
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); 
+}
+
+function showToast(msg) { 
+  const t = document.getElementById('toast'); 
+  t.textContent = msg; 
+  t.classList.add('show'); 
+  setTimeout(() => t.classList.remove('show'), 2800); 
+}
+
+function escapeHtml(text) { 
+  if (!text) return ''; 
+  const div = document.createElement('div'); 
+  div.textContent = text; 
+  return div.innerHTML; 
+}
+
+function closeModal() { 
+  document.getElementById('modal').style.display = 'none'; 
+  const modals = document.querySelectorAll('.modal-overlay'); 
+  modals.forEach(m => { 
+    if (m !== document.getElementById('modal').querySelector('.modal-overlay')) m.remove(); 
+  }); 
+}
+
+// ===== THEME =====
+function initTheme() {
+  const saved = localStorage.getItem('tobby_theme') || 'dark';
+  document.body.classList.toggle('light-theme', saved === 'light');
+  updateThemeIcon(saved);
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.contains('light-theme');
+  const newTheme = isLight ? 'dark' : 'light';
+  document.body.classList.toggle('light-theme', newTheme === 'light');
+  localStorage.setItem('tobby_theme', newTheme);
+  updateThemeIcon(newTheme);
+}
+
+function updateThemeIcon(theme) {
+  const icon = document.getElementById('theme-icon');
+  if (icon) {
+    icon.className = theme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
   }
 }
 
-.modal-handle {
-  width: 40px;
-  height: 4px;
-  background: var(--border);
-  border-radius: 99px;
-  margin: 0 auto 1rem;
+// ===== SCREENS =====
+function showScreen(id) { 
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
+  document.getElementById(id).classList.add('active'); 
 }
 
-.modal h3 {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 1.25rem;
+function showLogin() { 
+  document.getElementById('login-card').style.display = 'block'; 
+  document.getElementById('register-card').style.display = 'none'; 
+  document.getElementById('forgot-card').style.display = 'none'; 
+  document.getElementById('reset-card').style.display = 'none'; 
 }
 
-.field {
-  margin-bottom: 1rem;
+function showRegister() { 
+  document.getElementById('login-card').style.display = 'none'; 
+  document.getElementById('register-card').style.display = 'block'; 
+  document.getElementById('forgot-card').style.display = 'none'; 
+  document.getElementById('reset-card').style.display = 'none'; 
 }
 
-.field label {
-  display: block;
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-  font-weight: 600;
-  text-transform: uppercase;
+function showForgotPassword() { 
+  document.getElementById('login-card').style.display = 'none'; 
+  document.getElementById('register-card').style.display = 'none'; 
+  document.getElementById('forgot-card').style.display = 'block'; 
+  document.getElementById('reset-card').style.display = 'none'; 
 }
 
-.field input, .field select, textarea {
-  width: 100%;
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
+// ===== AUTH =====
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pwd = document.getElementById('login-pwd').value;
+  if (!email || !pwd) { showToast('Preencha e-mail e senha'); return; }
+  try {
+    const user = await api.login(email, pwd);
+    currentUser = user;
+    document.getElementById('login-err').style.display = 'none';
+    enterApp();
+  } catch (e) {
+    const errDiv = document.getElementById('login-err');
+    errDiv.style.display = 'block';
+    errDiv.textContent = e.message || 'E-mail ou senha inválidos';
+  }
 }
 
-.field input:focus, .field select:focus, textarea:focus {
-  outline: none;
-  border-color: var(--green);
+async function doRegister() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pwd = document.getElementById('reg-pwd').value;
+  const salary = parseFloat(document.getElementById('reg-salary').value) || 0;
+  if (!name || !email || !pwd) { showToast('Preencha todos os campos'); return; }
+  try {
+    const user = await api.register(name, email, pwd, salary);
+    currentUser = user;
+    enterApp();
+  } catch (e) {
+    const errDiv = document.getElementById('reg-err');
+    errDiv.style.display = 'block';
+    errDiv.textContent = e.message || 'Erro ao criar conta';
+  }
 }
 
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+async function doForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { showToast('Digite seu e-mail'); return; }
+  try {
+    const data = await api.forgotPassword(email);
+    const successDiv = document.getElementById('forgot-success');
+    successDiv.style.display = 'block';
+    successDiv.innerHTML = '📧 ' + data.message;
+    setTimeout(() => showLogin(), 3000);
+  } catch (e) {
+    document.getElementById('forgot-err').style.display = 'block';
+    document.getElementById('forgot-err').textContent = e.message;
+  }
 }
 
-/* Auth */
-.auth-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
+async function doResetPassword() {
+  const newPassword = document.getElementById('reset-pwd').value;
+  const confirmPassword = document.getElementById('reset-pwd-confirm').value;
+  if (!newPassword || !confirmPassword) { showToast('Preencha ambos os campos'); return; }
+  if (newPassword !== confirmPassword) { showToast('Senhas não coincidem'); return; }
+  if (newPassword.length < 6) { showToast('Mínimo 6 caracteres'); return; }
+  try {
+    await api.resetPassword(resetToken, newPassword);
+    alert('Senha redefinida com sucesso!');
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showLogin();
+  } catch (e) {
+    showToast(e.message || 'Erro ao redefinir');
+  }
 }
 
-.auth-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: 2rem;
-  width: 100%;
-  max-width: 400px;
+function doLogout() {
+  api.clearToken();
+  currentUser = null;
+  showScreen('auth');
+  showLogin();
 }
 
-.auth-logo {
-  text-align: center;
-  margin-bottom: 2rem;
+function updateUserUI() {
+  if (!currentUser) return;
+  const initials = currentUser.name.split(' ').map(x => x[0]).join('').substring(0, 2).toUpperCase();
+  document.getElementById('top-avatar').textContent = initials;
+  document.getElementById('prof-av').textContent = initials;
+  document.getElementById('prof-name').textContent = currentUser.name;
+  document.getElementById('prof-email').textContent = currentUser.email;
+  document.getElementById('prof-salary').textContent = fmt(currentUser.salary);
 }
 
-.logo-mark {
-  width: 64px;
-  height: 64px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, var(--green), var(--blue));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  margin: 0 auto 1rem;
+async function enterApp() {
+  showScreen('app');
+  updateUserUI();
+  navTo('home');
 }
 
-.logo-title {
-  font-size: 28px;
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--green), var(--blue));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+// ===== NAVIGATION =====
+const TABS = ['home', 'bills', 'investments', 'loans', 'wealth', 'ai', 'profile'];
+
+function navTo(tab) {
+  TABS.forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    const nav = document.getElementById('nav-' + t);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+    if (nav) nav.classList.toggle('active', t === tab);
+  });
+  if (tab === 'home') {
+    loadHome();
+    loadFinancialScore();
+    loadEmergencyFund();
+    loadGoals();
+  }
+  if (tab === 'bills') loadBills();
+  if (tab === 'investments') loadInvestments();
+  if (tab === 'loans') loadLoans();
+  if (tab === 'wealth') loadWealth();
+  if (tab === 'ai') {
+    loadInsights();
+    showPrivacyMessage();
+  }
+  if (tab === 'profile') {
+    loadCategories();
+  }
 }
 
-/* Filters */
-.filters {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  overflow-x: auto;
-  padding-bottom: 4px;
+// ===== SCORE FINANCEIRO =====
+async function loadFinancialScore() {
+  try {
+    const response = await api.request('/score');
+    if (response.score) {
+      document.getElementById('score-value').innerHTML = response.score + '<span style="font-size: 14px;">/100</span>';
+      document.getElementById('score-label').innerHTML = response.classification.name;
+      document.getElementById('score-bar').style.width = response.score + '%';
+      
+      if (response.score >= 90) document.getElementById('score-emoji').innerHTML = '🏆';
+      else if (response.score >= 70) document.getElementById('score-emoji').innerHTML = '😊';
+      else if (response.score >= 50) document.getElementById('score-emoji').innerHTML = '🐶';
+      else if (response.score >= 30) document.getElementById('score-emoji').innerHTML = '🧐';
+      else document.getElementById('score-emoji').innerHTML = '😟';
+    }
+  } catch (error) {
+    console.error('Erro ao carregar score:', error);
+  }
 }
 
-.filter-chip {
-  padding: 6px 16px;
-  border-radius: 30px;
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  cursor: pointer;
-  white-space: nowrap;
+// ===== RESERVA DE EMERGENCIA =====
+async function loadEmergencyFund() {
+  try {
+    const response = await api.request('/emergency-fund');
+    if (response) {
+      document.getElementById('emergency-amount').innerHTML = fmt(response.current_amount);
+      document.getElementById('emergency-months').innerHTML = response.months_of_safety + ' meses';
+      document.getElementById('emergency-progress').style.width = response.progress + '%';
+      document.getElementById('emergency-recommended').innerHTML = 'Recomendado: ' + fmt(response.recommended_amount);
+    }
+  } catch (error) {
+    console.error('Erro ao carregar reserva:', error);
+  }
 }
 
-.filter-chip.active {
-  background: var(--green);
-  color: white;
-  border-color: var(--green);
+// ===== METAS FINANCEIRAS =====
+async function loadGoals() {
+  try {
+    const response = await api.request('/goals/goals');
+    const goals = response.goals || [];
+    const container = document.getElementById('goals-list');
+    
+    if (goals.length === 0) {
+      container.innerHTML = `
+        <div class="stat-card" style="text-align: center; cursor: pointer;" onclick="openGoalModal()">
+          <div style="font-size: 24px; margin-bottom: 8px;">🎯</div>
+          <div style="font-size: 13px; color: var(--text-secondary);">Crie sua primeira meta!</div>
+          <div style="font-size: 11px; color: var(--green); margin-top: 4px;">Clique para adicionar →</div>
+        </div>
+      `;
+      return;
+    }
+    
+    container.innerHTML = goals.map(goal => {
+      const progress = goal.progress || 0;
+      const remaining = goal.remaining || 0;
+      const monthlyNeeded = goal.monthly_needed || 0;
+      
+      return `
+        <div class="stat-card" style="margin-bottom: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div>
+              <div style="font-weight: 700;">${escapeHtml(goal.name)}</div>
+              <div style="font-size: 10px; color: var(--text-muted);">${new Date(goal.deadline).toLocaleDateString('pt-BR')}</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 700;">${fmt(goal.current_amount)}</div>
+              <div style="font-size: 10px; color: var(--text-muted);">de ${fmt(goal.target_amount)}</div>
+            </div>
+          </div>
+          <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+            <div style="width: ${progress}%; height: 100%; background: var(--green); border-radius: 3px;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 10px;">
+            <span>${progress.toFixed(0)}% concluído</span>
+            <span>Faltam ${fmt(remaining)}</span>
+          </div>
+          ${monthlyNeeded > 0 ? '<div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">💰 Precisaria de ' + fmt(monthlyNeeded) + '/mês</div>' : ''}
+          <div style="display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end;">
+            <button class="chip" onclick="event.stopPropagation(); updateGoalProgress(\'' + goal.id + '\')" style="font-size: 10px;">📈 Atualizar</button>
+            <button class="chip" onclick="event.stopPropagation(); deleteGoal(\'' + goal.id + '\')" style="font-size: 10px; background: var(--red-bg);">🗑️ Remover</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (error) {
+    console.error('Erro ao carregar metas:', error);
+  }
 }
 
-/* Chat */
-.chat-msgs {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 0.85rem;
-  max-height: 400px;
-  overflow-y: auto;
+function openGoalModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3>🎯 Nova Meta Financeira</h3>
+      <div class="field"><label>Nome da meta</label><input type="text" id="goal-name" placeholder="Ex: Comprar moto, Viagem, Casa própria"></div>
+      <div class="field"><label>Valor alvo (R$)</label><input type="number" id="goal-target" step="0.01" placeholder="0,00"></div>
+      <div class="field"><label>Valor já guardado (R$)</label><input type="number" id="goal-current" step="0.01" placeholder="0,00" value="0"></div>
+      <div class="field"><label>Data limite</label><input type="date" id="goal-deadline"></div>
+      <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
+        <button class="btn-primary" style="flex: 1" onclick="saveGoal()">Salvar meta</button>
+        <button class="btn-secondary" style="flex: 1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
 }
 
-.msg {
-  max-width: 86%;
-  padding: 0.75rem 1rem;
-  border-radius: 18px;
-  font-size: 13px;
-  line-height: 1.5;
+async function saveGoal() {
+  const name = document.getElementById('goal-name').value;
+  const target_amount = parseFloat(document.getElementById('goal-target').value);
+  const current_amount = parseFloat(document.getElementById('goal-current').value) || 0;
+  const deadline = document.getElementById('goal-deadline').value;
+  
+  if (!name || !target_amount || !deadline) {
+    showToast('Preencha todos os campos');
+    return;
+  }
+  
+  try {
+    await api.request('/goals/goals', {
+      method: 'POST',
+      body: JSON.stringify({ name, target_amount, current_amount, deadline })
+    });
+    showToast('Meta criada com sucesso! 🎯');
+    document.querySelector('.modal-overlay')?.remove();
+    loadGoals();
+  } catch (error) {
+    showToast('Erro ao criar meta');
+  }
 }
 
-.msg-ai {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  align-self: flex-start;
-  border-radius: 4px 18px 18px 18px;
+async function updateGoalProgress(goalId) {
+  const newAmount = prompt('Digite o novo valor guardado (R$):');
+  if (newAmount === null) return;
+  
+  const current_amount = parseFloat(newAmount);
+  if (isNaN(current_amount)) {
+    showToast('Valor inválido');
+    return;
+  }
+  
+  try {
+    await api.request('/goals/goals/' + goalId, {
+      method: 'PUT',
+      body: JSON.stringify({ current_amount })
+    });
+    showToast('Progresso atualizado! 📈');
+    loadGoals();
+  } catch (error) {
+    showToast('Erro ao atualizar progresso');
+  }
 }
 
-.msg-ai-label {
-  color: var(--green);
-  display: block;
-  margin-bottom: 4px;
-  font-size: 10px;
-  font-weight: 700;
+async function deleteGoal(goalId) {
+  if (!confirm('Tem certeza que deseja remover esta meta?')) return;
+  
+  try {
+    await api.request('/goals/goals/' + goalId, { method: 'DELETE' });
+    showToast('Meta removida');
+    loadGoals();
+  } catch (error) {
+    showToast('Erro ao remover meta');
+  }
 }
 
-.msg-user {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid var(--border);
-  align-self: flex-end;
-  border-radius: 18px 18px 4px 18px;
+// ===== CATEGORIAS =====
+async function loadCategories() {
+  try {
+    const response = await api.request('/categories');
+    allCategories = response.categories || [];
+    const container = document.getElementById('categories-list');
+    
+    if (!container) return;
+    
+    if (allCategories.length === 0) {
+      container.innerHTML = `
+        <div class="stat-card" style="text-align: center; cursor: pointer;" onclick="openCategoryModal()">
+          <div style="font-size: 24px; margin-bottom: 8px;">🏷️</div>
+          <div style="font-size: 13px; color: var(--text-secondary);">Crie suas próprias categorias!</div>
+          <div style="font-size: 11px; color: var(--green); margin-top: 4px;">Clique para adicionar →</div>
+        </div>
+      `;
+      return;
+    }
+    
+    const defaultCats = allCategories.filter(c => c.is_default === true);
+    const userCats = allCategories.filter(c => c.is_default === false);
+    
+    let html = '';
+    
+    if (userCats.length > 0) {
+      html += '<div style="margin-bottom: 0.5rem;"><strong>📝 Minhas Categorias</strong></div>';
+      html += userCats.map(cat => `
+        <div class="transaction-item" style="padding: 0.75rem;">
+          <div class="transaction-icon" style="background: ${cat.color || '#6B7280'}20; width: 40px; height: 40px;">
+            ${cat.emoji || '📦'}
+          </div>
+          <div class="transaction-info" style="flex: 1;">
+            <div class="transaction-name">${escapeHtml(cat.name)}</div>
+            <div class="transaction-meta">Personalizada</div>
+          </div>
+          <div class="transaction-actions">
+            <div class="transaction-action" onclick="event.stopPropagation(); editCategory('${cat.id}', '${escapeHtml(cat.name)}', '${cat.emoji || '📦'}', '${cat.color || '#6B7280'}')">✏️</div>
+            <div class="transaction-action" onclick="event.stopPropagation(); deleteCategory('${cat.id}')">🗑️</div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    if (defaultCats.length > 0) {
+      html += '<div style="margin-top: 0.75rem; margin-bottom: 0.5rem;"><strong>⭐ Categorias Padrão</strong></div>';
+      html += '<div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">';
+      html += defaultCats.map(cat => `
+        <div class="category-badge" style="background: ${cat.color || '#6B7280'}20; border: 1px solid ${cat.color || '#6B7280'}30;">
+          <span>${cat.emoji || '📦'}</span>
+          <span style="font-size: 12px;">${escapeHtml(cat.name)}</span>
+        </div>
+      `).join('');
+      html += '</div>';
+    }
+    
+    container.innerHTML = html;
+    loadCategoryOptions();
+  } catch (error) {
+    console.error('Erro ao carregar categorias:', error);
+  }
 }
 
-.chat-bar {
-  display: flex;
-  gap: 0.6rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  padding: 0.5rem 0.75rem;
+function openCategoryModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3>🏷️ Nova Categoria</h3>
+      <div class="field">
+        <label>Nome da categoria</label>
+        <input type="text" id="cat-name" placeholder="Ex: Pet, Farmácia, Academia">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Emoji</label>
+          <input type="text" id="cat-emoji" placeholder="🐶" maxlength="2" value="📦">
+        </div>
+        <div class="field">
+          <label>Cor</label>
+          <input type="color" id="cat-color" value="#10B981">
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
+        <button class="btn-primary" style="flex: 1" onclick="saveCategory()">Salvar categoria</button>
+        <button class="btn-secondary" style="flex: 1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
 }
 
-.chat-input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--text-primary);
+function editCategory(id, name, emoji, color) {
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h3>✏️ Editar Categoria</h3>
+      <div class="field">
+        <label>Nome da categoria</label>
+        <input type="text" id="cat-name" value="${escapeHtml(name)}">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Emoji</label>
+          <input type="text" id="cat-emoji" value="${emoji}" maxlength="2">
+        </div>
+        <div class="field">
+          <label>Cor</label>
+          <input type="color" id="cat-color" value="${color || '#10B981'}">
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
+        <button class="btn-primary" style="flex: 1" onclick="updateCategory('${id}')">Salvar alterações</button>
+        <button class="btn-secondary" style="flex: 1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
 }
 
-.chat-send {
-  background: var(--green);
-  border: none;
-  border-radius: 30px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+async function saveCategory() {
+  const name = document.getElementById('cat-name').value.trim();
+  const emoji = document.getElementById('cat-emoji').value.trim() || '📦';
+  const color = document.getElementById('cat-color').value;
+  
+  if (!name) {
+    showToast('Digite o nome da categoria');
+    return;
+  }
+  
+  try {
+    await api.request('/categories', {
+      method: 'POST',
+      body: JSON.stringify({ name, emoji, color, parent_category: 'custom' })
+    });
+    showToast('Categoria criada com sucesso! 🏷️');
+    document.querySelector('.modal-overlay')?.remove();
+    loadCategories();
+  } catch (error) {
+    showToast(error.message || 'Erro ao criar categoria');
+  }
 }
 
-/* Toast */
-.toast {
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  padding: 0.65rem 1.1rem;
-  font-size: 13px;
-  z-index: 300;
-  opacity: 0;
-  transition: all 0.3s;
-  pointer-events: none;
-  white-space: nowrap;
+async function updateCategory(id) {
+  const name = document.getElementById('cat-name').value.trim();
+  const emoji = document.getElementById('cat-emoji').value.trim() || '📦';
+  const color = document.getElementById('cat-color').value;
+  
+  if (!name) {
+    showToast('Digite o nome da categoria');
+    return;
+  }
+  
+  try {
+    await api.request('/categories/' + id, {
+      method: 'PUT',
+      body: JSON.stringify({ name, emoji, color })
+    });
+    showToast('Categoria atualizada! ✏️');
+    document.querySelector('.modal-overlay')?.remove();
+    loadCategories();
+  } catch (error) {
+    showToast(error.message || 'Erro ao atualizar categoria');
+  }
 }
 
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
+async function deleteCategory(id) {
+  if (!confirm('Tem certeza que deseja remover esta categoria?\n\nContas que usam esta categoria serão movidas para "Outros".')) return;
+  
+  try {
+    await api.request('/categories/' + id, { method: 'DELETE' });
+    showToast('Categoria removida');
+    loadCategories();
+  } catch (error) {
+    showToast(error.message || 'Erro ao deletar categoria');
+  }
 }
 
-.hidden {
-  display: none !important;
+async function loadCategoryOptions() {
+  try {
+    if (allCategories.length === 0) {
+      const response = await api.request('/categories');
+      allCategories = response.categories || [];
+    }
+    
+    const categorySelect = document.getElementById('f-cat');
+    if (categorySelect) {
+      const currentValue = categorySelect.value;
+      categorySelect.innerHTML = allCategories.map(cat => 
+        '<option value="' + cat.name + '" ' + (cat.name === currentValue ? 'selected' : '') + '>' + (cat.emoji || '📦') + ' ' + cat.name + '</option>'
+      ).join('');
+    }
+  } catch (error) {
+    console.error('Erro ao carregar opções de categorias:', error);
+  }
 }
 
-.screen {
-  display: none;
-  min-height: 100vh;
-}
-
-.screen.active {
-  display: block;
-}
-
-/* Loading */
-#loading {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-primary);
-  z-index: 1000;
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 3px solid var(--border);
-  border-top-color: var(--green);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--border);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--green);
-  border-radius: 4px;
-}
-
-/* Score Card */
-.score-card {
-  background: linear-gradient(135deg, var(--purple), var(--pink));
-  margin-bottom: 1rem;
-  border-radius: var(--radius-xl);
-  padding: 1rem;
-  color: white;
-}
-
-/* Chips */
-.chip {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.chip:active {
-  transform: scale(0.95);
-}
-
-/* Category Badges */
-.category-badge {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  transition: var(--transition);
-}
-
-.category-badge:active {
-  transform: scale(0.95);
-}
 // ===== HOME =====
 async function loadHome() {
   try {
@@ -962,7 +589,7 @@ async function loadHome() {
     allBills = bills;
     
     const today = new Date();
-    document.getElementById('bal-date').textContent = `Saldo em ${today.getDate()} de ${today.toLocaleString('pt-BR', { month: 'long' })}`;
+    document.getElementById('bal-date').textContent = 'Saldo em ' + today.getDate() + ' de ' + today.toLocaleString('pt-BR', { month: 'long' });
     document.getElementById('bal-free').textContent = fmt(dash.freeBalance);
     document.getElementById('bal-in').textContent = fmt(dash.salary);
     document.getElementById('bal-out').textContent = fmt(dash.totalPaid || 0);
@@ -990,9 +617,9 @@ function updateTobyMood(dash) {
   const free = dash.freeBalance || 0;
   const late = dash.lateBills || 0;
   let avatar = '🐶', msg = '', badge = '🐶';
-  if (late > 0) { avatar = '😟'; msg = `Você tem ${late} conta(s) atrasada(s). Vamos resolver?`; badge = 'Preocupado'; }
-  else if (free < 500 && free > 0) { avatar = '🧐'; msg = `Saldo livre de ${fmt(free)}. Vamos com cuidado!`; badge = 'Atento'; }
-  else if (free > 2000) { avatar = '😊'; msg = `${fmt(free)} livres! Você está indo muito bem!`; badge = 'Feliz'; }
+  if (late > 0) { avatar = '😟'; msg = 'Você tem ' + late + ' conta(s) atrasada(s). Vamos resolver?'; badge = 'Preocupado'; }
+  else if (free < 500 && free > 0) { avatar = '🧐'; msg = 'Saldo livre de ' + fmt(free) + '. Vamos com cuidado!'; badge = 'Atento'; }
+  else if (free > 2000) { avatar = '😊'; msg = fmt(free) + ' livres! Você está indo muito bem!'; badge = 'Feliz'; }
   else { avatar = '🐶'; msg = 'Tudo dentro do esperado. Continue assim!'; badge = 'Normal'; }
   document.getElementById('toby-avatar').textContent = avatar;
   document.getElementById('toby-message').textContent = msg;
@@ -1009,7 +636,7 @@ function updateCategoryChart(bills) {
   const legendDiv = document.getElementById('category-legend');
   if (total === 0) { legendDiv.innerHTML = '<div style="font-size: 12px; color: var(--text-muted)">Nenhuma despesa registrada</div>'; return; }
   const colors = { moradia: '#3B82F6', alimentacao: '#10B981', saude: '#8B5CF6', transporte: '#F59E0B', lazer: '#EC4899', educacao: '#06B6D4', tecnologia: '#6366F1', financeiro: '#EF4444', outros: '#6B7280' };
-  legendDiv.innerHTML = Object.entries(categories).slice(0, 5).map(([cat, val]) => `<div class="legend-item"><div class="legend-color" style="background: ${colors[cat] || '#6B7280'}"></div><div class="legend-label">${cat}</div><div class="legend-value">${fmt(val)}</div><div style="font-size: 11px; color: var(--text-muted)">${Math.round((val / total) * 100)}%</div></div>`).join('');
+  legendDiv.innerHTML = Object.entries(categories).slice(0, 5).map(([cat, val]) => '<div class="legend-item"><div class="legend-color" style="background: ' + (colors[cat] || '#6B7280') + '"></div><div class="legend-label">' + cat + '</div><div class="legend-value">' + fmt(val) + '</div><div style="font-size: 11px; color: var(--text-muted)">' + Math.round((val / total) * 100) + '%</div></div>').join('');
 }
 
 function renderHomeBills(bills) {
@@ -1020,7 +647,7 @@ function renderHomeBills(bills) {
   el.innerHTML = upcoming.map(b => {
     const cat = CATS[b.category] || CATS.outros;
     const isLate = b.status === 'late' || (b.status === 'pending' && b.due_day < today);
-    return `<div class="transaction-item" onclick="navTo('bills')"><div class="transaction-icon" style="background: ${cat.bg}">${cat.e}</div><div class="transaction-info"><div class="transaction-name">${b.name}</div><div class="transaction-meta">${isLate ? 'Atrasada' : 'Vence dia ' + b.due_day}</div></div><div class="transaction-right"><div class="transaction-value expense">${fmt(b.value)}</div><div class="transaction-status ${isLate ? 'status-late' : 'status-pending'}">${isLate ? 'Atrasado' : 'Pendente'}</div></div></div>`;
+    return '<div class="transaction-item" onclick="navTo(\'bills\')"><div class="transaction-icon" style="background: ' + cat.bg + '">' + cat.e + '</div><div class="transaction-info"><div class="transaction-name">' + b.name + '</div><div class="transaction-meta">' + (isLate ? 'Atrasada' : 'Vence dia ' + b.due_day) + '</div></div><div class="transaction-right"><div class="transaction-value expense">' + fmt(b.value) + '</div><div class="transaction-status ' + (isLate ? 'status-late' : 'status-pending') + '">' + (isLate ? 'Atrasado' : 'Pendente') + '</div></div></div>';
   }).join('');
 }
 
@@ -1053,7 +680,7 @@ function renderBills() {
     const isLate = b.status === 'pending' && b.due_day < today;
     const statusClass = b.status === 'paid' ? 'status-paid' : (isLate ? 'status-late' : 'status-pending');
     const statusText = b.status === 'paid' ? 'Pago' : (isLate ? 'Atrasado' : 'Pendente');
-    return `<div class="transaction-item"><div class="transaction-icon" style="background: ${cat.bg}">${cat.e}</div><div class="transaction-info"><div class="transaction-name">${b.name}</div><div class="transaction-meta">${b.due_day} de cada mês · ${b.category}</div></div><div class="transaction-right"><div class="transaction-value expense">${fmt(b.value)}</div><div class="transaction-status ${statusClass}">${statusText}</div></div><div class="transaction-actions"><div class="transaction-action" onclick="event.stopPropagation(); toggleStatus('${b.id}','${b.status}')">${b.status === 'paid' ? '↩️' : '✅'}</div><div class="transaction-action" onclick="event.stopPropagation(); openBillModal('${b.id}')">✏️</div><div class="transaction-action" onclick="event.stopPropagation(); deleteBill('${b.id}')">🗑️</div></div></div>`;
+    return '<div class="transaction-item"><div class="transaction-icon" style="background: ' + cat.bg + '">' + cat.e + '</div><div class="transaction-info"><div class="transaction-name">' + b.name + '</div><div class="transaction-meta">' + b.due_day + ' de cada mês · ' + b.category + '</div></div><div class="transaction-right"><div class="transaction-value expense">' + fmt(b.value) + '</div><div class="transaction-status ' + statusClass + '">' + statusText + '</div></div><div class="transaction-actions"><div class="transaction-action" onclick="event.stopPropagation(); toggleStatus(\'' + b.id + '\',\'' + b.status + '\')">' + (b.status === 'paid' ? '↩️' : '✅') + '</div><div class="transaction-action" onclick="event.stopPropagation(); openBillModal(\'' + b.id + '\')">✏️</div><div class="transaction-action" onclick="event.stopPropagation(); deleteBill(\'' + b.id + '\')">🗑️</div></div></div>';
   }).join('');
 }
 
@@ -1131,7 +758,7 @@ async function loadInvestments() {
     document.getElementById('current-value').textContent = fmt(totalCurrent);
     const container = document.getElementById('investments-list-container');
     if (!investments.length) { container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary)">Nenhum investimento cadastrado</div>'; return; }
-    container.innerHTML = investments.map(inv => `<div class="transaction-item"><div class="transaction-icon">${inv.asset_type === 'crypto' ? '₿' : '📈'}</div><div class="transaction-info"><div class="transaction-name">${inv.symbol}</div><div class="transaction-meta">${inv.quantity} unidades · Preço: ${fmt(inv.purchase_price)}</div></div><div class="transaction-right"><div class="transaction-value">${fmt(inv.quantity * (inv.current_price || inv.purchase_price))}</div><div class="transaction-action" onclick="deleteInvestment('${inv.id}')">🗑️</div></div></div>`).join('');
+    container.innerHTML = investments.map(inv => '<div class="transaction-item"><div class="transaction-icon">' + (inv.asset_type === 'crypto' ? '₿' : '📈') + '</div><div class="transaction-info"><div class="transaction-name">' + inv.symbol + '</div><div class="transaction-meta">' + inv.quantity + ' unidades · Preço: ' + fmt(inv.purchase_price) + '</div></div><div class="transaction-right"><div class="transaction-value">' + fmt(inv.quantity * (inv.current_price || inv.purchase_price)) + '</div><div class="transaction-action" onclick="deleteInvestment(\'' + inv.id + '\')">🗑️</div></div></div>').join('');
   } catch (e) { console.error(e); }
 }
 
@@ -1143,7 +770,7 @@ async function deleteInvestment(id) {
 function showAddInvestmentModal() {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
-  modal.innerHTML = `<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Investimento</h3><div class="field"><label>Símbolo</label><input type="text" id="inv-symbol" placeholder="PETR4, BTC, ITSA4"></div><div class="field"><label>Tipo</label><select id="inv-type"><option value="stock">Ação (B3)</option><option value="crypto">Criptomoeda</option><option value="fii">FII</option></select></div><div class="field-row"><div class="field"><label>Quantidade</label><input type="number" id="inv-quantity" step="0.00001"></div><div class="field"><label>Preço médio (R$)</label><input type="number" id="inv-price" step="0.01"></div></div><div class="field"><label>Data da compra</label><input type="date" id="inv-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveInvestment()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button></div></div>`;
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Investimento</h3><div class="field"><label>Símbolo</label><input type="text" id="inv-symbol" placeholder="PETR4, BTC, ITSA4"></div><div class="field"><label>Tipo</label><select id="inv-type"><option value="stock">Ação (B3)</option><option value="crypto">Criptomoeda</option><option value="fii">FII</option></select></div><div class="field-row"><div class="field"><label>Quantidade</label><input type="number" id="inv-quantity" step="0.00001"></div><div class="field"><label>Preço médio (R$)</label><input type="number" id="inv-price" step="0.01"></div></div><div class="field"><label>Data da compra</label><input type="date" id="inv-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveInvestment()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
   document.body.appendChild(modal);
 }
 
@@ -1172,7 +799,7 @@ async function loadLoans() {
     document.getElementById('total-monthly').textContent = fmt(summary.totalMonthlyPayment);
     const container = document.getElementById('loans-list-container');
     if (!loans.length) { container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary)">Nenhum financiamento cadastrado</div>'; return; }
-    container.innerHTML = loans.map(loan => `<div class="transaction-item"><div class="transaction-icon">🏠</div><div class="transaction-info"><div class="transaction-name">${loan.name}</div><div class="transaction-meta">${loan.remaining_installments} parcelas · ${loan.interest_rate}% a.m.</div></div><div class="transaction-right"><div class="transaction-value expense">${fmt(loan.outstanding_balance)}</div><div class="transaction-action" onclick="deleteLoan('${loan.id}')">🗑️</div></div></div>`).join('');
+    container.innerHTML = loans.map(loan => '<div class="transaction-item"><div class="transaction-icon">🏠</div><div class="transaction-info"><div class="transaction-name">' + loan.name + '</div><div class="transaction-meta">' + loan.remaining_installments + ' parcelas · ' + loan.interest_rate + '% a.m.</div></div><div class="transaction-right"><div class="transaction-value expense">' + fmt(loan.outstanding_balance) + '</div><div class="transaction-action" onclick="deleteLoan(\'' + loan.id + '\')">🗑️</div></div></div>').join('');
   } catch (e) { console.error(e); }
 }
 
@@ -1184,7 +811,7 @@ async function deleteLoan(id) {
 function showAddLoanModal() {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
-  modal.innerHTML = `<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Financiamento</h3><div class="field"><label>Nome</label><input type="text" id="loan-name" placeholder="Ex: Financiamento Casa"></div><div class="field"><label>Tipo</label><select id="loan-type"><option value="mortgage">Financiamento Imobiliário</option><option value="car">Financiamento Veículo</option><option value="personal">Empréstimo Pessoal</option></select></div><div class="field-row"><div class="field"><label>Valor Total</label><input type="number" id="loan-total" step="0.01"></div><div class="field"><label>Saldo Devedor</label><input type="number" id="loan-balance" step="0.01"></div></div><div class="field-row"><div class="field"><label>Taxa Juros (% mês)</label><input type="number" id="loan-rate" step="0.01"></div><div class="field"><label>Parcelas Restantes</label><input type="number" id="loan-installments"></div></div><div class="field"><label>Data Início</label><input type="date" id="loan-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveLoan()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button></div></div>`;
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Financiamento</h3><div class="field"><label>Nome</label><input type="text" id="loan-name" placeholder="Ex: Financiamento Casa"></div><div class="field"><label>Tipo</label><select id="loan-type"><option value="mortgage">Financiamento Imobiliário</option><option value="car">Financiamento Veículo</option><option value="personal">Empréstimo Pessoal</option></select></div><div class="field-row"><div class="field"><label>Valor Total</label><input type="number" id="loan-total" step="0.01"></div><div class="field"><label>Saldo Devedor</label><input type="number" id="loan-balance" step="0.01"></div></div><div class="field-row"><div class="field"><label>Taxa Juros (% mês)</label><input type="number" id="loan-rate" step="0.01"></div><div class="field"><label>Parcelas Restantes</label><input type="number" id="loan-installments"></div></div><div class="field"><label>Data Início</label><input type="date" id="loan-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveLoan()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
   document.body.appendChild(modal);
 }
 
@@ -1217,7 +844,7 @@ async function loadWealth() {
     const assetsList = assets.assets || [];
     const container = document.getElementById('assets-list-container');
     if (!assetsList.length) { container.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary)">Nenhum bem cadastrado</div>'; return; }
-    container.innerHTML = assetsList.map(a => `<div class="transaction-item"><div class="transaction-icon">🏠</div><div class="transaction-info"><div class="transaction-name">${a.name}</div><div class="transaction-meta">${a.asset_type === 'real_estate' ? 'Imóvel' : a.asset_type === 'vehicle' ? 'Veículo' : 'Outro'}</div></div><div class="transaction-right"><div class="transaction-value">${fmt(a.estimated_value)}</div><div class="transaction-action" onclick="deleteAsset('${a.id}')">🗑️</div></div></div>`).join('');
+    container.innerHTML = assetsList.map(a => '<div class="transaction-item"><div class="transaction-icon">🏠</div><div class="transaction-info"><div class="transaction-name">' + a.name + '</div><div class="transaction-meta">' + (a.asset_type === 'real_estate' ? 'Imóvel' : a.asset_type === 'vehicle' ? 'Veículo' : 'Outro') + '</div></div><div class="transaction-right"><div class="transaction-value">' + fmt(a.estimated_value) + '</div><div class="transaction-action" onclick="deleteAsset(\'' + a.id + '\')">🗑️</div></div></div>').join('');
   } catch (e) { showToast('Erro ao carregar patrimônio'); }
 }
 
@@ -1229,7 +856,7 @@ async function deleteAsset(id) {
 function showAddAssetModal() {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
-  modal.innerHTML = `<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Bem</h3><div class="field"><label>Nome</label><input type="text" id="asset-name" placeholder="Ex: Apartamento, Carro"></div><div class="field"><label>Tipo</label><select id="asset-type"><option value="real_estate">Imóvel</option><option value="vehicle">Veículo</option><option value="savings">Reserva Financeira</option><option value="other">Outro</option></select></div><div class="field"><label>Valor Estimado (R$)</label><input type="number" id="asset-value" step="0.01"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveAsset()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button></div></div>`;
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Bem</h3><div class="field"><label>Nome</label><input type="text" id="asset-name" placeholder="Ex: Apartamento, Carro"></div><div class="field"><label>Tipo</label><select id="asset-type"><option value="real_estate">Imóvel</option><option value="vehicle">Veículo</option><option value="savings">Reserva Financeira</option><option value="other">Outro</option></select></div><div class="field"><label>Valor Estimado (R$)</label><input type="number" id="asset-value" step="0.01"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveAsset()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
   document.body.appendChild(modal);
 }
 
@@ -1257,11 +884,11 @@ function loadInsights() {
   const el = document.getElementById('insights-list');
   if (!bills.length) { el.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary)">Cadastre contas para receber análises</div>'; return; }
   let cards = [];
-  if (late.length > 0) cards.push(`<div class="indicator-card" style="text-align:left; cursor:pointer" onclick="navTo('bills')"><div class="indicator-label">⚠️ Contas atrasadas</div><div class="indicator-value small" style="color: var(--red)">${late.length} conta(s)</div><div style="font-size: 10px; color: var(--text-muted)">Regularize para evitar juros</div></div>`);
-  if (pct > 70) cards.push(`<div class="indicator-card" style="text-align:left" onclick="navTo('bills')"><div class="indicator-label">📊 Comprometimento</div><div class="indicator-value small" style="color: var(--orange)">${pct}% da renda</div><div style="font-size: 10px; color: var(--text-muted)">Ideal é abaixo de 50%</div></div>`);
-  if (free > 500) cards.push(`<div class="indicator-card" style="text-align:left" onclick="navTo('investments')"><div class="indicator-label">💰 Saldo disponível</div><div class="indicator-value small" style="color: var(--green)">${fmt(free)}</div><div style="font-size: 10px; color: var(--text-muted)">Considere investir!</div></div>`);
-  if (!cards.length) cards.push(`<div class="indicator-card" style="text-align:left" onclick="navTo('bills')"><div class="indicator-label">🐶 Continue assim!</div><div class="indicator-value small">${bills.length} contas cadastradas</div><div style="font-size: 10px; color: var(--text-muted)">Adicione mais contas para melhores análises</div></div>`);
-  el.innerHTML = `<div class="stats-grid" style="grid-template-columns: 1fr; gap: 0.5rem">${cards.map(c => `<div class="stat-card">${c}</div>`).join('')}</div>`;
+  if (late.length > 0) cards.push('<div class="indicator-card" style="text-align:left; cursor:pointer" onclick="navTo(\'bills\')"><div class="indicator-label">⚠️ Contas atrasadas</div><div class="indicator-value small" style="color: var(--red)">' + late.length + ' conta(s)</div><div style="font-size: 10px; color: var(--text-muted)">Regularize para evitar juros</div></div>');
+  if (pct > 70) cards.push('<div class="indicator-card" style="text-align:left" onclick="navTo(\'bills\')"><div class="indicator-label">📊 Comprometimento</div><div class="indicator-value small" style="color: var(--orange)">' + pct + '% da renda</div><div style="font-size: 10px; color: var(--text-muted)">Ideal é abaixo de 50%</div></div>');
+  if (free > 500) cards.push('<div class="indicator-card" style="text-align:left" onclick="navTo(\'investments\')"><div class="indicator-label">💰 Saldo disponível</div><div class="indicator-value small" style="color: var(--green)">' + fmt(free) + '</div><div style="font-size: 10px; color: var(--text-muted)">Considere investir!</div></div>');
+  if (!cards.length) cards.push('<div class="indicator-card" style="text-align:left" onclick="navTo(\'bills\')"><div class="indicator-label">🐶 Continue assim!</div><div class="indicator-value small">' + bills.length + ' contas cadastradas</div><div style="font-size: 10px; color: var(--text-muted)">Adicione mais contas para melhores análises</div></div>');
+  el.innerHTML = '<div class="stats-grid" style="grid-template-columns: 1fr; gap: 0.5rem">' + cards.map(c => '<div class="stat-card">' + c + '</div>').join('') + '</div>';
 }
 
 // ===== MENSAGEM DE PRIVACIDADE =====
@@ -1303,7 +930,7 @@ async function sendMsg() {
   
   input.value = '';
   const msgs = document.getElementById('chat-msgs');
-  msgs.innerHTML += `<div class="msg msg-user">${escapeHtml(q)}</div>`;
+  msgs.innerHTML += '<div class="msg msg-user">' + escapeHtml(q) + '</div>';
   msgs.scrollTop = msgs.scrollHeight;
   document.getElementById('typing-ind').style.display = 'block';
   
@@ -1333,13 +960,13 @@ async function sendMsg() {
     
     const reply = response.reply || 'Desculpe, não consegui processar sua mensagem.';
     document.getElementById('typing-ind').style.display = 'none';
-    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>${reply}</div>`;
+    msgs.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>' + reply + '</div>';
     msgs.scrollTop = msgs.scrollHeight;
     
   } catch (e) {
     console.error('Erro no chat:', e);
     document.getElementById('typing-ind').style.display = 'none';
-    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Desculpe, estou com dificuldades técnicas. Tente novamente em alguns instantes!</div>`;
+    msgs.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Desculpe, estou com dificuldades técnicas. Tente novamente em alguns instantes!</div>';
   }
 }
 
@@ -1365,7 +992,7 @@ function openReceiptScanner() { showToast('📸 Câmera - Funcionalidade em dese
 function showHollerithModal() {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
-  modal.innerHTML = `<div class="modal"><div class="modal-handle"></div><h3>📄 Leitor de Holerite</h3><textarea id="holerite-text" rows="6" placeholder="Cole aqui o texto do seu holerite..."></textarea><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="processHollerith()">Processar</button><button class="btn-secondary" style="flex:1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button></div><div id="holerite-result" style="margin-top:1rem;display:none"></div></div>`;
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>📄 Leitor de Holerite</h3><textarea id="holerite-text" rows="6" placeholder="Cole aqui o texto do seu holerite..."></textarea><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="processHollerith()">Processar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div><div id="holerite-result" style="margin-top:1rem;display:none"></div></div>';
   document.body.appendChild(modal);
 }
 
@@ -1383,7 +1010,7 @@ async function processHollerith() {
 function showBankExtractModal() {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
-  modal.innerHTML = `<div class="modal"><div class="modal-handle"></div><h3>🏦 Importar Extrato</h3><select id="extract-format"><option value="text">📝 Texto simples</option><option value="csv">📊 CSV</option><option value="ofx">🏦 OFX</option></select><textarea id="extract-text" rows="6" placeholder="Cole aqui o texto do seu extrato..." style="margin-top:1rem"></textarea><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="processBankExtract()">Processar</button><button class="btn-secondary" style="flex:1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button></div></div>`;
+  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>🏦 Importar Extrato</h3><select id="extract-format"><option value="text">📝 Texto simples</option><option value="csv">📊 CSV</option><option value="ofx">🏦 OFX</option></select><textarea id="extract-text" rows="6" placeholder="Cole aqui o texto do seu extrato..." style="margin-top:1rem"></textarea><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="processBankExtract()">Processar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
   document.body.appendChild(modal);
 }
 
@@ -1402,7 +1029,7 @@ async function processBankExtract() {
 async function showIncomeReport() {
   try {
     const report = await api.request('/hollerith/report');
-    alert(`📊 INFORME DE RENDIMENTOS\n\nUsuário: ${report.user}\nAno: ${report.year}\nRendimentos Totais: ${fmt(report.totalIncome)}\nDespesas Dedutíveis: ${fmt(report.totalExpenses)}\nIRRF Retido: ${fmt(report.annualIRRF)}`);
+    alert('📊 INFORME DE RENDIMENTOS\n\nUsuário: ' + report.user + '\nAno: ' + report.year + '\nRendimentos Totais: ' + fmt(report.totalIncome) + '\nDespesas Dedutíveis: ' + fmt(report.totalExpenses) + '\nIRRF Retido: ' + fmt(report.annualIRRF));
   } catch (e) { showToast('Erro ao gerar informe'); }
 }
 
