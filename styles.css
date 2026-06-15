@@ -911,6 +911,7 @@ body {
   background: var(--green);
   border-radius: 4px;
 }
+
 /* News items */
 .news-item {
   background: var(--bg-card);
@@ -921,26 +922,32 @@ body {
   cursor: pointer;
   transition: var(--transition);
 }
+
 .news-item:active {
   transform: scale(0.98);
 }
+
 .news-title {
   font-size: 12px;
   font-weight: 600;
   margin-bottom: 4px;
 }
+
 .news-description {
   font-size: 10px;
   color: var(--text-secondary);
   margin-bottom: 4px;
 }
+
 .news-source {
   font-size: 9px;
   color: var(--text-muted);
 }
+
 .stat-sub.positive {
   color: var(--green);
 }
+
 .stat-sub.negative {
   color: var(--red);
 }

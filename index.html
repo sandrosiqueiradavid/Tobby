@@ -111,57 +111,18 @@
         <div class="toby-badge" id="toby-badge">🐶</div>
       </div>
 
-      <!-- INDICADORES DE MERCADO -->
+      <!-- NOTÍCIAS DE MERCADO -->
       <div class="indicators-section" style="margin-bottom: 1rem;">
         <div class="section-header">
-          <h3><i class="fas fa-chart-line"></i> Mercado Hoje</h3>
+          <h3><i class="fas fa-newspaper"></i> Últimas Notícias do Mercado</h3>
           <span id="market-update-time" style="font-size: 10px; color: var(--text-muted)"></span>
         </div>
-        
-        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0.75rem;">
-          <div class="stat-card" id="selic-card">
-            <div class="stat-label">SELIC</div>
-            <div class="stat-value" id="selic-value" style="font-size: 18px;">--%</div>
-            <div class="stat-sub">a.a.</div>
-          </div>
-          <div class="stat-card" id="ipca-card">
-            <div class="stat-label">IPCA</div>
-            <div class="stat-value" id="ipca-value" style="font-size: 18px;">--%</div>
-            <div class="stat-sub">acum. 12m</div>
-          </div>
-          <div class="stat-card" id="dollar-card">
-            <div class="stat-label">DÓLAR</div>
-            <div class="stat-value" id="dollar-value" style="font-size: 18px;">R$ --</div>
-            <div class="stat-sub">comercial</div>
+        <div id="news-list" style="max-height: 300px; overflow-y: auto;">
+          <div style="text-align: center; padding: 1rem; color: var(--text-secondary)">
+            <div class="spinner" style="width: 20px; height: 20px; margin: 0 auto 10px;"></div>
+            Carregando notícias...
           </div>
         </div>
-        
-        <div class="section-header">
-          <h3><i class="fab fa-bitcoin"></i> Criptomoedas</h3>
-        </div>
-        <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 0.75rem;">
-          <div class="stat-card" id="btc-card" style="cursor: pointer;" onclick="window.open('https://www.coingecko.com/pt/moedas/bitcoin', '_blank')">
-            <div class="stat-label">₿ Bitcoin</div>
-            <div class="stat-value" id="btc-value" style="font-size: 14px;">R$ --</div>
-            <div class="stat-sub" id="btc-change">--%</div>
-          </div>
-          <div class="stat-card" id="eth-card" style="cursor: pointer;" onclick="window.open('https://www.coingecko.com/pt/moedas/ethereum', '_blank')">
-            <div class="stat-label">⟠ Ethereum</div>
-            <div class="stat-value" id="eth-value" style="font-size: 14px;">R$ --</div>
-            <div class="stat-sub" id="eth-change">--%</div>
-          </div>
-          <div class="stat-card" id="sol-card" style="cursor: pointer;" onclick="window.open('https://www.coingecko.com/pt/moedas/solana', '_blank')">
-            <div class="stat-label">◎ Solana</div>
-            <div class="stat-value" id="sol-value" style="font-size: 14px;">R$ --</div>
-            <div class="stat-sub" id="sol-change">--%</div>
-          </div>
-        </div>
-        
-        <div class="section-header">
-          <h3><i class="fas fa-newspaper"></i> Últimas Notícias</h3>
-          <a onclick="window.refreshMarketData()" style="cursor: pointer;">↻ Atualizar</a>
-        </div>
-        <div id="news-list" style="max-height: 250px; overflow-y: auto;"></div>
       </div>
 
       <div class="balance-card">
