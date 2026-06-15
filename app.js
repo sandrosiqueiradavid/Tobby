@@ -190,12 +190,91 @@ function navTo(tab) {
     if (el) el.style.display = t === tab ? 'block' : 'none';
     if (nav) nav.classList.toggle('active', t === tab);
   });
-  if (tab === 'home') loadHome();
+  if (tab === 'home') {
+    loadHome();
+    loadMarketData();
+  }
   if (tab === 'bills') loadBills();
   if (tab === 'investments') loadInvestments();
   if (tab === 'loans') loadLoans();
   if (tab === 'wealth') loadWealth();
-  if (tab === 'ai') loadInsights();
+  if (tab === 'ai') {
+    loadInsights();
+    showPrivacyMessage();
+  }
+}
+
+// ===== INDICADORES DE MERCADO =====
+async function loadMarketData() {
+  try {
+    const response = await api.request('/market/indicators');
+    
+    if (!response.success) return;
+    
+    // Indicadores
+    if (response.indicators.selic) {
+      document.getElementById('selic-value').textContent = `${response.indicators.selic.value}%`;
+    }
+    if (response.indicators.ipca) {
+      document.getElementById('ipca-value').textContent = `${response.indicators.ipca.value}%`;
+    }
+    if (response.indicators.dollar) {
+      document.getElementById('dollar-value').textContent = `R$ ${response.indicators.dollar.value}`;
+    }
+    
+    // Criptomoedas
+    if (response.crypto) {
+      updateCryptoCard('btc', response.crypto.bitcoin);
+      updateCryptoCard('eth', response.crypto.ethereum);
+      updateCryptoCard('sol', response.crypto.solana);
+    }
+    
+    // Notícias
+    if (response.news && response.news.length) {
+      const newsContainer = document.getElementById('news-list');
+      newsContainer.innerHTML = response.news.map(news => `
+        <div class="news-item" onclick="window.open('${news.url}', '_blank')">
+          <div class="news-title">${escapeHtml(news.title)}</div>
+          <div class="news-description">${escapeHtml(news.description?.substring(0, 100) || '')}...</div>
+          <div class="news-source">${news.source} • ${new Date(news.publishedAt).toLocaleDateString('pt-BR')}</div>
+        </div>
+      `).join('');
+    }
+    
+    // Atualizar timestamp
+    const updateTime = document.getElementById('market-update-time');
+    if (updateTime) {
+      const date = new Date(response.updatedAt);
+      updateTime.textContent = `Atualizado: ${date.toLocaleTimeString('pt-BR')}`;
+    }
+    
+  } catch (error) {
+    console.error('Erro ao carregar dados de mercado:', error);
+  }
+}
+
+function updateCryptoCard(coin, data) {
+  if (!data) return;
+  
+  const valueEl = document.getElementById(`${coin}-value`);
+  const changeEl = document.getElementById(`${coin}-change`);
+  
+  if (valueEl) {
+    valueEl.textContent = `R$ ${data.brl.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  }
+  
+  if (changeEl) {
+    const change = data.change_24h;
+    const changeClass = change >= 0 ? 'positive' : 'negative';
+    const changeSign = change >= 0 ? '+' : '';
+    changeEl.textContent = `${changeSign}${change}%`;
+    changeEl.className = `stat-sub ${changeClass}`;
+  }
+}
+
+function refreshMarketData() {
+  showToast('🔄 Atualizando dados do mercado...');
+  loadMarketData();
 }
 
 // ===== HOME =====
@@ -507,7 +586,38 @@ function loadInsights() {
   el.innerHTML = `<div class="stats-grid" style="grid-template-columns: 1fr; gap: 0.5rem">${cards.map(c => `<div class="stat-card">${c}</div>`).join('')}</div>`;
 }
 
-// ===== CHAT COM IA (via backend) =====
+// ===== MENSAGEM DE PRIVACIDADE =====
+function showPrivacyMessage() {
+  const msgs = document.getElementById('chat-msgs');
+  
+  if (document.getElementById('privacy-msg')) return;
+  
+  const privacyMsg = `
+    <div class="msg msg-ai" id="privacy-msg" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--green);">
+      <span class="msg-ai-label">🔒 PRIVACIDADE E SEGURANÇA</span>
+      Seus dados são protegidos! 🔐<br><br>
+      • Seus dados financeiros NÃO são armazenados pela IA<br>
+      • Apenas o contexto da sua pergunta é enviado para análise<br>
+      • A IA responde e tudo é descartado imediatamente<br>
+      • Suas informações pessoais (nome, e-mail) NUNCA são compartilhadas<br><br>
+      <span style="font-size: 11px; color: var(--text-muted);">✓ Chat 100% seguro e privado</span>
+    </div>
+  `;
+  
+  msgs.innerHTML = privacyMsg + msgs.innerHTML;
+}
+
+// ===== LIMPAR CHAT =====
+function clearChat() {
+  const msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML = `
+    <div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Como posso te ajudar?</div>
+  `;
+  showPrivacyMessage();
+  showToast('Conversa limpa! 🧹');
+}
+
+// ===== CHAT COM IA =====
 async function sendMsg() {
   const input = document.getElementById('chat-input');
   const q = input.value.trim();
@@ -544,7 +654,7 @@ async function sendMsg() {
   } catch (e) {
     console.error('Erro no chat:', e);
     document.getElementById('typing-ind').style.display = 'none';
-    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Erro de conexão. Tente novamente.</div>`;
+    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Desculpe, estou com dificuldades técnicas. Tente novamente em alguns instantes!</div>`;
   }
 }
 
@@ -678,6 +788,7 @@ window.showAddAssetModal = showAddAssetModal;
 window.saveAsset = saveAsset;
 window.deleteAsset = deleteAsset;
 window.sendMsg = sendMsg;
+window.clearChat = clearChat;
 window.editSalary = editSalary;
 window.openReceiptScanner = openReceiptScanner;
 window.showHollerithModal = showHollerithModal;
@@ -685,3 +796,5 @@ window.processHollerith = processHollerith;
 window.showBankExtractModal = showBankExtractModal;
 window.processBankExtract = processBankExtract;
 window.showIncomeReport = showIncomeReport;
+window.loadMarketData = loadMarketData;
+window.refreshMarketData = refreshMarketData;
