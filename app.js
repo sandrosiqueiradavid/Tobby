@@ -211,7 +211,6 @@ async function loadMarketData() {
     
     if (!response.success) return;
     
-    // Indicadores
     if (response.indicators.selic) {
       document.getElementById('selic-value').textContent = `${response.indicators.selic.value}%`;
     }
@@ -222,14 +221,12 @@ async function loadMarketData() {
       document.getElementById('dollar-value').textContent = `R$ ${response.indicators.dollar.value}`;
     }
     
-    // Criptomoedas
     if (response.crypto) {
       updateCryptoCard('btc', response.crypto.bitcoin);
       updateCryptoCard('eth', response.crypto.ethereum);
       updateCryptoCard('sol', response.crypto.solana);
     }
     
-    // Notícias
     if (response.news && response.news.length) {
       const newsContainer = document.getElementById('news-list');
       newsContainer.innerHTML = response.news.map(news => `
@@ -241,7 +238,6 @@ async function loadMarketData() {
       `).join('');
     }
     
-    // Atualizar timestamp
     const updateTime = document.getElementById('market-update-time');
     if (updateTime) {
       const date = new Date(response.updatedAt);
@@ -632,23 +628,31 @@ async function sendMsg() {
   try {
     const pendingBills = allBills.filter(b => b.status === 'pending').length;
     const lateBills = allBills.filter(b => b.status === 'late').length;
+    const totalCommitted = allBills.reduce((sum, b) => sum + b.value, 0);
+    const salary = currentUser?.salary || 0;
+    const commitmentPercent = salary > 0 ? (totalCommitted / salary) * 100 : 0;
+    const freeMoney = salary - totalCommitted;
     
     const response = await api.request('/ai/chat', {
       method: 'POST',
       body: JSON.stringify({
         message: q,
         context: {
-          salary: currentUser?.salary || 0,
+          salary: salary,
           billsCount: allBills.length,
           pendingBills: pendingBills,
-          lateBills: lateBills
+          lateBills: lateBills,
+          totalCommitted: totalCommitted,
+          commitmentPercent: commitmentPercent.toFixed(1),
+          freeMoney: freeMoney
         }
       })
     });
     
     const reply = response.reply || 'Desculpe, não consegui processar sua mensagem.';
     document.getElementById('typing-ind').style.display = 'none';
-    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>${escapeHtml(reply)}</div>`;
+    // IMPORTANTE: NÃO usar escapeHtml para permitir formatação HTML da IA
+    msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>${reply}</div>`;
     msgs.scrollTop = msgs.scrollHeight;
     
   } catch (e) {
