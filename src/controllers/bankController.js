@@ -1,4 +1,5 @@
 const supabase = require('../db/supabase');
+const { encryptNumber } = require('../utils/crypto');
 
 const bankController = {
   processBankExtract: async (req, res) => {
@@ -22,18 +23,21 @@ const bankController = {
       
       const bills = [];
       for (const exp of expenses.slice(0, 20)) {
+        const encryptedValue = encryptNumber(exp.value);
+        
         const { data: bill, error } = await supabase
-          .from('tobby_bills')
+          .from('bills')
           .insert({
             user_id: req.userId,
             name: exp.name,
-            value: exp.value,
+            value_encrypted: encryptedValue,
             due_day: new Date().getDate(),
             category: exp.category || 'outros',
             status: 'paid'
           })
           .select()
           .single();
+        
         if (!error && bill) bills.push(bill);
       }
 
@@ -44,7 +48,8 @@ const bankController = {
         summary: {
           totalTransactions: transactions.length,
           expensesCount: expenses.length,
-          incomeCount: transactions.filter(t => t.type === 'income').length
+          incomeCount: transactions.filter(t => t.type === 'income').length,
+          totalExpensesValue: expenses.reduce((sum, e) => sum + e.value, 0)
         }
       });
     } catch (err) {
@@ -64,7 +69,8 @@ function parseTextExtract(text) {
     { regex: /supermercado.*[Rr]\$\s*([\d.,]+)/i, name: 'Supermercado', category: 'alimentacao' },
     { regex: /restaurante.*[Rr]\$\s*([\d.,]+)/i, name: 'Restaurante', category: 'alimentacao' },
     { regex: /uber.*[Rr]\$\s*([\d.,]+)/i, name: 'Uber', category: 'transporte' },
-    { regex: /netflix.*[Rr]\$\s*([\d.,]+)/i, name: 'Netflix', category: 'lazer' }
+    { regex: /netflix.*[Rr]\$\s*([\d.,]+)/i, name: 'Netflix', category: 'lazer' },
+    { regex: /salario.*[Rr]\$\s*([\d.,]+)/i, name: 'Salário', category: 'receita', type: 'income' }
   ];
 
   for (const line of lines) {
@@ -75,7 +81,7 @@ function parseTextExtract(text) {
         transactions.push({
           name: pattern.name,
           value: value,
-          type: 'expense',
+          type: pattern.type === 'income' ? 'income' : 'expense',
           category: pattern.category,
           date: new Date()
         });
@@ -96,10 +102,11 @@ function parseCSV(csvText) {
     if (parts.length >= 3) {
       const value = parseFloat(parts[2].replace(/["']/g, '').trim());
       if (!isNaN(value) && value > 0) {
+        const isExpense = parts[1]?.includes('DEBITO') || parts[1]?.includes('PAG');
         transactions.push({
           name: parts[1]?.replace(/["']/g, '') || 'Transação',
           value: value,
-          type: 'expense',
+          type: isExpense ? 'expense' : 'income',
           category: 'outros',
           date: new Date(parts[0])
         });
@@ -121,7 +128,7 @@ function parseOFX(ofxText) {
     
     if (amountMatch) {
       const value = Math.abs(parseFloat(amountMatch[1]));
-      const type = typeMatch && typeMatch[1] === 'DEBIT' ? 'expense' : 'income';
+      const type = typeMatch && (typeMatch[1] === 'DEBIT' || typeMatch[1] === 'PAYMENT') ? 'expense' : 'income';
       
       if (type === 'expense') {
         transactions.push({

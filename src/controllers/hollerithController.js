@@ -63,11 +63,8 @@ function calculateIRRF(salary) {
   return base * 0.275 - 884.96;
 }
 
-// ===== CONTROLLER PRINCIPAL =====
-
 const hollerithController = {
-  // Processar texto do holerite e criar contas automaticamente
-  processHollerith: async (req, res) => {
+  async processHollerith(req, res) {
     try {
       const { hollerithText } = req.body;
       if (!hollerithText) {
@@ -84,7 +81,7 @@ const hollerithController = {
         const encryptedValue = encryptNumber(item.value);
         
         const { data: bill, error } = await supabase
-          .from('tobby_bills')
+          .from('bills')
           .insert({
             user_id: req.userId,
             name: item.name,
@@ -113,20 +110,19 @@ const hollerithController = {
     }
   },
 
-  // Gerar informe de rendimentos anual
-  generateIncomeReport: async (req, res) => {
+  async generateIncomeReport(req, res) {
     try {
       const { year } = req.query;
       const currentYear = year || new Date().getFullYear();
 
       const { data: user } = await supabase
-        .from('tobby_users')
+        .from('users')
         .select('name, salary_encrypted')
         .eq('id', req.userId)
         .single();
 
       const { data: paidBills } = await supabase
-        .from('tobby_bills')
+        .from('bills')
         .select('value_encrypted')
         .eq('user_id', req.userId)
         .eq('status', 'paid');
@@ -158,14 +154,13 @@ const hollerithController = {
     }
   },
 
-  // Gerar declaração de IR simplificada
-  generateIRDeclaration: async (req, res) => {
+  async generateIRDeclaration(req, res) {
     try {
       const { year } = req.query;
       const currentYear = year || new Date().getFullYear();
 
       const { data: user } = await supabase
-        .from('tobby_users')
+        .from('users')
         .select('name, email, salary_encrypted')
         .eq('id', req.userId)
         .single();
@@ -178,7 +173,7 @@ const hollerithController = {
       const annualIRRF = irrf * 12;
 
       const { data: bills } = await supabase
-        .from('tobby_bills')
+        .from('bills')
         .select('value_encrypted')
         .eq('user_id', req.userId)
         .eq('status', 'paid');
