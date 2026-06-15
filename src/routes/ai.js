@@ -4,21 +4,35 @@ const authMiddleware = require('../middleware/auth');
 
 router.use(authMiddleware);
 
-async function getGroqReply(message, context) {
+async function getGroqReply(message, context, useFinancialData) {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
   
-  const salary = context?.salary || 0;
-  const billsCount = context?.billsCount || 0;
-  const pendingBills = context?.pendingBills || 0;
-  const lateBills = context?.lateBills || 0;
-  const totalCommitted = context?.totalCommitted || 0;
-  const commitmentPercent = context?.commitmentPercent || 0;
-  const freeMoney = context?.freeMoney || 0;
+  let systemPrompt = `Você é o Tobby IA, um assistente financeiro amigável do aplicativo Tobby. Você tem personalidade de um cachorro chamado Tobby: leal, animado e sempre pronto para ajudar.
 
-  const systemPrompt = `Você é o Tobby IA, um assistente financeiro especialista do aplicativo Tobby.
+REGRAS IMPORTANTES:
+1. Responda SEMPRE em português brasileiro
+2. Use emojis moderadamente (🐶, 💰, 📊, ✅, ⚠️, 📈)
+3. Seja prático, acolhedor e dê conselhos realistas
+4. Responda APENAS o que o usuário perguntou, sem invadir a privacidade
+5. NÃO ofereça análises financeiras não solicitadas
+6. NÃO mencione salário, contas ou dados financeiros a menos que o usuário peça explicitamente
 
-DADOS REAIS DO USUÁRIO (use estes dados para análises personalizadas):
-- Salário mensal: R$ ${salary.toLocaleString('pt-BR')}
+Pergunta do usuário: ${message}`;
+
+  // SÓ usa os dados financeiros se o usuário PEDIR explicitamente
+  if (useFinancialData) {
+    const salary = context?.salary || 0;
+    const billsCount = context?.billsCount || 0;
+    const pendingBills = context?.pendingBills || 0;
+    const lateBills = context?.lateBills || 0;
+    const totalCommitted = context?.totalCommitted || 0;
+    const commitmentPercent = context?.commitmentPercent || 0;
+    const freeMoney = context?.freeMoney || 0;
+
+    systemPrompt = `Você é o Tobby IA, um assistente financeiro especialista do aplicativo Tobby.
+
+DADOS REAIS DO USUARIO (use SOMENTE se ele pediu análise financeira):
+- Salario mensal: R$ ${salary.toLocaleString('pt-BR')}
 - Total de contas: ${billsCount}
 - Contas pendentes: ${pendingBills}
 - Contas atrasadas: ${lateBills}
@@ -26,15 +40,15 @@ DADOS REAIS DO USUÁRIO (use estes dados para análises personalizadas):
 - Comprometimento: ${commitmentPercent}%
 - Saldo livre: R$ ${freeMoney.toLocaleString('pt-BR')}
 
-REGRAS DE FORMATAÇÃO:
-1. Use texto puro com emojis (não use HTML)
-2. Use quebras de linha com \\n\\n para separar seções
-3. Use • para listas
-4. Use **texto** para enfatizar
-5. Seja acolhedor e prático
-6. Use OS DADOS REAIS do usuário acima
+REGRAS:
+1. Responda em portugues brasileiro
+2. Use emojis com moderação
+3. Seja acolhedor e pratico
+4. Use OS DADOS REAIS acima para dar uma resposta personalizada
+5. Dê sugestões específicas baseadas no cenário do usuario
 
-Pergunta: ${message}`;
+Pergunta do usuario: ${message}`;
+  }
 
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -60,7 +74,44 @@ Pergunta: ${message}`;
   return data.choices[0].message.content;
 }
 
-function getFallbackReply(message, context) {
+function getFallbackReply(message, useFinancialData, context) {
+  const msg = message.toLowerCase();
+  
+  // Palavras-chave que indicam que o usuário QUER análise financeira
+  const analiseKeywords = ['analise', 'análise', 'finanças', 'contas', 'salário', 'gastos', 'despesas', 'economizar', 'investir', 'divida', 'dívida'];
+  
+  const querAnalise = analiseKeywords.some(keyword => msg.includes(keyword));
+  
+  // Se não quer análise, respostas simples e amigáveis
+  if (!querAnalise) {
+    if (msg.includes('oi') || msg.includes('olá') || msg.includes('ola')) {
+      return `🐶 Oi! Tudo bem? Sou o Tobby, seu assistente financeiro. Como posso ajudar você hoje?`;
+    }
+    if (msg.includes('obrigado') || msg.includes('valeu')) {
+      return `🐶 Por nada! Fico feliz em ajudar. Estou sempre aqui quando precisar! 🐾`;
+    }
+    if (msg.includes('tudo bem') || msg.includes('como você está')) {
+      return `🐶 Estou muito bem, obrigado por perguntar! E você, como está? Como posso ajudar hoje?`;
+    }
+    if (msg.includes('quem é você') || msg.includes('quem e voce')) {
+      return `🐶 Sou o Tobby! Seu assistente financeiro pessoal. Ajudo você a organizar suas contas, dar dicas de economia e responder perguntas sobre finanças. Que tal me perguntar algo sobre investimentos ou como economizar?`;
+    }
+    if (msg.includes('ajuda') || msg.includes('help') || msg.includes('comandos')) {
+      return `🐶 Aqui estão algumas coisas que posso fazer:
+
+• "Analise minhas finanças" - diagnóstico completo
+• "Como economizar?" - dicas personalizadas
+• "Dicas de investimentos" - guia para iniciantes
+• "Como sair das dívidas" - plano de ação
+• Perguntas gerais sobre finanças, economia, investimentos
+
+O que você gostaria de saber hoje? 🐶`;
+    }
+    
+    return `🐶 Olá! Sou o Tobby, seu assistente financeiro. Posso ajudar com dicas de economia, investimentos ou responder perguntas sobre finanças. Se quiser uma análise das suas finanças, é só pedir: "analise minhas finanças"! O que você precisa?`;
+  }
+  
+  // Se quer análise, usa os dados do usuário
   const salary = context?.salary || 0;
   const billsCount = context?.billsCount || 0;
   const pendingBills = context?.pendingBills || 0;
@@ -69,48 +120,35 @@ function getFallbackReply(message, context) {
   const commitmentPercent = context?.commitmentPercent || 0;
   const freeMoney = context?.freeMoney || salary;
 
-  const msg = message.toLowerCase();
-  
-  if (msg.includes('analise') || msg.includes('análise') || msg.includes('finanças') || msg.includes('contas')) {
+  if (msg.includes('analise') || msg.includes('análise') || msg.includes('finanças')) {
     if (lateBills > 0) {
-      return `🐶 ANALISE FINANCEIRA COMPLETA
+      return `🐶 ANALISE FINANCEIRA
 
-⚠️ ALERTA CRITICO: Você tem ${lateBills} conta(s) atrasada(s)!
+⚠️ Você tem ${lateBills} conta(s) atrasada(s)!
 
-📊 SEU PANORAMA ATUAL:
+📊 SEUS NUMEROS:
 • Salário: R$ ${salary.toLocaleString('pt-BR')}
-• Contas no total: ${billsCount}
 • Contas atrasadas: ${lateBills}
 • Contas pendentes: ${pendingBills}
-• Gastos mensais: R$ ${totalCommitted.toLocaleString('pt-BR')}
-• Comprometimento da renda: ${commitmentPercent}%
+• Comprometimento: ${commitmentPercent}%
 • Saldo livre: R$ ${freeMoney.toLocaleString('pt-BR')}
 
-🎯 PLANO DE ACAO:
-1. PRIORIDADE MAXIMA: Pague as ${lateBills} contas atrasadas imediatamente
-2. NEGOCIACAO: Entre em contato com os credores para renegociar multas
-3. CORTE DE GASTOS: Reduza despesas não essenciais pelos próximos 30 dias
-4. REORGANIZACAO: Use o Tobby para agendar todas as contas do próximo mês
+🎯 RECOMENDACOES:
+1. Pague as contas atrasadas o mais rápido possível
+2. Negocie multas com os credores
+3. Corte gastos não essenciais por 30 dias
 
-💡 Previsão: Se seguir este plano, em 60 dias sua situação estará regularizada.
-
-🐶 Precisa de ajuda para priorizar quais contas pagar primeiro?`;
+Precisa de ajuda para priorizar as contas? 🐶`;
     }
     
     if (billsCount === 0) {
-      return `🐶 VAMOS COMECAR!
-
-📊 VOCE AINDA NAO TEM CONTAS CADASTRADAS
+      return `🐶 VOCE AINDA NAO TEM CONTAS CADASTRADAS
 
 • Salário: R$ ${salary.toLocaleString('pt-BR')}
-• Contas cadastradas: 0
 
-🎯 PRIMEIROS PASSOS:
-1. Vá na aba "Contas" e cadastre suas despesas fixas (aluguel, energia, internet)
-2. Adicione gastos variáveis (supermercado, transporte, lazer)
-3. Quanto mais dados você cadastrar, melhores serão minhas análises!
+Para eu poder analisar suas finanças, cadastre suas contas na aba "Contas" do aplicativo. Assim posso te dar um diagnóstico completo!
 
-🐶 Vamos nessa? Estou aqui para te ajudar em cada passo!`;
+Vamos começar? 🐶`;
     }
     
     return `🐶 RESUMO FINANCEIRO
@@ -120,38 +158,42 @@ function getFallbackReply(message, context) {
 • Contas cadastradas: ${billsCount}
 • Pendentes: ${pendingBills}
 • Atrasadas: ${lateBills}
-• Gastos mensais: R$ ${totalCommitted.toLocaleString('pt-BR')}
 • Comprometimento: ${commitmentPercent}%
 • Saldo livre: R$ ${freeMoney.toLocaleString('pt-BR')}
 
-🎯 CLASSIFICACAO: ${commitmentPercent <= 50 ? '✅ Financeiro Saudavel' : (commitmentPercent <= 70 ? '⚠️ Atencao Necessaria' : '🔴 Risco Financeiro')}
+${commitmentPercent <= 50 ? '✅ Sua situação financeira está saudável!' : (commitmentPercent <= 70 ? '⚠️ Atenção: Seu comprometimento está alto!' : '🔴 Alerta: Risco financeiro detectado!')}
 
-🐶 Como posso te ajudar a melhorar sua saude financeira?`;
+Como posso ajudar a melhorar? 🐶`;
   }
   
   if (msg.includes('investir') || msg.includes('investimento')) {
-    return `🐶 GUIA DE INVESTIMENTOS PARA INICIANTES
+    return `🐶 DICAS DE INVESTIMENTOS
 
-💰 COM SEU PERFIL (Sobra: R$ ${freeMoney.toLocaleString('pt-BR')}/mes)
+💰 Com seu perfil (saldo livre: R$ ${freeMoney.toLocaleString('pt-BR')}/mes)
 
 📊 POR ONDE COMECAR:
-1. Tesouro Selic (segurança máxima, liquidez diaria)
-2. CDB 100% CDI (proteção FGC, rendimento bom)
-3. LCI/LCA (isentos de IR, seguros)
+1. Tesouro Selic (seguro e liquido)
+2. CDB 100% CDI (protegido pelo FGC)
+3. LCI/LCA (isentos de IR)
 
-🐶 Quer simular quanto seu dinheiro renderia?`;
+Quer saber mais sobre alguma dessas opções? 🐶`;
   }
   
-  return `🐶 Ola! Sou o Tobby, seu assistente financeiro!
+  if (msg.includes('economizar') || msg.includes('poupar')) {
+    return `🐶 DICAS PARA ECONOMIZAR
 
-💰 Tenho acesso aos seus dados: salario de R$ ${salary.toLocaleString('pt-BR')}, ${billsCount} contas cadastradas.
+📋 PLANO PRATICO:
+1. Liste todos os gastos (use o Tobby!)
+2. Corte assinaturas que não usa
+3. Cozinhe mais em casa
+4. Use transporte público quando possivel
 
-📊 O que posso fazer por voce?
-• "Analise minhas finanças" - diagnóstico completo
-• "Como economizar?" - dicas personalizadas
-• "Dicas de investimentos" - guia para iniciantes
+💰 Potencial de economia: 20-30% dos gastos atuais!
 
-🐶 O que você gostaria de saber hoje?`;
+Quer ajuda para identificar onde cortar? 🐶`;
+  }
+  
+  return `🐶 Entendi sua pergunta! Para te dar a melhor resposta, você poderia me dar mais detalhes? Ou se quiser uma análise completa das suas finanças, é só pedir "analise minhas finanças"! 🐾`;
 }
 
 router.post('/chat', async (req, res) => {
@@ -164,17 +206,27 @@ router.post('/chat', async (req, res) => {
     
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
     
+    // Verificar se o usuário PEDIU para analisar as finanças
+    const msgLower = message.toLowerCase();
+    const analiseKeywords = ['analise', 'análise', 'finanças', 'minhas contas', 'meu salário', 'meus gastos', 'situação financeira'];
+    const useFinancialData = analiseKeywords.some(keyword => msgLower.includes(keyword));
+    
+    // Se não tem chave ou é fake, usa fallback
     if (!GROQ_API_KEY || GROQ_API_KEY === '12345') {
-      const reply = getFallbackReply(message, context);
+      const reply = getFallbackReply(message, useFinancialData, context);
       return res.json({ reply });
     }
     
-    const reply = await getGroqReply(message, context);
+    // Usa Groq
+    const reply = await getGroqReply(message, context, useFinancialData);
     res.json({ reply });
     
   } catch (error) {
     console.error('Erro no chat:', error);
-    const reply = getFallbackReply(req.body.message, req.body.context);
+    const msgLower = req.body.message?.toLowerCase() || '';
+    const analiseKeywords = ['analise', 'análise', 'finanças', 'minhas contas'];
+    const useFinancialData = analiseKeywords.some(keyword => msgLower.includes(keyword));
+    const reply = getFallbackReply(req.body.message, useFinancialData, req.body.context);
     res.json({ reply });
   }
 });
