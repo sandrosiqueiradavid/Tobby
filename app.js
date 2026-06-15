@@ -507,34 +507,42 @@ function loadInsights() {
   el.innerHTML = `<div class="stats-grid" style="grid-template-columns: 1fr; gap: 0.5rem">${cards.map(c => `<div class="stat-card">${c}</div>`).join('')}</div>`;
 }
 
-// ===== CHAT =====
+// ===== CHAT COM IA (via backend) =====
 async function sendMsg() {
   const input = document.getElementById('chat-input');
   const q = input.value.trim();
   if (!q) return;
+  
   input.value = '';
   const msgs = document.getElementById('chat-msgs');
   msgs.innerHTML += `<div class="msg msg-user">${escapeHtml(q)}</div>`;
   msgs.scrollTop = msgs.scrollHeight;
   document.getElementById('typing-ind').style.display = 'block';
-  const ctx = `Contexto financeiro:\n- Salário: R$ ${currentUser?.salary || 0}\n- Total de contas: ${allBills.length}\n- Pergunta: ${q}`;
+  
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const pendingBills = allBills.filter(b => b.status === 'pending').length;
+    const lateBills = allBills.filter(b => b.status === 'late').length;
+    
+    const response = await api.request('/ai/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 500,
-        system: 'Você é o Tobby IA, assistente financeiro amigável. Responda em português brasileiro.',
-        messages: [{ role: 'user', content: ctx }]
+        message: q,
+        context: {
+          salary: currentUser?.salary || 0,
+          billsCount: allBills.length,
+          pendingBills: pendingBills,
+          lateBills: lateBills
+        }
       })
     });
-    const data = await res.json();
-    let reply = data.content?.[0]?.text || 'Desculpe, tente novamente.';
+    
+    const reply = response.reply || 'Desculpe, não consegui processar sua mensagem.';
     document.getElementById('typing-ind').style.display = 'none';
     msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>${escapeHtml(reply)}</div>`;
     msgs.scrollTop = msgs.scrollHeight;
+    
   } catch (e) {
+    console.error('Erro no chat:', e);
     document.getElementById('typing-ind').style.display = 'none';
     msgs.innerHTML += `<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Erro de conexão. Tente novamente.</div>`;
   }
@@ -641,7 +649,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('loading').classList.add('hidden');
 });
 
-// Exportar funções para o escopo global (para serem chamadas pelo HTML)
+// Exportar funções para o escopo global
 window.fmt = fmt;
 window.showToast = showToast;
 window.closeModal = closeModal;

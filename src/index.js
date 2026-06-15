@@ -37,6 +37,7 @@ app.use('/api/wealth', require('./routes/wealth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/memory', require('./routes/memory'));
 app.use('/api/simulator', require('./routes/simulator'));
+app.use('/api/ai', require('./routes/ai'));  // ← NOVA ROTA DA IA
 
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
@@ -44,6 +45,7 @@ app.get('/', (req, res) => res.json({
   app: '🐶 Tobby API v5.0',
   supabase: !!process.env.SUPABASE_URL,
   encryption: !!process.env.ENCRYPTION_KEY,
+  groq: !!process.env.GROQ_API_KEY,
   timestamp: new Date().toISOString()
 }));
 
@@ -60,16 +62,15 @@ app.get('/api/diagnose', async (req, res) => {
     timestamp: new Date().toISOString(),
     environment: {
       NODE_ENV: process.env.NODE_ENV || 'development',
-      encryption_key_configured: !!process.env.ENCRYPTION_KEY
+      encryption_key_configured: !!process.env.ENCRYPTION_KEY,
+      groq_key_configured: !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345'
     },
     supabase_configured: {
       SUPABASE_URL: !!process.env.SUPABASE_URL,
       SUPABASE_SECRET_KEY: !!process.env.SUPABASE_SECRET_KEY
     },
     jwt_configured: !!process.env.JWT_SECRET,
-    admin_configured: !!process.env.ADMIN_KEY,
-    memory_table_exists: true,
-    simulator_routes: true
+    admin_configured: !!process.env.ADMIN_KEY
   });
 });
 
@@ -103,24 +104,7 @@ app.listen(PORT, () => {
   console.log(`📍 Health: http://localhost:${PORT}/health`);
   console.log(`🔍 Diagnóstico: http://localhost:${PORT}/api/diagnose`);
   console.log(`🔐 Criptografia: ${process.env.ENCRYPTION_KEY ? '✅ ATIVA' : '❌ INATIVA'}`);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('📋 VARIÁVEIS DE AMBIENTE:');
-  console.log(`  SUPABASE_URL: ${process.env.SUPABASE_URL ? '✅' : '❌'}`);
-  console.log(`  SUPABASE_SECRET_KEY: ${process.env.SUPABASE_SECRET_KEY ? '✅' : '❌'}`);
-  console.log(`  JWT_SECRET: ${process.env.JWT_SECRET ? '✅' : '❌'}`);
-  console.log(`  ADMIN_KEY: ${process.env.ADMIN_KEY ? '✅' : '❌'}`);
-  console.log(`  ENCRYPTION_KEY: ${process.env.ENCRYPTION_KEY ? '✅' : '❌'}`);
-  console.log(`  RESEND_API_KEY: ${process.env.RESEND_API_KEY ? '✅' : '❌'}`);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🧠 Rotas ativas:');
-  console.log('  - /api/auth (autenticação)');
-  console.log('  - /api/user (perfil)');
-  console.log('  - /api/bills (contas)');
-  console.log('  - /api/investment (investimentos)');
-  console.log('  - /api/loans (financiamentos)');
-  console.log('  - /api/wealth (patrimônio)');
-  console.log('  - /api/memory (memória da IA)');
-  console.log('  - /api/simulator (simulador de decisões)');
+  console.log(`🤖 Groq API: ${process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345' ? '✅ CONFIGURADA' : '⚠️ EM MODO DEMO'}`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 
