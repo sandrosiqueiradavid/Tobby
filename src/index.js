@@ -46,9 +46,8 @@ app.use('/api/cash-forecast', require('./routes/cashForecast'));
 app.use('/api/monthly-report', require('./routes/monthlyReport'));
 app.use('/api/market-indicators', require('./routes/marketIndicators'));
 app.use('/api/timeline', require('./routes/timeline').router);
-// Opcional - se não tiver o arquivo, comente ou remova
 app.use('/api/notifications', require('./routes/notifications').router);
-
+app.use('/api/categories', require('./routes/categories'));
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
   status: 'ok',

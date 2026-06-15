@@ -1,5 +1,5 @@
 🐶 TOBBY - DOCUMENTAÇÃO COMPLETA DO PROJETO
-Versão 5.1 - Com Criptografia AES-256 e IA Groq
+Versão 6.0 - Score Financeiro, Metas, Reserva de Emergência e IA Analista
 
 📌 1. VISÃO GERAL DO PROJETO
 Tobby é um organizador financeiro pessoal com personalidade, projetado para ser um "companheiro financeiro". O nome é uma homenagem ao cachorro Tobby Maguire.
@@ -10,6 +10,8 @@ Filosofia
 - Foco em personalidade e conexão emocional com o usuário
 - IA que conversa de forma natural e personalizada
 - Privacidade em primeiro lugar (dados criptografados)
+- Gamificação e conquistas para engajamento
+- Análise financeira profunda com inteligência artificial
 
 🏗️ 2. ARQUITETURA
 Stack Tecnológico
@@ -43,12 +45,27 @@ Tobby/
 │   │   ├── wealthController.js    # Patrimônio
 │   │   └── adminController.js     # Dashboard administrativo
 │   ├── routes/                    # Rotas da API
+│   │   ├── auth.js
+│   │   ├── user.js
+│   │   ├── bills.js
+│   │   ├── financialGoals.js      # Metas financeiras
+│   │   ├── emergencyFund.js       # Reserva de emergência
+│   │   ├── financialScore.js      # Score financeiro
+│   │   ├── achievements.js        # Conquistas
+│   │   ├── ai.js                  # Chat e análise com Groq
+│   │   ├── cashForecast.js        # Previsão de caixa
+│   │   ├── monthlyReport.js       # Relatório mensal
+│   │   ├── marketIndicators.js    # Indicadores econômicos
+│   │   ├── timeline.js            # Linha do tempo financeira
+│   │   └── ...
 │   ├── middleware/
 │   │   └── auth.js                # Verificação JWT
 │   ├── db/
 │   │   └── supabase.js            # Cliente Supabase
 │   ├── utils/
 │   │   └── crypto.js              # AES-256
+│   ├── jobs/
+│   │   └── weeklyReportJob.js     # Relatório semanal por e-mail
 │   └── index.js                   # Servidor Express
 ├── admin/
 │   └── index.html                 # Painel administrativo
@@ -58,10 +75,31 @@ Tobby/
 ├── sw.js                          # Service Worker
 └── package.json                   # Dependências
 
+🗄️ 4. BANCO DE DADOS (SUPABASE)
+Principais Tabelas:
+- users (usuários + criptografia)
+- bills (contas com value_encrypted)
+- investments (investimentos criptografados)
+- loans (financiamentos criptografados)
+- assets (bens criptografados)
+- audit_log (auditoria de alterações)
+- financial_goals (metas financeiras)
+- emergency_fund (reserva de emergência)
+- financial_score (cache do score)
+- achievements (conquistas disponíveis)
+- user_achievements (conquistas do usuário)
+- conversation_memory (memória da IA)
+- push_subscriptions (notificações push)
+- financial_timeline (linha do tempo)
+- cash_forecast (previsão de caixa)
+- monthly_reports (relatórios mensais)
+
 🔐 5. CRIPTOGRAFIA
 - Algoritmo: AES-256-CBC
 - Chave: 32 bytes (64 caracteres hex) via ENCRYPTION_KEY
-- Campos criptografados: salary_encrypted, value_encrypted, purchase_price_encrypted, current_price_encrypted, total_principal_encrypted, outstanding_balance_encrypted, monthly_payment_encrypted, estimated_value_encrypted
+- Campos criptografados: salary_encrypted, value_encrypted, purchase_price_encrypted, 
+  current_price_encrypted, total_principal_encrypted, outstanding_balance_encrypted, 
+  monthly_payment_encrypted, estimated_value_encrypted
 
 Gerar chave: node -e "console.log(crypto.randomBytes(32).toString('hex'))"
 
@@ -97,9 +135,27 @@ POST   /api/hollerith/process
 GET    /api/hollerith/report
 GET    /api/hollerith/ir-declaration
 POST   /api/bank/process
-POST   /api/ai/chat
+POST   /api/ai/chat          # Conversa com IA
+POST   /api/ai/analyze       # Análise financeira profunda
+GET    /api/memory
+POST   /api/memory
+DELETE /api/memory/:key
+GET    /api/goals/goals
+POST   /api/goals/goals
+PUT    /api/goals/goals/:id
+DELETE /api/goals/goals/:id
+GET    /api/emergency-fund
+PUT    /api/emergency-fund
+GET    /api/score
+POST   /api/score/recalculate
+GET    /api/achievements
+GET    /api/cash-forecast     # Previsão de caixa
+GET    /api/monthly-report    # Relatório mensal
+GET    /api/monthly-report/history
+GET    /api/market-indicators # Selic, IPCA, Dólar, Bitcoin
+GET    /api/timeline          # Linha do tempo financeira
 
-Admin (requer header x-admin-key: tobbyadmin2024):
+Admin (requer header x-admin-key):
 GET /api/admin/health
 GET /api/admin/metrics
 GET /api/admin/logs
@@ -109,19 +165,26 @@ GET /api/admin/dashboard
 Telas (Tabs): Início, Contas, Investir, Dívidas, Patrimônio, IA
 
 Componentes Especiais:
-- TobyMood: Cachorro que muda de expressão (😟 preocupado, 🧐 atento, 😊 feliz, 🏆 orgulhoso, 🐶 normal)
+- Score Financeiro: Pontuação 0-100 com emoji animado
+- Reserva de Emergência: Cálculo automático de meses de segurança
+- Metas Financeiras: Criação e acompanhamento de objetivos
+- Previsão de Caixa: Projeção de saldo para o fim do mês
+- Relatório Mensal: Carta personalizada do Tobby
+- Linha do Tempo: Evolução financeira do usuário
+- TobyMood: Cachorro que muda de expressão
 - Missão da Semana: Gamificação leve
 - Tema Claro/Escuro: Alternância com persistência
 - Design Responsivo: Web e mobile
 - PWA: Instalável no celular
-- Chat com IA Groq: Assistente financeiro gratuito e rápido
+- Chat com IA Groq: Assistente financeiro
+- IA Analista: Análise financeira profunda
 
 🔧 8. VARIÁVEIS DE AMBIENTE (RENDER)
 Obrigatórias:
 SUPABASE_URL = https://seu-projeto.supabase.co
 SUPABASE_SECRET_KEY = sua_service_role_key
 JWT_SECRET = sua_chave_jwt_segura
-ADMIN_KEY = tobbyadmin2024
+ADMIN_KEY = 8fX#92Lm@Qz71P!kW  (gerar aleatoriamente)
 
 Recomendadas:
 ENCRYPTION_KEY = 64_caracteres_hex_aqui
@@ -145,16 +208,18 @@ Frontend (GitHub Pages):
 🔍 10. DIAGNÓSTICO E TESTES
 Verificar backend: curl https://tobby-api.onrender.com/health
 Verificar criptografia: curl https://tobby-api.onrender.com/ (deve mostrar "encryption": true)
+Verificar Groq: curl https://tobby-api.onrender.com/api/diagnose (groq_key_configured: true)
 Testar registro: POST para /api/auth/register
 Testar login: POST para /api/auth/login
-Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: tobbyadmin2024)
+Testar análise IA: POST para /api/ai/analyze
+Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#92Lm@Qz71P!kW)
 
 🐛 11. PROBLEMAS CONHECIDOS E SOLUÇÕES
 - Supabase desconectado: Remover /rest/v1/ da URL
 - Erro PGRST125: Verificar nome da tabela (users, não tobby_users)
 - Timeout no Supabase: Projeto gratuito hiberna
 - Criptografia não funciona: Adicionar ENCRYPTION_KEY no Render
-- Erro 401 no admin: Usar tobbyadmin2024 no header x-admin-key
+- Erro 401 no admin: Usar ADMIN_KEY correta no header x-admin-key
 - IA não responde: Configurar GROQ_API_KEY no Render
 
 📦 12. DEPENDÊNCIAS (package.json)
@@ -167,32 +232,101 @@ Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: tobb
 - multer: ^1.4.5-lts.1
 - pdf-parse: ^1.1.1
 
-📝 13. FUNCIONALIDADES IMPLEMENTADAS
-✅ Autenticação JWT completa
-✅ CRUD de contas
-✅ Dashboard financeiro
-✅ Investimentos
-✅ Financiamentos com simulação
-✅ Patrimônio líquido
-✅ Cadastro de bens
-✅ Leitura de nota fiscal via câmera
-✅ Leitura de holerite via texto
-✅ Importação de extrato bancário
-✅ Informe de rendimentos para IR
-✅ Chat com IA Groq (gratuito e rápido)
-✅ Tema claro/escuro
-✅ Design responsivo
-✅ Tobby reativo
-✅ Missão da semana
-✅ Painel administrativo
-✅ PWA
-✅ Criptografia AES-256
+📝 13. FUNCIONALIDADES IMPLEMENTADAS (CHECKLIST)
+✅ Concluído na Versão 6.0:
+- Autenticação JWT completa
+- CRUD de contas a pagar/receber
+- Dashboard financeiro com saldo e percentuais
+- Investimentos com cotações
+- Financiamentos com simulação de amortização extra
+- Patrimônio líquido (ativos vs passivos)
+- Cadastro de bens (imóveis, veículos, reservas)
+- Leitura de nota fiscal via câmera
+- Leitura de holerite via texto
+- Importação de extrato bancário (CSV, OFX, texto)
+- Informe de rendimentos para IR
+- Chat com IA Groq (gratuito e rápido)
+- IA Analista Financeira (análise profunda)
+- Tema claro/escuro com persistência
+- Design responsivo (web + mobile)
+- Tobby reativo (muda de expressão)
+- Missão da semana (gamificação)
+- Painel administrativo com métricas
+- PWA (instalável no celular)
+- Criptografia AES-256 para dados sensíveis
+- Auditoria completa (tabela audit_log)
+- Score Financeiro (0-100)
+- Metas Financeiras
+- Reserva de Emergência
+- Memória persistente da IA
+- Relatório semanal por e-mail
+- Previsão de Caixa
+- Relatório Mensal do Tobby
+- Linha do Tempo Financeira
+- Central de Indicadores (Selic, IPCA, Dólar, Bitcoin)
+- Estrutura de Conquistas
 
-🚧 Em andamento / Pendentes
+🚧 Em andamento / Pendentes para v6.1:
+- Interface de Conquistas no frontend
+- Gamificação completa
 - Envio de notificações WhatsApp
 - Leitura de PDF com IA
 - Domínio personalizado
 
-🎯 14. RESUMO PARA IA
-Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS). Autenticação JWT. Criptografia AES-256 para dados sensíveis. Funcionalidades: controle de contas, investimentos, financiamentos (simulação de amortização), patrimônio (bens), leitura de nota fiscal por foto, leitura de holerite, importação de extrato (CSV/OFX/texto), informe de IR, chat com IA Groq (gratuito, modelo Llama 3.3 70B). Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcionais: ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA).
+🎯 14. SCORE FINANCEIRO (Cálculo)
+O Score Tobby é calculado com os seguintes pesos:
+
+| Fator | Peso | O que avalia |
+|-------|------|--------------|
+| Dívidas | 30% | Quanto da renda está comprometida |
+| Contas atrasadas | 20% | Percentual de contas em atraso |
+| Patrimônio | 20% | Ativos vs passivos |
+| Reserva de emergência | 15% | Meses de segurança |
+| Investimentos | 15% | Percentual da renda investido |
+
+Classificações:
+- 90-100: Excelente! 🏆
+- 70-89: Bom! ✅
+- 50-69: Regular ⚠️
+- 30-49: Atenção 🔴
+- 0-29: Crítico ⚠️
+
+📈 15. IA ANALISTA FINANCEIRA
+O Tobby possui um endpoint especializado `/api/ai/analyze` que:
+- Analisa automaticamente gastos, investimentos e dívidas
+- Calcula taxa de economia e distribuição de gastos
+- Gera insights personalizados baseados nos dados reais
+- Produz carta mensal do Tobby com evolução financeira
+- Registra auditoria de todas as análises
+
+🏆 16. CONQUISTAS
+Conquistas planejadas:
+- Primeira Conta (📋)
+- Mês sem Atraso (✅)
+- Reserva Iniciada (🏦)
+- Investidor Iniciante (📈)
+- Meta Alcançada (🎯)
+- Score 70+ (🏆)
+- Score 90+ (👑)
+- Economizador (💰)
+- Tobby Amigo (🐶)
+
+📊 17. PREVISÃO DE CAIXA
+Funcionalidade que projeta o saldo final do mês baseado em:
+- Salário do usuário
+- Contas já pagas
+- Contas previstas para vencer
+- Status: crítico, alerta ou seguro
+
+📅 18. RELATÓRIO MENSAL
+Todo mês o Tobby gera uma carta personalizada com:
+- Comparativo com mês anterior
+- Evolução do score
+- Progresso das metas
+- Análise de gastos por categoria
+- Dicas personalizadas
+
+🎯 19. RESUMO PARA IA
+Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS). Autenticação JWT. Criptografia AES-256 para dados sensíveis. Funcionalidades: controle de contas, investimentos, financiamentos (simulação de amortização), patrimônio (bens), leitura de nota fiscal por foto, leitura de holerite, importação de extrato (CSV/OFX/texto), informe de IR, chat com IA Groq (gratuito, modelo Llama 3.3 70B), IA Analista Financeira, Score Financeiro (0-100), Metas Financeiras, Reserva de Emergência, Previsão de Caixa, Relatório Mensal, Linha do Tempo Financeira, Central de Indicadores (Selic, IPCA, Dólar, Bitcoin), Auditoria completa, Conquistas. Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcionais: ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA), RESEND_API_KEY (e-mails).
+
 Com este documento, qualquer IA pode entender exatamente o que foi construído e continuar o desenvolvimento! 🐶📚
