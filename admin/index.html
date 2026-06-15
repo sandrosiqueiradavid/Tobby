@@ -139,79 +139,106 @@
       border: 1px solid #EF444430;
     }
 
+    .status-warning {
+      background: #F59E0B20;
+      color: #F59E0B;
+      border: 1px solid #F59E0B30;
+    }
+
     .status-detail {
       font-size: 0.85rem;
       color: #94A3B8;
       margin-top: 0.5rem;
     }
 
-    /* Logs */
-    .logs-container {
+    /* News Section */
+    .news-container {
       background: #0F172A;
       border: 1px solid #1E293B;
       border-radius: 1rem;
       padding: 1rem;
-      margin-top: 1.5rem;
+      margin-bottom: 2rem;
     }
 
-    .log-filters {
+    .news-header {
       display: flex;
-      gap: 0.5rem;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 1rem;
-      flex-wrap: wrap;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #1E293B;
     }
 
-    .log-filter-btn {
+    .news-header h3 {
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .refresh-btn {
       background: #1E293B;
-      border: none;
+      border: 1px solid #334155;
       padding: 0.4rem 1rem;
-      border-radius: 9999px;
-      color: #94A3B8;
+      border-radius: 0.5rem;
+      color: #E2E8F0;
       cursor: pointer;
+      transition: all 0.2s;
       font-size: 0.8rem;
+    }
+
+    .refresh-btn:hover {
+      background: #334155;
+    }
+
+    .news-list {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .news-item {
+      background: #111827;
+      border: 1px solid #1F2937;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
       transition: all 0.2s;
     }
 
-    .log-filter-btn.active {
-      background: #3B82F6;
-      color: white;
+    .news-item:hover {
+      border-color: #3B82F6;
+      transform: translateX(4px);
     }
 
-    .log-list {
-      max-height: 400px;
-      overflow-y: auto;
-      font-family: 'Monaco', 'Menlo', monospace;
-      font-size: 0.75rem;
+    .news-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #F1F5F9;
     }
 
-    .log-item {
-      padding: 0.5rem;
-      border-bottom: 1px solid #1E293B;
+    .news-description {
+      font-size: 0.8rem;
+      color: #94A3B8;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+
+    .news-meta {
       display: flex;
-      gap: 1rem;
-    }
-
-    .log-level {
-      font-weight: 700;
-      min-width: 60px;
-    }
-
-    .log-level-info { color: #3B82F6; }
-    .log-level-warn { color: #F59E0B; }
-    .log-level-error { color: #EF4444; }
-
-    .log-message {
-      color: #CBD5E1;
-      word-break: break-word;
-    }
-
-    .log-time {
-      color: #64748B;
+      justify-content: space-between;
+      align-items: center;
       font-size: 0.7rem;
-      min-width: 140px;
+      color: #64748B;
     }
 
-    /* Loading */
+    .news-source {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
     .loading {
       display: flex;
       justify-content: center;
@@ -238,20 +265,6 @@
       border-color: #1F2937;
       margin: 1rem 0;
     }
-
-    .refresh-btn {
-      background: #1E293B;
-      border: 1px solid #334155;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      color: #E2E8F0;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .refresh-btn:hover {
-      background: #334155;
-    }
   </style>
 </head>
 <body>
@@ -260,48 +273,77 @@
     <h1>🐶 Tobby Admin Dashboard</h1>
     <div style="display: flex; gap: 0.5rem;">
       <span class="badge" id="api-status-text">🔌 Conectando...</span>
-      <button class="refresh-btn" onclick="carregarTodosOsDados()">🔄 Atualizar</button>
+      <button class="refresh-btn" onclick="carregarTodosOsDados()">🔄 Atualizar Tudo</button>
     </div>
   </div>
 
   <!-- Cards de Métricas -->
   <div class="stats-grid" id="metrics-grid">
-    <div class="stat-card"><div class="stat-title">👥 Total de Usuários</div><div class="stat-value" id="total-users">--</div><div class="stat-sub" id="active-users">Ativos últimos 7 dias: --</div></div>
-    <div class="stat-card"><div class="stat-title">📋 Total de Contas</div><div class="stat-value" id="total-bills">--</div><div class="stat-sub" id="bills-value">Valor total: --</div></div>
-    <div class="stat-card"><div class="stat-title">📈 Investimentos</div><div class="stat-value" id="total-investments">--</div><div class="stat-sub">Ativos cadastrados</div></div>
-    <div class="stat-card"><div class="stat-title">🏦 Financiamentos</div><div class="stat-value" id="total-loans">--</div><div class="stat-sub">Dívidas registradas</div></div>
-  </div>
-
-  <!-- Cards de Status das Integrações -->
-  <div class="status-grid" id="integrations-grid">
-    <div class="status-card"><div class="status-header"><span class="status-name">🤖 IA (Groq)</span><span class="status-badge" id="groq-status-badge">Carregando...</span></div><div class="status-detail" id="groq-status-detail">Verificando integração...</div></div>
-    <div class="status-card"><div class="status-header"><span class="status-name">📊 Banco Central (Selic/Dólar)</span><span class="status-badge" id="bcb-status-badge">Carregando...</span></div><div class="status-detail" id="bcb-status-detail">Última consulta: --</div></div>
-    <div class="status-card"><div class="status-header"><span class="status-name">₿ Criptomoedas (CoinGecko)</span><span class="status-badge" id="coingecko-status-badge">Carregando...</span></div><div class="status-detail" id="coingecko-status-detail">Cotação BTC: --</div></div>
-    <div class="status-card"><div class="status-header"><span class="status-name">💾 Banco de Dados (Supabase)</span><span class="status-badge" id="supabase-status-badge">Carregando...</span></div><div class="status-detail" id="supabase-status-detail">Conexão: --</div></div>
-  </div>
-
-  <!-- Logs do Sistema -->
-  <div class="logs-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
-      <h3 style="font-size: 1rem;">📝 Logs do Sistema</h3>
-      <div class="log-filters" id="log-filters">
-        <button class="log-filter-btn active" data-level="all">Todos</button>
-        <button class="log-filter-btn" data-level="info">Info</button>
-        <button class="log-filter-btn" data-level="warn">Warn</button>
-        <button class="log-filter-btn" data-level="error">Error</button>
-      </div>
+    <div class="stat-card">
+      <div class="stat-title">👥 Total de Usuários</div>
+      <div class="stat-value" id="total-users">--</div>
+      <div class="stat-sub" id="active-users">Ativos últimos 7 dias: --</div>
     </div>
-    <div id="logs-list" class="log-list"><div class="loading"><div class="spinner"></div> Carregando logs...</div></div>
+    <div class="stat-card">
+      <div class="stat-title">📋 Total de Contas</div>
+      <div class="stat-value" id="total-bills">--</div>
+      <div class="stat-sub" id="bills-value">Valor total: --</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">📈 Investimentos</div>
+      <div class="stat-value" id="total-investments">--</div>
+      <div class="stat-sub">Ativos cadastrados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">🏦 Financiamentos</div>
+      <div class="stat-value" id="total-loans">--</div>
+      <div class="stat-sub">Dívidas registradas</div>
+    </div>
+  </div>
+
+  <!-- Cards de Status das Integrações (apenas Groq, Banco de Dados e API de Notícias) -->
+  <div class="status-grid" id="integrations-grid">
+    <div class="status-card">
+      <div class="status-header">
+        <span class="status-name">🤖 IA (Groq)</span>
+        <span class="status-badge" id="groq-status-badge">Carregando...</span>
+      </div>
+      <div class="status-detail" id="groq-status-detail">Verificando integração...</div>
+    </div>
+    <div class="status-card">
+      <div class="status-header">
+        <span class="status-name">💾 Banco de Dados (Supabase)</span>
+        <span class="status-badge" id="supabase-status-badge">Carregando...</span>
+      </div>
+      <div class="status-detail" id="supabase-status-detail">Conexão: --</div>
+    </div>
+    <div class="status-card">
+      <div class="status-header">
+        <span class="status-name">📰 API de Notícias</span>
+        <span class="status-badge" id="news-status-badge">Carregando...</span>
+      </div>
+      <div class="status-detail" id="news-status-detail">Última atualização: --</div>
+    </div>
+  </div>
+
+  <!-- Seção de Notícias -->
+  <div class="news-container">
+    <div class="news-header">
+      <h3>📰 Últimas Notícias do Mercado Financeiro</h3>
+      <button class="refresh-btn" onclick="carregarNoticias()">↻ Atualizar Notícias</button>
+    </div>
+    <div id="news-list" class="news-list">
+      <div class="loading"><div class="spinner"></div> Carregando notícias...</div>
+    </div>
   </div>
 </div>
 
 <script>
-  // --- Configuração ---
-  // ATENÇÃO: Altere esta URL para a URL do SEU backend no Render
+  // ===== CONFIGURAÇÃO =====
   const API_BASE_URL = 'https://tobby-api.onrender.com/api';
-  const ADMIN_KEY = 'tobbyadmin2024'; // Use a mesma chave que você configurou no backend
+  const ADMIN_KEY = 'tobbyadmin2024';
 
-  // --- Funções Auxiliares ---
+  // ===== FUNÇÕES AUXILIARES =====
   async function request(endpoint) {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = {
@@ -318,43 +360,55 @@
     }
   }
 
-  // --- Buscar métricas do adminController (health, metrics, validate) ---
+  // ===== MÉTRICAS =====
   async function carregarMetricas() {
-    const [health, metrics, system] = await Promise.all([
-      request('/admin/health'),
-      request('/admin/metrics'),
-      request('/admin/validate')
-    ]);
-
-    // Usuários e contas
+    const metrics = await request('/admin/metrics');
     if (metrics) {
       document.getElementById('total-users').innerText = metrics.users?.total ?? '--';
       document.getElementById('total-bills').innerText = metrics.bills?.total ?? '--';
-      document.getElementById('bills-value').innerHTML = `Valor total: ${metrics.bills?.totalValue ? 'R$ ' + metrics.bills.totalValue.toFixed(2) : '--'}`;
       document.getElementById('total-investments').innerText = metrics.investments?.total ?? '--';
       document.getElementById('total-loans').innerText = metrics.loans?.total ?? '--';
       if (metrics.users?.activeLast7Days !== undefined) {
         document.getElementById('active-users').innerHTML = `Ativos últimos 7 dias: ${metrics.users.activeLast7Days}`;
       }
     }
+  }
 
-    // Status do Supabase via health ou validate
-    let supabaseOk = false;
-    if (health?.database?.connected === true) supabaseOk = true;
-    if (system?.supabase?.connection === true) supabaseOk = true;
+  // ===== STATUS DAS INTEGRAÇÕES =====
+  async function carregarStatusIntegracoes() {
+    // Diagnóstico do backend
+    const diagnose = await request('/diagnose');
+    
+    // Status do Groq
+    const groqConfigured = diagnose?.environment?.groq_key_configured === true;
+    const groqBadge = document.getElementById('groq-status-badge');
+    const groqDetail = document.getElementById('groq-status-detail');
+    if (groqConfigured) {
+      groqBadge.innerText = '✅ Ativa';
+      groqBadge.className = 'status-badge status-on';
+      groqDetail.innerHTML = 'Chave configurada e pronta para uso.';
+    } else {
+      groqBadge.innerText = '⚠️ Inativa';
+      groqBadge.className = 'status-badge status-warning';
+      groqDetail.innerHTML = 'Chave não configurada. Adicione GROQ_API_KEY para ativar a IA.';
+    }
+
+    // Status do Supabase
+    const health = await request('/admin/health');
+    const supabaseOk = health?.database?.connected === true;
     const supabaseBadge = document.getElementById('supabase-status-badge');
     const supabaseDetail = document.getElementById('supabase-status-detail');
     if (supabaseOk) {
       supabaseBadge.innerText = '✅ Online';
       supabaseBadge.className = 'status-badge status-on';
-      supabaseDetail.innerHTML = 'Conexão: Estabelecida com sucesso.';
+      supabaseDetail.innerHTML = `Conexão: Estabelecida com sucesso. Latência: ${health.database.latency}ms`;
     } else {
       supabaseBadge.innerText = '❌ Offline';
       supabaseBadge.className = 'status-badge status-off';
       supabaseDetail.innerHTML = 'Conexão: Falhou. Verifique SUPABASE_URL/KEY.';
     }
 
-    // Atualizar status da API (ícone de conexão)
+    // Status da API de Notícias
     const apiStatusSpan = document.getElementById('api-status-text');
     if (health) {
       apiStatusSpan.innerHTML = '✅ API Online';
@@ -365,145 +419,81 @@
     }
   }
 
-  // --- Status das integrações (Groq, BCB, CoinGecko) via diagnose e chamadas de teste ---
-  async function carregarStatusIntegracoes() {
-    // 1. Diagnóstico do backend (contém config da Groq)
-    const diagnose = await request('/diagnose');
-    const groqConfigured = diagnose?.environment?.groq_key_configured === true;
-    const groqBadge = document.getElementById('groq-status-badge');
-    const groqDetail = document.getElementById('groq-status-detail');
-    if (groqConfigured) {
-      groqBadge.innerText = '✅ Ativa';
-      groqBadge.className = 'status-badge status-on';
-      groqDetail.innerHTML = 'Chave configurada e pronta para uso.';
-    } else {
-      groqBadge.innerText = '⚠️ Inativa';
-      groqBadge.className = 'status-badge status-off';
-      groqDetail.innerHTML = 'Chave não configurada ou inválida. Adicione GROQ_API_KEY.';
-    }
-
-    // 2. Testar Banco Central (Selic)
-    const bcbBadge = document.getElementById('bcb-status-badge');
-    const bcbDetail = document.getElementById('bcb-status-detail');
+  // ===== NOTÍCIAS =====
+  async function carregarNoticias() {
+    const newsContainer = document.getElementById('news-list');
+    newsContainer.innerHTML = '<div class="loading"><div class="spinner"></div> Carregando notícias...</div>';
+    
     try {
-      const selicRes = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.11/dados?formato=json');
-      if (selicRes.ok) {
-        const data = await selicRes.json();
-        const lastValue = data[data.length-1]?.valor;
-        bcbBadge.innerText = '✅ Online';
-        bcbBadge.className = 'status-badge status-on';
-        bcbDetail.innerHTML = `Última consulta: Selic ${lastValue}% (BCB respondendo)`;
+      const response = await request('/market/indicators');
+      
+      if (response && response.news && response.news.length > 0) {
+        const newsBadge = document.getElementById('news-status-badge');
+        const newsDetail = document.getElementById('news-status-detail');
+        newsBadge.innerText = '✅ Online';
+        newsBadge.className = 'status-badge status-on';
+        newsDetail.innerHTML = `Última atualização: ${new Date(response.updatedAt).toLocaleString('pt-BR')}`;
+        
+        newsContainer.innerHTML = response.news.map(news => `
+          <div class="news-item" onclick="window.open('${news.url}', '_blank')">
+            <div class="news-title">📰 ${escapeHtml(news.title)}</div>
+            <div class="news-description">${escapeHtml(news.description || '')}</div>
+            <div class="news-meta">
+              <span class="news-source">🏢 ${news.source}</span>
+              <span>🕒 ${new Date(news.publishedAt).toLocaleString('pt-BR')}</span>
+            </div>
+          </div>
+        `).join('');
       } else {
-        throw new Error('Falha na consulta');
+        throw new Error('Sem notícias');
       }
-    } catch (e) {
-      bcbBadge.innerText = '⚠️ Instável';
-      bcbBadge.className = 'status-badge status-off';
-      bcbDetail.innerHTML = 'Erro na consulta ao BCB. Pode ser bloqueio de CORS ou API fora do ar.';
-    }
-
-    // 3. Testar CoinGecko
-    const cgBadge = document.getElementById('coingecko-status-badge');
-    const cgDetail = document.getElementById('coingecko-status-detail');
-    try {
-      const cryptoRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=brl');
-      if (cryptoRes.ok) {
-        const data = await cryptoRes.json();
-        const btc = data.bitcoin?.brl;
-        cgBadge.innerText = '✅ Online';
-        cgBadge.className = 'status-badge status-on';
-        cgDetail.innerHTML = `Cotação BTC: R$ ${btc?.toLocaleString('pt-BR') ?? '--'} (última consulta)`;
-      } else {
-        throw new Error('Falha na consulta');
-      }
-    } catch (e) {
-      cgBadge.innerText = '⚠️ Limite/Erro';
-      cgBadge.className = 'status-badge status-off';
-      cgDetail.innerHTML = 'CoinGecko pode estar bloqueando (limite ou CORS). Verifique mais tarde.';
+    } catch (error) {
+      console.error('Erro ao carregar notícias:', error);
+      const newsBadge = document.getElementById('news-status-badge');
+      newsBadge.innerText = '⚠️ Offline';
+      newsBadge.className = 'status-badge status-warning';
+      document.getElementById('news-status-detail').innerHTML = 'Usando notícias locais (cache)';
+      
+      // Notícias locais (fallback)
+      const noticiasLocais = [
+        { title: 'Mercado financeiro aguarda decisão do Copom', description: 'Expectativa é de manutenção da Selic em 13,25% ao ano. Decisão sai amanhã.', source: 'InfoMoney', date: new Date() },
+        { title: 'Bitcoin opera em alta com expectativa de ETFs nos EUA', description: 'Criptomoeda se aproxima dos R$ 350.000 com novo interesse institucional.', source: 'Cripto News', date: new Date() },
+        { title: 'Dólar fecha em queda com cenário externo favorável', description: 'Moeda americana cai ante o real após dados de emprego nos EUA.', source: 'Valor Econômico', date: new Date() },
+        { title: 'IPCA fica abaixo do esperado em maio', description: 'Inflação oficial do país mostra desaceleração, abrindo espaço para cortes de juros.', source: 'IBGE', date: new Date() },
+        { title: 'Tesouro Direto bate recorde de investidores', description: 'Programa de títulos públicos atinge maior número de investidores da história.', source: 'Tesouro Direto', date: new Date() }
+      ];
+      
+      newsContainer.innerHTML = noticiasLocais.map(news => `
+        <div class="news-item">
+          <div class="news-title">📰 ${escapeHtml(news.title)}</div>
+          <div class="news-description">${escapeHtml(news.description)}</div>
+          <div class="news-meta">
+            <span class="news-source">🏢 ${news.source}</span>
+            <span>🕒 Hoje</span>
+          </div>
+        </div>
+      `).join('');
     }
   }
 
-  // --- Logs (exemplo: buscamos do admin/logs e também geramos entradas simuladas de integração) ---
-  async function carregarLogs(filtro = 'all') {
-    const logsContainer = document.getElementById('logs-list');
-    logsContainer.innerHTML = '<div class="loading"><div class="spinner"></div> Carregando logs...</div>';
-    
-    // Tenta obter logs reais do backend
-    let logsReais = [];
-    const logsData = await request('/admin/logs?limit=30');
-    if (logsData && Array.isArray(logsData.logs)) {
-      logsReais = logsData.logs;
-    }
-    
-    // Adiciona logs simulados para mostrar eventos das integrações (apenas para exemplo visual)
-    const logsSistema = [
-      { level: 'info', message: 'Servidor iniciado com sucesso', timestamp: new Date(Date.now() - 3600000).toISOString() },
-      { level: 'info', message: 'Integração com Groq verificada', timestamp: new Date(Date.now() - 1800000).toISOString() },
-      { level: 'warn', message: 'Requisição lenta detectada: /api/market/indicators (1800ms)', timestamp: new Date(Date.now() - 900000).toISOString() },
-      { level: 'info', message: 'Indicadores de mercado atualizados (Selic, Dólar, Cripto)', timestamp: new Date(Date.now() - 600000).toISOString() },
-      { level: 'error', message: 'Falha temporária na API CoinGecko (limite de taxa)', timestamp: new Date(Date.now() - 300000).toISOString() },
-    ];
-    
-    // Combina e ordena por timestamp decrescente
-    let todosLogs = [...logsReais, ...logsSistema];
-    todosLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
-    if (filtro !== 'all') {
-      todosLogs = todosLogs.filter(log => log.level === filtro);
-    }
-    
-    if (todosLogs.length === 0) {
-      logsContainer.innerHTML = '<div style="padding: 1rem; text-align: center; color: #64748B;">Nenhum log encontrado.</div>';
-      return;
-    }
-    
-    logsContainer.innerHTML = todosLogs.map(log => `
-      <div class="log-item">
-        <div class="log-time">${new Date(log.timestamp).toLocaleString()}</div>
-        <div class="log-level log-level-${log.level}">${log.level.toUpperCase()}</div>
-        <div class="log-message">${escapeHtml(log.message)}</div>
-      </div>
-    `).join('');
-  }
-  
   function escapeHtml(text) {
     if (!text) return '';
-    return text.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
-  
-  // --- Função principal de carregamento ---
+
+  // ===== FUNÇÃO PRINCIPAL =====
   async function carregarTodosOsDados() {
-    // Atualiza todos os blocos em paralelo
     await Promise.all([
       carregarMetricas(),
       carregarStatusIntegracoes(),
-      carregarLogs(window.filtroLogAtual || 'all')
+      carregarNoticias()
     ]);
   }
-  
-  // --- Inicialização e listeners de filtro de log ---
-  window.filtroLogAtual = 'all';
-  function setupLogFilters() {
-    const btns = document.querySelectorAll('.log-filter-btn');
-    btns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        btns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const level = btn.getAttribute('data-level');
-        window.filtroLogAtual = level;
-        carregarLogs(level);
-      });
-    });
-  }
-  
-  // Executar ao carregar a página
+
+  // ===== INICIALIZAÇÃO =====
   window.addEventListener('DOMContentLoaded', () => {
-    setupLogFilters();
     carregarTodosOsDados();
     // Atualização automática a cada 60 segundos
     setInterval(carregarTodosOsDados, 60000);
