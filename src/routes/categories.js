@@ -8,7 +8,6 @@ router.use(authMiddleware);
 // Listar categorias do usuário (inclui padrões)
 router.get('/', async (req, res) => {
   try {
-    // Buscar categorias padrão + categorias personalizadas do usuário
     const { data: defaultCategories } = await supabase
       .from('categories')
       .select('*')
@@ -39,7 +38,6 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Nome da categoria é obrigatório' });
     }
     
-    // Verificar se já existe categoria com este nome para o usuário
     const { data: existing } = await supabase
       .from('categories')
       .select('id')
@@ -58,7 +56,7 @@ router.post('/', async (req, res) => {
         name,
         emoji: emoji || '📦',
         color: color || '#6B7280',
-        parent_category: parent_category || 'outros',
+        parent_category: parent_category || 'custom',
         is_default: false
       })
       .select()
@@ -88,13 +86,23 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { name, emoji, color, parent_category } = req.body;
     
+    const { data: category } = await supabase
+      .from('categories')
+      .select('is_default')
+      .eq('id', id)
+      .single();
+    
+    if (category?.is_default) {
+      return res.status(400).json({ error: 'Não é possível editar categorias padrão' });
+    }
+    
     const { data, error } = await supabase
       .from('categories')
       .update({
         name,
         emoji,
         color,
-        parent_category,
+        parent_category: parent_category || 'custom',
         updated_at: new Date()
       })
       .eq('id', id)
@@ -104,6 +112,16 @@ router.put('/:id', async (req, res) => {
     
     if (error) return res.status(404).json({ error: 'Categoria não encontrada' });
     
+    await supabase
+      .from('audit_log')
+      .insert({
+        user_id: req.userId,
+        action: 'CATEGORY_UPDATED',
+        table_name: 'categories',
+        old_value: { name: category?.name },
+        new_value: { name }
+      });
+    
     res.json(data);
   } catch (err) {
     console.error('Update category error:', err);
@@ -111,20 +129,30 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Deletar categoria (apenas personalizadas)
+// Deletar categoria
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Verificar se é categoria padrão
     const { data: category } = await supabase
       .from('categories')
-      .select('is_default')
+      .select('name, is_default')
       .eq('id', id)
       .single();
     
     if (category?.is_default) {
       return res.status(400).json({ error: 'Não é possível deletar categorias padrão' });
+    }
+    
+    // Atualizar contas que usam esta categoria para 'outros'
+    const { error: updateError } = await supabase
+      .from('bills')
+      .update({ category: 'outros' })
+      .eq('user_id', req.userId)
+      .eq('category', category.name);
+    
+    if (updateError) {
+      console.error('Erro ao atualizar contas:', updateError);
     }
     
     const { error } = await supabase
@@ -134,6 +162,15 @@ router.delete('/:id', async (req, res) => {
       .eq('user_id', req.userId);
     
     if (error) throw error;
+    
+    await supabase
+      .from('audit_log')
+      .insert({
+        user_id: req.userId,
+        action: 'CATEGORY_DELETED',
+        table_name: 'categories',
+        old_value: { name: category?.name }
+      });
     
     res.json({ success: true });
   } catch (err) {

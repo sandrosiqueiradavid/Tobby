@@ -1,5 +1,5 @@
 🐶 TOBBY - DOCUMENTAÇÃO COMPLETA DO PROJETO
-Versão 6.0 - Score Financeiro, Metas, Reserva de Emergência e IA Analista
+Versão 6.1 - AES-256-GCM, Categorias Customizáveis e IA Expandida
 
 📌 1. VISÃO GERAL DO PROJETO
 Tobby é um organizador financeiro pessoal com personalidade, projetado para ser um "companheiro financeiro". O nome é uma homenagem ao cachorro Tobby Maguire.
@@ -12,6 +12,7 @@ Filosofia
 - Privacidade em primeiro lugar (dados criptografados)
 - Gamificação e conquistas para engajamento
 - Análise financeira profunda com inteligência artificial
+- Categorias customizáveis pelo usuário
 
 🏗️ 2. ARQUITETURA
 Stack Tecnológico
@@ -21,7 +22,7 @@ Frontend        | HTML/CSS/JS Puro     | Aplicação PWA instalável
 Backend         | Node.js + Express    | API RESTful
 Banco de Dados  | Supabase (PostgreSQL)| Armazenamento principal
 Autenticação    | JWT + bcrypt         | Tokens com validade de 30 dias
-Criptografia    | AES-256-CBC          | Dados financeiros protegidos
+Criptografia    | AES-256-GCM          | Dados financeiros protegidos
 IA              | Groq API (Llama 3.3) | Assistente financeiro gratuito
 Hospedagem      | Render + GitHub Pages| Deploy contínuo
 
@@ -48,11 +49,12 @@ Tobby/
 │   │   ├── auth.js
 │   │   ├── user.js
 │   │   ├── bills.js
+│   │   ├── categories.js          # Categorias customizáveis
 │   │   ├── financialGoals.js      # Metas financeiras
 │   │   ├── emergencyFund.js       # Reserva de emergência
 │   │   ├── financialScore.js      # Score financeiro
 │   │   ├── achievements.js        # Conquistas
-│   │   ├── ai.js                  # Chat e análise com Groq
+│   │   ├── ai.js                  # Chat, análise, revisão, insights
 │   │   ├── cashForecast.js        # Previsão de caixa
 │   │   ├── monthlyReport.js       # Relatório mensal
 │   │   ├── marketIndicators.js    # Indicadores econômicos
@@ -63,9 +65,11 @@ Tobby/
 │   ├── db/
 │   │   └── supabase.js            # Cliente Supabase
 │   ├── utils/
-│   │   └── crypto.js              # AES-256
+│   │   └── crypto.js              # AES-256-GCM
 │   ├── jobs/
 │   │   └── weeklyReportJob.js     # Relatório semanal por e-mail
+│   ├── scripts/
+│   │   └── migrate-to-gcm.js      # Migração CBC → GCM
 │   └── index.js                   # Servidor Express
 ├── admin/
 │   └── index.html                 # Painel administrativo
@@ -77,11 +81,12 @@ Tobby/
 
 🗄️ 4. BANCO DE DADOS (SUPABASE)
 Principais Tabelas:
-- users (usuários + criptografia)
+- users (usuários + criptografia AES-256-GCM)
 - bills (contas com value_encrypted)
 - investments (investimentos criptografados)
 - loans (financiamentos criptografados)
 - assets (bens criptografados)
+- categories (categorias padrão + customizáveis)
 - audit_log (auditoria de alterações)
 - financial_goals (metas financeiras)
 - emergency_fund (reserva de emergência)
@@ -95,11 +100,18 @@ Principais Tabelas:
 - monthly_reports (relatórios mensais)
 
 🔐 5. CRIPTOGRAFIA
-- Algoritmo: AES-256-CBC
+- Algoritmo: AES-256-GCM (mais seguro que CBC)
 - Chave: 32 bytes (64 caracteres hex) via ENCRYPTION_KEY
-- Campos criptografados: salary_encrypted, value_encrypted, purchase_price_encrypted, 
-  current_price_encrypted, total_principal_encrypted, outstanding_balance_encrypted, 
-  monthly_payment_encrypted, estimated_value_encrypted
+- IV: 12 bytes (recomendado para GCM)
+- Autenticação: GCM inclui auth tag para detectar adulteração
+- Fallback: Compatível com dados antigos (CBC)
+
+Campos criptografados:
+- salary_encrypted (users)
+- value_encrypted (bills)
+- purchase_price_encrypted, current_price_encrypted (investments)
+- total_principal_encrypted, outstanding_balance_encrypted, monthly_payment_encrypted (loans)
+- estimated_value_encrypted, acquisition_value_encrypted (assets)
 
 Gerar chave: node -e "console.log(crypto.randomBytes(32).toString('hex'))"
 
@@ -135,11 +147,23 @@ POST   /api/hollerith/process
 GET    /api/hollerith/report
 GET    /api/hollerith/ir-declaration
 POST   /api/bank/process
-POST   /api/ai/chat          # Conversa com IA
-POST   /api/ai/analyze       # Análise financeira profunda
+
+IA e Análises:
+POST   /api/ai/chat              # Conversa com IA
+POST   /api/ai/analyze           # Análise financeira profunda
+POST   /api/ai/monthly-review    # Revisão mensal automática
+POST   /api/ai/daily-insights    # Insights diários
+
+Memória e Preferências:
 GET    /api/memory
 POST   /api/memory
 DELETE /api/memory/:key
+GET    /api/categories           # Listar categorias
+POST   /api/categories           # Criar categoria personalizada
+PUT    /api/categories/:id       # Editar categoria
+DELETE /api/categories/:id       # Deletar categoria
+
+Finanças e Metas:
 GET    /api/goals/goals
 POST   /api/goals/goals
 PUT    /api/goals/goals/:id
@@ -149,11 +173,11 @@ PUT    /api/emergency-fund
 GET    /api/score
 POST   /api/score/recalculate
 GET    /api/achievements
-GET    /api/cash-forecast     # Previsão de caixa
-GET    /api/monthly-report    # Relatório mensal
+GET    /api/cash-forecast        # Previsão de caixa
+GET    /api/monthly-report       # Relatório mensal
 GET    /api/monthly-report/history
-GET    /api/market-indicators # Selic, IPCA, Dólar, Bitcoin
-GET    /api/timeline          # Linha do tempo financeira
+GET    /api/market-indicators    # Selic, IPCA, Dólar, Bitcoin
+GET    /api/timeline             # Linha do tempo financeira
 
 Admin (requer header x-admin-key):
 GET /api/admin/health
@@ -171,6 +195,7 @@ Componentes Especiais:
 - Previsão de Caixa: Projeção de saldo para o fim do mês
 - Relatório Mensal: Carta personalizada do Tobby
 - Linha do Tempo: Evolução financeira do usuário
+- Categorias Customizáveis: Usuário pode criar suas próprias categorias
 - TobyMood: Cachorro que muda de expressão
 - Missão da Semana: Gamificação leve
 - Tema Claro/Escuro: Alternância com persistência
@@ -178,6 +203,7 @@ Componentes Especiais:
 - PWA: Instalável no celular
 - Chat com IA Groq: Assistente financeiro
 - IA Analista: Análise financeira profunda
+- Insights Diários: Dicas personalizadas diariamente
 
 🔧 8. VARIÁVEIS DE AMBIENTE (RENDER)
 Obrigatórias:
@@ -209,9 +235,9 @@ Frontend (GitHub Pages):
 Verificar backend: curl https://tobby-api.onrender.com/health
 Verificar criptografia: curl https://tobby-api.onrender.com/ (deve mostrar "encryption": true)
 Verificar Groq: curl https://tobby-api.onrender.com/api/diagnose (groq_key_configured: true)
-Testar registro: POST para /api/auth/register
-Testar login: POST para /api/auth/login
 Testar análise IA: POST para /api/ai/analyze
+Testar revisão mensal: POST para /api/ai/monthly-review
+Testar insights diários: POST para /api/ai/daily-insights
 Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#92Lm@Qz71P!kW)
 
 🐛 11. PROBLEMAS CONHECIDOS E SOLUÇÕES
@@ -233,7 +259,7 @@ Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#
 - pdf-parse: ^1.1.1
 
 📝 13. FUNCIONALIDADES IMPLEMENTADAS (CHECKLIST)
-✅ Concluído na Versão 6.0:
+✅ Concluído na Versão 6.1:
 - Autenticação JWT completa
 - CRUD de contas a pagar/receber
 - Dashboard financeiro com saldo e percentuais
@@ -247,13 +273,16 @@ Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#
 - Informe de rendimentos para IR
 - Chat com IA Groq (gratuito e rápido)
 - IA Analista Financeira (análise profunda)
+- Revisão Mensal Automática
+- Insights Diários
 - Tema claro/escuro com persistência
 - Design responsivo (web + mobile)
 - Tobby reativo (muda de expressão)
 - Missão da semana (gamificação)
 - Painel administrativo com métricas
 - PWA (instalável no celular)
-- Criptografia AES-256 para dados sensíveis
+- Criptografia AES-256-GCM (mais segura)
+- Fallback para dados antigos (CBC)
 - Auditoria completa (tabela audit_log)
 - Score Financeiro (0-100)
 - Metas Financeiras
@@ -264,11 +293,15 @@ Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#
 - Relatório Mensal do Tobby
 - Linha do Tempo Financeira
 - Central de Indicadores (Selic, IPCA, Dólar, Bitcoin)
+- Categorias Customizáveis pelo usuário
 - Estrutura de Conquistas
 
-🚧 Em andamento / Pendentes para v6.1:
-- Interface de Conquistas no frontend
-- Gamificação completa
+🚧 Em andamento / Pendentes para v7.0:
+- Radar Financeiro (alertas de mercado)
+- Simulador de Sonhos
+- Saúde Financeira Familiar
+- Interface completa de Conquistas no frontend
+- Gamificação avançada
 - Envio de notificações WhatsApp
 - Leitura de PDF com IA
 - Domínio personalizado
@@ -291,25 +324,25 @@ Classificações:
 - 30-49: Atenção 🔴
 - 0-29: Crítico ⚠️
 
-📈 15. IA ANALISTA FINANCEIRA
-O Tobby possui um endpoint especializado `/api/ai/analyze` que:
-- Analisa automaticamente gastos, investimentos e dívidas
-- Calcula taxa de economia e distribuição de gastos
-- Gera insights personalizados baseados nos dados reais
-- Produz carta mensal do Tobby com evolução financeira
-- Registra auditoria de todas as análises
+📈 15. IA DO TOBBY
+Endpoints de IA disponíveis:
 
-🏆 16. CONQUISTAS
-Conquistas planejadas:
-- Primeira Conta (📋)
-- Mês sem Atraso (✅)
-- Reserva Iniciada (🏦)
-- Investidor Iniciante (📈)
-- Meta Alcançada (🎯)
-- Score 70+ (🏆)
-- Score 90+ (👑)
-- Economizador (💰)
-- Tobby Amigo (🐶)
+| Endpoint | Função |
+|----------|--------|
+| POST /api/ai/chat | Conversa normal com IA |
+| POST /api/ai/analyze | Análise financeira profunda |
+| POST /api/ai/monthly-review | Revisão mensal automática |
+| POST /api/ai/daily-insights | Insights diários personalizados |
+
+🏆 16. CATEGORIAS
+Tipos de categorias:
+- Padrão: 11 categorias pré-definidas (Alimentação, Transporte, Moradia, etc.)
+- Customizáveis: Usuário pode criar suas próprias categorias
+- Cada categoria possui: nome, emoji, cor e tipo
+
+Categorias padrão:
+🍽️ Alimentação | 🚗 Transporte | 🏠 Moradia | 🏥 Saúde | 🎮 Lazer
+📚 Educação | 📈 Investimentos | ⚡ Serviços | 🛍️ Compras | 💰 Receita | 📦 Outros
 
 📊 17. PREVISÃO DE CAIXA
 Funcionalidade que projeta o saldo final do mês baseado em:
@@ -326,7 +359,15 @@ Todo mês o Tobby gera uma carta personalizada com:
 - Análise de gastos por categoria
 - Dicas personalizadas
 
-🎯 19. RESUMO PARA IA
-Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS). Autenticação JWT. Criptografia AES-256 para dados sensíveis. Funcionalidades: controle de contas, investimentos, financiamentos (simulação de amortização), patrimônio (bens), leitura de nota fiscal por foto, leitura de holerite, importação de extrato (CSV/OFX/texto), informe de IR, chat com IA Groq (gratuito, modelo Llama 3.3 70B), IA Analista Financeira, Score Financeiro (0-100), Metas Financeiras, Reserva de Emergência, Previsão de Caixa, Relatório Mensal, Linha do Tempo Financeira, Central de Indicadores (Selic, IPCA, Dólar, Bitcoin), Auditoria completa, Conquistas. Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcionais: ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA), RESEND_API_KEY (e-mails).
+🔒 19. SEGURANÇA
+- AES-256-GCM para dados sensíveis
+- JWT com bcrypt para senhas
+- Auditoria de todas as alterações
+- Rate limiting (planejado)
+- CORS configurado
+- Headers de segurança
+
+🎯 20. RESUMO PARA IA
+Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS). Autenticação JWT. Criptografia AES-256-GCM para dados sensíveis com fallback para CBC. Funcionalidades: controle de contas, investimentos, financiamentos, patrimônio, leitura de nota fiscal, holerite, extrato, informe de IR, chat com IA Groq, IA Analista Financeira, Score Financeiro (0-100), Metas Financeiras, Reserva de Emergência, Previsão de Caixa, Relatório Mensal, Linha do Tempo Financeira, Central de Indicadores, Categorias Customizáveis, Auditoria completa, Conquistas. Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcionais: ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA), RESEND_API_KEY (e-mails).
 
 Com este documento, qualquer IA pode entender exatamente o que foi construído e continuar o desenvolvimento! 🐶📚

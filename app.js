@@ -1,379 +1,959 @@
-// ===== CONSTANTS =====
-const CATS = {
-  moradia: { e: '🏠', bg: '#3D0F14' },
-  alimentacao: { e: '🍽️', bg: '#3D2A0A' },
-  saude: { e: '🏥', bg: '#0D2040' },
-  transporte: { e: '🚗', bg: '#1F1540' },
-  lazer: { e: '🎮', bg: '#0F3D25' },
-  educacao: { e: '📚', bg: '#1F1540' },
-  tecnologia: { e: '💻', bg: '#0D2040' },
-  financeiro: { e: '💳', bg: '#3D0F14' },
-  outros: { e: '📦', bg: '#2A3050' }
-};
-
-let currentUser = null;
-let allBills = [];
-let currentFilter = 'all';
-let resetToken = null;
-
-// ===== UTILS =====
-function fmt(v) { 
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0); 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-function showToast(msg) { 
-  const t = document.getElementById('toast'); 
-  t.textContent = msg; 
-  t.classList.add('show'); 
-  setTimeout(() => t.classList.remove('show'), 2800); 
+:root {
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-card: #334155;
+  --bg-card-hover: #475569;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border: #334155;
+  --green: #10B981;
+  --green-dark: #059669;
+  --red: #EF4444;
+  --red-dark: #DC2626;
+  --blue: #3B82F6;
+  --purple: #8B5CF6;
+  --orange: #F59E0B;
+  --pink: #EC4899;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+  --transition: all 0.2s ease;
 }
 
-function escapeHtml(text) { 
-  if (!text) return ''; 
-  const div = document.createElement('div'); 
-  div.textContent = text; 
-  return div.innerHTML; 
+body.light-theme {
+  --bg-primary: #F1F5F9;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8FAFC;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --border: #E2E8F0;
 }
 
-function closeModal() { 
-  document.getElementById('modal').style.display = 'none'; 
-  const modals = document.querySelectorAll('.modal-overlay'); 
-  modals.forEach(m => { 
-    if (m !== document.getElementById('modal').querySelector('.modal-overlay')) m.remove(); 
-  }); 
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: var(--transition);
 }
 
-// ===== THEME =====
-function initTheme() {
-  const saved = localStorage.getItem('tobby_theme') || 'dark';
-  document.body.classList.toggle('light-theme', saved === 'light');
-  updateThemeIcon(saved);
+/* Layout */
+.app-container {
+  max-width: 500px;
+  margin: 0 auto;
+  position: relative;
+  min-height: 100vh;
+  background: var(--bg-primary);
 }
 
-function toggleTheme() {
-  const isLight = document.body.classList.contains('light-theme');
-  const newTheme = isLight ? 'dark' : 'light';
-  document.body.classList.toggle('light-theme', newTheme === 'light');
-  localStorage.setItem('tobby_theme', newTheme);
-  updateThemeIcon(newTheme);
+.content {
+  padding: 1rem;
+  padding-bottom: 80px;
 }
 
-function updateThemeIcon(theme) {
-  const icon = document.getElementById('theme-icon');
-  if (icon) {
-    icon.className = theme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.nav-container {
+  display: flex;
+  gap: 0.25rem;
+  width: 100%;
+  justify-content: space-around;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-muted);
+  max-width: 70px;
+}
+
+.nav-item.active {
+  color: var(--green);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.nav-item:active {
+  transform: scale(0.95);
+}
+
+.nav-icon {
+  font-size: 22px;
+}
+
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Top Bar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.topbar-name {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Balance Card */
+.balance-card {
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.balance-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.balance-value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 1rem;
+  color: var(--green);
+}
+
+.balance-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.balance-details {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.balance-detail {
+  flex: 1;
+}
+
+.balance-detail-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.balance-detail-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.balance-detail-value.positive {
+  color: var(--green);
+}
+
+.balance-detail-value.negative {
+  color: var(--red);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+
+.stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.stat-sub {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Chart Card */
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chart-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.donut {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--blue) 0deg 198deg,
+    var(--green) 198deg 263deg,
+    var(--orange) 263deg 317deg,
+    var(--purple) 317deg 360deg
+  );
+  flex-shrink: 0;
+}
+
+.chart-legend {
+  flex: 1;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-label {
+  flex: 1;
+  color: var(--text-secondary);
+}
+
+.legend-value {
+  font-weight: 600;
+}
+
+/* Indicators */
+.indicators {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.indicator-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.indicator-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.indicator-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.indicator-value.small {
+  font-size: 14px;
+}
+
+/* Transaction Items */
+.transaction-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.875rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.transaction-item:active {
+  transform: scale(0.99);
+  background: var(--bg-card-hover);
+}
+
+.transaction-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.transaction-info {
+  flex: 1;
+}
+
+.transaction-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.transaction-meta {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.transaction-right {
+  text-align: right;
+}
+
+.transaction-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.transaction-value.income {
+  color: var(--green);
+}
+
+.transaction-value.expense {
+  color: var(--red);
+}
+
+.transaction-status {
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.status-paid {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--green);
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--orange);
+}
+
+.status-late {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--red);
+}
+
+.transaction-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.transaction-action {
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.6;
+}
+
+.transaction-action:active {
+  transform: scale(0.9);
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.section-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.section-header a {
+  font-size: 11px;
+  color: var(--green);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Toby Card */
+.toby-card {
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+  border-radius: var(--radius-xl);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+}
+
+.toby-avatar {
+  font-size: 48px;
+  background: var(--bg-primary);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toby-message {
+  flex: 1;
+}
+
+.toby-message p {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.toby-message small {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.toby-badge {
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  border: none;
+  border-radius: var(--radius-md);
+  color: white;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 13px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-danger {
+  width: 100%;
+  padding: 14px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--red);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal {
+  background: var(--bg-secondary);
+  border-radius: 24px 24px 0 0;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+  .modal-overlay {
+    align-items: center;
+  }
+  .modal {
+    border-radius: 24px;
+    margin: 1rem;
   }
 }
 
-// ===== SCREENS =====
-function showScreen(id) { 
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); 
-  document.getElementById(id).classList.add('active'); 
+.modal-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  margin: 0 auto 1rem;
 }
 
-function showLogin() { 
-  document.getElementById('login-card').style.display = 'block'; 
-  document.getElementById('register-card').style.display = 'none'; 
-  document.getElementById('forgot-card').style.display = 'none'; 
-  document.getElementById('reset-card').style.display = 'none'; 
+.modal h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
 }
 
-function showRegister() { 
-  document.getElementById('login-card').style.display = 'none'; 
-  document.getElementById('register-card').style.display = 'block'; 
-  document.getElementById('forgot-card').style.display = 'none'; 
-  document.getElementById('reset-card').style.display = 'none'; 
+.field {
+  margin-bottom: 1rem;
 }
 
-function showForgotPassword() { 
-  document.getElementById('login-card').style.display = 'none'; 
-  document.getElementById('register-card').style.display = 'none'; 
-  document.getElementById('forgot-card').style.display = 'block'; 
-  document.getElementById('reset-card').style.display = 'none'; 
+.field label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-// ===== AUTH =====
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pwd = document.getElementById('login-pwd').value;
-  if (!email || !pwd) { showToast('Preencha e-mail e senha'); return; }
-  try {
-    const user = await api.login(email, pwd);
-    currentUser = user;
-    document.getElementById('login-err').style.display = 'none';
-    enterApp();
-  } catch (e) {
-    const errDiv = document.getElementById('login-err');
-    errDiv.style.display = 'block';
-    errDiv.textContent = e.message || 'E-mail ou senha inválidos';
-  }
+.field input, .field select, textarea {
+  width: 100%;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
 }
 
-async function doRegister() {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const pwd = document.getElementById('reg-pwd').value;
-  const salary = parseFloat(document.getElementById('reg-salary').value) || 0;
-  if (!name || !email || !pwd) { showToast('Preencha todos os campos'); return; }
-  try {
-    const user = await api.register(name, email, pwd, salary);
-    currentUser = user;
-    enterApp();
-  } catch (e) {
-    const errDiv = document.getElementById('reg-err');
-    errDiv.style.display = 'block';
-    errDiv.textContent = e.message || 'Erro ao criar conta';
-  }
+.field input:focus, .field select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--green);
 }
 
-async function doForgotPassword() {
-  const email = document.getElementById('forgot-email').value.trim();
-  if (!email) { showToast('Digite seu e-mail'); return; }
-  try {
-    const data = await api.forgotPassword(email);
-    const successDiv = document.getElementById('forgot-success');
-    successDiv.style.display = 'block';
-    successDiv.innerHTML = '📧 ' + data.message;
-    setTimeout(() => showLogin(), 3000);
-  } catch (e) {
-    document.getElementById('forgot-err').style.display = 'block';
-    document.getElementById('forgot-err').textContent = e.message;
-  }
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
 }
 
-async function doResetPassword() {
-  const newPassword = document.getElementById('reset-pwd').value;
-  const confirmPassword = document.getElementById('reset-pwd-confirm').value;
-  if (!newPassword || !confirmPassword) { showToast('Preencha ambos os campos'); return; }
-  if (newPassword !== confirmPassword) { showToast('Senhas não coincidem'); return; }
-  if (newPassword.length < 6) { showToast('Mínimo 6 caracteres'); return; }
-  try {
-    await api.resetPassword(resetToken, newPassword);
-    alert('✅ Senha redefinida com sucesso!');
-    window.history.replaceState({}, document.title, window.location.pathname);
-    showLogin();
-  } catch (e) {
-    showToast(e.message || 'Erro ao redefinir');
-  }
+/* Auth */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
 }
 
-function doLogout() {
-  api.clearToken();
-  currentUser = null;
-  showScreen('auth');
-  showLogin();
+.auth-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
 }
 
-function updateUserUI() {
-  if (!currentUser) return;
-  const initials = currentUser.name.split(' ').map(x => x[0]).join('').substring(0, 2).toUpperCase();
-  document.getElementById('top-avatar').textContent = initials;
-  document.getElementById('prof-av').textContent = initials;
-  document.getElementById('prof-name').textContent = currentUser.name;
-  document.getElementById('prof-email').textContent = currentUser.email;
-  document.getElementById('prof-salary').textContent = fmt(currentUser.salary);
+.auth-logo {
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
-async function enterApp() {
-  showScreen('app');
-  updateUserUI();
-  navTo('home');
+.logo-mark {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin: 0 auto 1rem;
 }
 
-// ===== NAVIGATION =====
-const TABS = ['home', 'bills', 'investments', 'loans', 'wealth', 'ai', 'profile'];
-
-function navTo(tab) {
-  TABS.forEach(t => {
-    const el = document.getElementById('tab-' + t);
-    const nav = document.getElementById('nav-' + t);
-    if (el) el.style.display = t === tab ? 'block' : 'none';
-    if (nav) nav.classList.toggle('active', t === tab);
-  });
-  if (tab === 'home') {
-    loadHome();
-    loadFinancialScore();
-    loadEmergencyFund();
-    loadGoals();
-  }
-  if (tab === 'bills') loadBills();
-  if (tab === 'investments') loadInvestments();
-  if (tab === 'loans') loadLoans();
-  if (tab === 'wealth') loadWealth();
-  if (tab === 'ai') {
-    loadInsights();
-    showPrivacyMessage();
-  }
+.logo-title {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--green), var(--blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-// ===== SCORE FINANCEIRO =====
-async function loadFinancialScore() {
-  try {
-    const response = await api.request('/score');
-    if (response.score) {
-      document.getElementById('score-value').innerHTML = `${response.score}<span style="font-size: 14px;">/100</span>`;
-      document.getElementById('score-label').innerHTML = response.classification.name;
-      document.getElementById('score-bar').style.width = `${response.score}%`;
-      
-      if (response.score >= 90) document.getElementById('score-emoji').innerHTML = '🏆';
-      else if (response.score >= 70) document.getElementById('score-emoji').innerHTML = '😊';
-      else if (response.score >= 50) document.getElementById('score-emoji').innerHTML = '🐶';
-      else if (response.score >= 30) document.getElementById('score-emoji').innerHTML = '🧐';
-      else document.getElementById('score-emoji').innerHTML = '😟';
-    }
-  } catch (error) {
-    console.error('Erro ao carregar score:', error);
-  }
+/* Filters */
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
-// ===== RESERVA DE EMERGÊNCIA =====
-async function loadEmergencyFund() {
-  try {
-    const response = await api.request('/emergency-fund');
-    if (response) {
-      document.getElementById('emergency-amount').innerHTML = fmt(response.current_amount);
-      document.getElementById('emergency-months').innerHTML = `${response.months_of_safety} meses`;
-      document.getElementById('emergency-progress').style.width = `${response.progress}%`;
-      document.getElementById('emergency-recommended').innerHTML = `Recomendado: ${fmt(response.recommended_amount)}`;
-    }
-  } catch (error) {
-    console.error('Erro ao carregar reserva:', error);
-  }
+.filter-chip {
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
-// ===== METAS FINANCEIRAS =====
-async function loadGoals() {
-  try {
-    const response = await api.request('/goals/goals');
-    const goals = response.goals || [];
-    const container = document.getElementById('goals-list');
-    
-    if (goals.length === 0) {
-      container.innerHTML = `
-        <div class="stat-card" style="text-align: center; cursor: pointer;" onclick="openGoalModal()">
-          <div style="font-size: 24px; margin-bottom: 8px;">🎯</div>
-          <div style="font-size: 13px; color: var(--text-secondary);">Crie sua primeira meta!</div>
-          <div style="font-size: 11px; color: var(--green); margin-top: 4px;">Clique para adicionar →</div>
-        </div>
-      `;
-      return;
-    }
-    
-    container.innerHTML = goals.map(goal => {
-      const progress = goal.progress || 0;
-      const remaining = goal.remaining || 0;
-      const monthlyNeeded = goal.monthly_needed || 0;
-      
-      return `
-        <div class="stat-card" style="margin-bottom: 0.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div>
-              <div style="font-weight: 700;">${escapeHtml(goal.name)}</div>
-              <div style="font-size: 10px; color: var(--text-muted);">${new Date(goal.deadline).toLocaleDateString('pt-BR')}</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-weight: 700;">${fmt(goal.current_amount)}</div>
-              <div style="font-size: 10px; color: var(--text-muted);">de ${fmt(goal.target_amount)}</div>
-            </div>
-          </div>
-          <div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
-            <div style="width: ${progress}%; height: 100%; background: var(--green); border-radius: 3px;"></div>
-          </div>
-          <div style="display: flex; justify-content: space-between; font-size: 10px;">
-            <span>${progress.toFixed(0)}% concluído</span>
-            <span>Faltam ${fmt(remaining)}</span>
-          </div>
-          ${monthlyNeeded > 0 ? `<div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">💰 Precisaria de ${fmt(monthlyNeeded)}/mês</div>` : ''}
-          <div style="display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end;">
-            <button class="chip" onclick="event.stopPropagation(); updateGoalProgress('${goal.id}')" style="font-size: 10px;">📈 Atualizar</button>
-            <button class="chip" onclick="event.stopPropagation(); deleteGoal('${goal.id}')" style="font-size: 10px; background: var(--red-bg);">🗑️ Remover</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  } catch (error) {
-    console.error('Erro ao carregar metas:', error);
-  }
+.filter-chip.active {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
 }
 
-function openGoalModal() {
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `
-    <div class="modal">
-      <div class="modal-handle"></div>
-      <h3>🎯 Nova Meta Financeira</h3>
-      <div class="field"><label>Nome da meta</label><input type="text" id="goal-name" placeholder="Ex: Comprar moto, Viagem, Casa própria"></div>
-      <div class="field"><label>Valor alvo (R$)</label><input type="number" id="goal-target" step="0.01" placeholder="0,00"></div>
-      <div class="field"><label>Valor já guardado (R$)</label><input type="number" id="goal-current" step="0.01" placeholder="0,00" value="0"></div>
-      <div class="field"><label>Data limite</label><input type="date" id="goal-deadline"></div>
-      <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
-        <button class="btn-primary" style="flex: 1" onclick="saveGoal()">Salvar meta</button>
-        <button class="btn-secondary" style="flex: 1" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
+/* Chat */
+.chat-msgs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-async function saveGoal() {
-  const name = document.getElementById('goal-name').value;
-  const target_amount = parseFloat(document.getElementById('goal-target').value);
-  const current_amount = parseFloat(document.getElementById('goal-current').value) || 0;
-  const deadline = document.getElementById('goal-deadline').value;
-  
-  if (!name || !target_amount || !deadline) {
-    showToast('Preencha todos os campos');
-    return;
-  }
-  
-  try {
-    await api.request('/goals/goals', {
-      method: 'POST',
-      body: JSON.stringify({ name, target_amount, current_amount, deadline })
-    });
-    showToast('Meta criada com sucesso! 🎯');
-    document.querySelector('.modal-overlay')?.remove();
-    loadGoals();
-  } catch (error) {
-    showToast('Erro ao criar meta');
-  }
+.msg {
+  max-width: 86%;
+  padding: 0.75rem 1rem;
+  border-radius: 18px;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-async function updateGoalProgress(goalId) {
-  const newAmount = prompt('Digite o novo valor guardado (R$):');
-  if (newAmount === null) return;
-  
-  const current_amount = parseFloat(newAmount);
-  if (isNaN(current_amount)) {
-    showToast('Valor inválido');
-    return;
-  }
-  
-  try {
-    await api.request(`/goals/goals/${goalId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ current_amount })
-    });
-    showToast('Progresso atualizado! 📈');
-    loadGoals();
-  } catch (error) {
-    showToast('Erro ao atualizar progresso');
-  }
+.msg-ai {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  align-self: flex-start;
+  border-radius: 4px 18px 18px 18px;
 }
 
-async function deleteGoal(goalId) {
-  if (!confirm('Tem certeza que deseja remover esta meta?')) return;
-  
-  try {
-    await api.request(`/goals/goals/${goalId}`, { method: 'DELETE' });
-    showToast('Meta removida');
-    loadGoals();
-  } catch (error) {
-    showToast('Erro ao remover meta');
-  }
+.msg-ai-label {
+  color: var(--green);
+  display: block;
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 700;
 }
 
+.msg-user {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--border);
+  align-self: flex-end;
+  border-radius: 18px 18px 4px 18px;
+}
+
+.chat-bar {
+  display: flex;
+  gap: 0.6rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 0.5rem 0.75rem;
+}
+
+.chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.chat-send {
+  background: var(--green);
+  border: none;
+  border-radius: 30px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 30px;
+  padding: 0.65rem 1.1rem;
+  font-size: 13px;
+  z-index: 300;
+  opacity: 0;
+  transition: all 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.screen {
+  display: none;
+  min-height: 100vh;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* Loading */
+#loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  z-index: 1000;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--green);
+  border-radius: 4px;
+}
+
+/* Score Card */
+.score-card {
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  margin-bottom: 1rem;
+  border-radius: var(--radius-xl);
+  padding: 1rem;
+  color: white;
+}
+
+/* Chips */
+.chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.chip:active {
+  transform: scale(0.95);
+}
+
+/* Category Badges */
+.category-badge {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  transition: var(--transition);
+}
+
+.category-badge:active {
+  transform: scale(0.95);
+}
 // ===== HOME =====
 async function loadHome() {
   try {
@@ -499,6 +1079,7 @@ function openBillModal(id) {
     document.getElementById('f-status').value = 'pending';
   }
   modalDiv.style.display = 'block';
+  setTimeout(() => loadCategoryOptions(), 100);
 }
 
 async function saveBill() {
@@ -904,3 +1485,9 @@ window.openGoalModal = openGoalModal;
 window.saveGoal = saveGoal;
 window.updateGoalProgress = updateGoalProgress;
 window.deleteGoal = deleteGoal;
+window.openCategoryModal = openCategoryModal;
+window.editCategory = editCategory;
+window.saveCategory = saveCategory;
+window.updateCategory = updateCategory;
+window.deleteCategory = deleteCategory;
+window.loadCategories = loadCategories;
