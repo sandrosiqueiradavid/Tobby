@@ -42,9 +42,12 @@ app.use('/api/goals', require('./routes/financialGoals'));
 app.use('/api/emergency-fund', require('./routes/emergencyFund'));
 app.use('/api/score', require('./routes/financialScore'));
 app.use('/api/achievements', require('./routes/achievements').router);
-
+app.use('/api/cash-forecast', require('./routes/cashForecast'));
+app.use('/api/monthly-report', require('./routes/monthlyReport'));
+app.use('/api/market-indicators', require('./routes/marketIndicators'));
+app.use('/api/timeline', require('./routes/timeline').router);
 // Opcional - se não tiver o arquivo, comente ou remova
-// app.use('/api/notifications', require('./routes/notifications').router);
+app.use('/api/notifications', require('./routes/notifications').router);
 
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
