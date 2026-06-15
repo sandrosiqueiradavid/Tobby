@@ -38,8 +38,11 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/memory', require('./routes/memory'));
 app.use('/api/simulator', require('./routes/simulator'));
 app.use('/api/ai', require('./routes/ai'));
-// app.use('/api/market', require('./routes/market')); // REMOVIDO - Não utilizado
-
+app.use('/api/memory', require('./routes/memory'));
+app.use('/api/notifications', require('./routes/notifications').router);
+app.use('/api/goals', require('./routes/financialGoals'));
+app.use('/api/emergency-fund', require('./routes/emergencyFund'));
+app.use('/api/score', require('./routes/financialScore'));
 // ===== HEALTH CHECKS =====
 app.get('/', (req, res) => res.json({
   status: 'ok',

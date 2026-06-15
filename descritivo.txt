@@ -195,5 +195,4 @@ Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: tobb
 
 🎯 14. RESUMO PARA IA
 Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS). Autenticação JWT. Criptografia AES-256 para dados sensíveis. Funcionalidades: controle de contas, investimentos, financiamentos (simulação de amortização), patrimônio (bens), leitura de nota fiscal por foto, leitura de holerite, importação de extrato (CSV/OFX/texto), informe de IR, chat com IA Groq (gratuito, modelo Llama 3.3 70B). Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcionais: ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA).
-
 Com este documento, qualquer IA pode entender exatamente o que foi construído e continuar o desenvolvimento! 🐶📚

@@ -55,6 +55,15 @@
     <div class="stat-card"><div class="stat-title">🏦 Financiamentos</div><div class="stat-value" id="total-loans">--</div><div class="stat-sub">Dívidas registradas</div></div>
   </div>
 
+  <!-- Card do Score Financeiro -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-title">🏆 Score Tobby</div>
+      <div class="stat-value" id="financial-score">--</div>
+      <div class="stat-sub" id="score-status">Carregando...</div>
+    </div>
+  </div>
+
   <div class="status-grid" id="integrations-grid">
     <div class="status-card"><div class="status-header"><span class="status-name">🤖 IA (Groq)</span><span class="status-badge" id="groq-status-badge">Carregando...</span></div><div class="status-detail" id="groq-status-detail">Verificando integração...</div></div>
     <div class="status-card"><div class="status-header"><span class="status-name">💾 Banco de Dados (Supabase)</span><span class="status-badge" id="supabase-status-badge">Carregando...</span></div><div class="status-detail" id="supabase-status-detail">Conexão: --</div></div>
@@ -63,7 +72,7 @@
 
 <script>
   const API_BASE_URL = 'https://tobby-api.onrender.com/api';
-  const ADMIN_KEY = 'tobbyadmin2024';
+  const ADMIN_KEY = '8fX#92Lm@Qz71P!kW';
 
   async function request(endpoint) {
     try {
@@ -88,6 +97,23 @@
       if (metrics.users?.activeLast7Days !== undefined) {
         document.getElementById('active-users').innerHTML = `Ativos últimos 7 dias: ${metrics.users.activeLast7Days}`;
       }
+    }
+  }
+
+  async function carregarScore() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/score`, {
+        headers: { 'x-admin-key': ADMIN_KEY }
+      });
+      const data = await response.json();
+      if (data.score) {
+        document.getElementById('financial-score').innerHTML = `${data.score}<span style="font-size: 0.8rem;">/100</span>`;
+        document.getElementById('score-status').innerHTML = data.classification.name;
+      }
+    } catch (error) {
+      console.error('Erro ao carregar score:', error);
+      document.getElementById('financial-score').innerHTML = '--';
+      document.getElementById('score-status').innerHTML = 'Não disponível';
     }
   }
 
@@ -127,7 +153,11 @@
   }
 
   async function carregarTodosOsDados() {
-    await Promise.all([carregarMetricas(), carregarStatusIntegracoes()]);
+    await Promise.all([
+      carregarMetricas(), 
+      carregarStatusIntegracoes(),
+      carregarScore()
+    ]);
   }
 
   window.addEventListener('DOMContentLoaded', () => {
