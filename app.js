@@ -1,7 +1,6 @@
-// TOBBY - APP PRINCIPAL
-// Versao 8.0 - Copiloto Financeiro
+// TOBBY - APP PRINCIPAL V8.0
+// COPILOTO FINANCEIRO PESSOAL
 
-// ===== CONSTANTS =====
 var CATS = {
   moradia: { e: '🏠', bg: '#3D0F14' },
   alimentacao: { e: '🍽️', bg: '#3D2A0A' },
@@ -20,7 +19,6 @@ var currentFilter = 'all';
 var resetToken = null;
 var allCategories = [];
 
-// ===== UTILS =====
 function fmt(v) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
 }
@@ -47,7 +45,6 @@ function closeModal() {
   });
 }
 
-// ===== THEME =====
 function initTheme() {
   var saved = localStorage.getItem('tobby_theme') || 'dark';
   document.body.classList.toggle('light-theme', saved === 'light');
@@ -69,7 +66,6 @@ function updateThemeIcon(theme) {
   }
 }
 
-// ===== SCREENS =====
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
@@ -182,11 +178,15 @@ async function enterApp() {
   showScreen('app');
   updateUserUI();
   navTo('home');
-  // Carregar briefing matinal
-  loadMorningBriefing();
+  // Carregar briefing matinal (com tratamento de erro)
+  try {
+    await loadMorningBriefing();
+  } catch(e) {
+    console.warn('Briefing não disponível:', e.message);
+  }
 }
 
-// ===== NAVIGATION (ATUALIZADO V8.0) =====
+// ===== NAVIGATION =====
 var TABS = ['home', 'bills', 'investments', 'loans', 'wealth', 'ai', 'profile', 'journal', 'timeline', 'retirement', 'missions'];
 
 function navTo(tab) {
@@ -201,7 +201,7 @@ function navTo(tab) {
     loadFinancialScore();
     loadEmergencyFund();
     loadGoals();
-    loadMorningBriefing();
+    try { loadMorningBriefing(); } catch(e) {}
   }
   if (tab === 'bills') loadBills();
   if (tab === 'investments') loadInvestments();
@@ -214,15 +214,11 @@ function navTo(tab) {
   if (tab === 'profile') {
     loadCategories();
   }
-  if (tab === 'journal') loadJournal();
-  if (tab === 'timeline') loadLifeEvents();
-  if (tab === 'retirement') loadRetirement();
-  if (tab === 'missions') loadMissions();
+  if (tab === 'journal') { try { loadJournal(); } catch(e) { showToast('Diário indisponível'); } }
+  if (tab === 'timeline') { try { loadLifeEvents(); } catch(e) { showToast('Timeline indisponível'); } }
+  if (tab === 'retirement') { try { loadRetirement(); } catch(e) { showToast('Aposentadoria indisponível'); } }
+  if (tab === 'missions') { try { loadMissions(); } catch(e) { showToast('Missões indisponíveis'); } }
 }
-
-// ============================================
-// FUNÇÕES EXISTENTES (BILLS, INVESTMENTS, ETC)
-// ============================================
 
 // ===== BILLS =====
 async function loadBills() {
@@ -933,14 +929,15 @@ async function loadMorningBriefing() {
     if (response.success && response.data) {
       var briefingDiv = document.getElementById('morning-briefing');
       if (briefingDiv) {
-        var briefingText = document.getElementById('briefing-text');
-        if (briefingText) {
-          briefingText.innerHTML = response.data.briefing.replace(/\n/g, '<br>');
-        }
+        briefingDiv.innerHTML = response.data.briefing.replace(/\n/g, '<br>');
       }
     }
   } catch (e) {
-    console.error('Erro ao carregar briefing:', e);
+    console.warn('Briefing não disponível:', e.message);
+    var briefingDiv = document.getElementById('morning-briefing');
+    if (briefingDiv) {
+      briefingDiv.innerHTML = '🐶 Bom dia! O briefing matinal será carregado em breve.';
+    }
   }
 }
 
@@ -985,7 +982,11 @@ async function loadJournal() {
     }
     container.innerHTML = html;
   } catch (e) {
-    console.error('Erro ao carregar diário:', e);
+    console.warn('Diário não disponível:', e.message);
+    var container = document.getElementById('journal-list');
+    if (container) {
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Diário indisponível no momento. Tente novamente mais tarde.</div>';
+    }
   }
 }
 
@@ -1086,7 +1087,11 @@ async function loadLifeEvents() {
     }
     container.innerHTML = html;
   } catch (e) {
-    console.error('Erro ao carregar timeline:', e);
+    console.warn('Timeline não disponível:', e.message);
+    var container = document.getElementById('timeline-list');
+    if (container) {
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Linha do tempo indisponível. Tente novamente mais tarde.</div>';
+    }
   }
 }
 
@@ -1166,7 +1171,11 @@ async function loadRetirement() {
       '<button class="btn-secondary" style="flex:1;" onclick="openRetirementModal()">✏️ Editar</button>' +
       '</div>';
   } catch (e) {
-    console.error('Erro ao carregar aposentadoria:', e);
+    console.warn('Aposentadoria não disponível:', e.message);
+    var container = document.getElementById('retirement-container');
+    if (container) {
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Planejador de aposentadoria indisponível. Tente novamente mais tarde.</div>';
+    }
   }
 }
 
@@ -1251,7 +1260,11 @@ async function loadMissions() {
     }
     container.innerHTML = html;
   } catch (e) {
-    console.error('Erro ao carregar missões:', e);
+    console.warn('Missões não disponíveis:', e.message);
+    var container = document.getElementById('missions-list');
+    if (container) {
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Missões indisponíveis. Tente novamente mais tarde.</div>';
+    }
   }
 }
 
