@@ -392,7 +392,7 @@
 <script src="app.js"></script>
 
 <!-- ============================================ -->
-<!-- PAINEL DE DEBUG                              -->
+<!-- PAINEL DE DEBUG (SEM INSTRUMENTAÇÃO)         -->
 <!-- ============================================ -->
 <div id="debug-panel" style="position: fixed; bottom: 80px; left: 10px; right: 10px; background: var(--bg-card); border: 2px solid var(--green); border-radius: 12px; padding: 12px; z-index: 9999; max-height: 350px; overflow-y: auto; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -419,7 +419,7 @@
 </button>
 
 <script>
-// ===== FUNÇÕES DE DEBUG =====
+// ===== FUNÇÕES DE DEBUG (SEM INSTRUMENTAÇÃO) =====
 function toggleDebugPanel() {
   var panel = document.getElementById('debug-panel');
   panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
@@ -484,25 +484,6 @@ async function debugTestLogin() {
   debugLog('🔓 Abrindo formulário de login...', 'info');
   showLogin();
   debugLog('⚠️ Faça login manualmente e depois teste novamente', 'warning');
-}
-
-// Instrumentar o API para logar todas as requisições
-if (typeof api !== 'undefined' && api && api.request) {
-  var originalRequest = api.request;
-  api.request = async function(endpoint, options) {
-    debugLog('📡 ' + (options.method || 'GET') + ' ' + endpoint, 'info');
-    try {
-      var result = await originalRequest.call(this, endpoint, options);
-      debugLog('✅ Resposta OK para ' + endpoint, 'success');
-      return result;
-    } catch (e) {
-      debugLog('❌ Erro em ' + endpoint + ': ' + e.message, 'error');
-      throw e;
-    }
-  };
-  debugLog('🔧 API instrumentada para debug', 'info');
-} else {
-  debugLog('⚠️ API não encontrada, aguarde o carregamento...', 'warning');
 }
 
 // Adicionar um atalho no console
