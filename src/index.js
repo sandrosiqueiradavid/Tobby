@@ -5,28 +5,9 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Log de inicialização
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 console.log('🐶 TOBBY API v7.0 - INICIANDO');
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-
-// Verificar variáveis de ambiente críticas
-const requiredEnv = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'JWT_SECRET'];
-const missingEnv = requiredEnv.filter(env => !process.env[env]);
-
-if (missingEnv.length > 0) {
-  console.error('❌ VARIÁVEIS DE AMBIENTE FALTANDO:', missingEnv.join(', '));
-} else {
-  console.log('✅ Variáveis de ambiente OK');
-}
-
-if (!process.env.ENCRYPTION_KEY) {
-  console.warn('⚠️ ENCRYPTION_KEY não configurada (criptografia pode falhar)');
-} else if (process.env.ENCRYPTION_KEY.length !== 64) {
-  console.warn('⚠️ ENCRYPTION_KEY deve ter 64 caracteres hex');
-} else {
-  console.log('✅ ENCRYPTION_KEY configurada');
-}
 
 // ===== MIDDLEWARES =====
 app.use(cors({
@@ -36,7 +17,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Log de requisições
+// ===== LOG DE REQUISIÇÕES =====
 app.use((req, res, next) => {
   console.log(`📝 ${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
@@ -74,8 +55,6 @@ app.get('/', (req, res) => {
     status: 'ok',
     app: '🐶 Tobby API v7.0',
     supabase: !!process.env.SUPABASE_URL,
-    encryption: !!process.env.ENCRYPTION_KEY,
-    groq: !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345',
     timestamp: new Date().toISOString()
   });
 });
@@ -93,16 +72,13 @@ app.get('/api/diagnose', async (req, res) => {
   res.json({
     timestamp: new Date().toISOString(),
     environment: {
-      NODE_ENV: process.env.NODE_ENV || 'development',
-      encryption_key_configured: !!process.env.ENCRYPTION_KEY,
-      groq_key_configured: !!process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== '12345'
+      NODE_ENV: process.env.NODE_ENV || 'development'
     },
     supabase_configured: {
       SUPABASE_URL: !!process.env.SUPABASE_URL,
       SUPABASE_SECRET_KEY: !!process.env.SUPABASE_SECRET_KEY
     },
-    jwt_configured: !!process.env.JWT_SECRET,
-    admin_configured: !!process.env.ADMIN_KEY
+    jwt_configured: !!process.env.JWT_SECRET
   });
 });
 
@@ -124,8 +100,6 @@ app.use((err, req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log(`🐶 Tobby API v7.0 rodando na porta ${PORT}`);
-  console.log(`📍 Health: http://localhost:${PORT}/health`);
-  console.log(`🔍 Diagnóstico: http://localhost:${PORT}/api/diagnose`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 

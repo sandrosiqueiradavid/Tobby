@@ -4,24 +4,20 @@ const API_BASE = 'https://tobby-api.onrender.com/api';
 class TobbyAPI {
   constructor() {
     this.token = localStorage.getItem('token');
-    console.log('[API] Inicializado, token presente:', !!this.token);
   }
 
   setToken(token) {
     this.token = token;
     if (token) {
       localStorage.setItem('token', token);
-      console.log('[API] Token salvo');
     } else {
       localStorage.removeItem('token');
-      console.log('[API] Token removido');
     }
   }
 
   clearToken() {
     this.token = null;
     localStorage.removeItem('token');
-    console.log('[API] Token limpo');
   }
 
   getHeaders() {
@@ -35,43 +31,24 @@ class TobbyAPI {
   }
 
   async request(endpoint, options = {}) {
-    const opts = options || {};
     const url = `${API_BASE}${endpoint}`;
     const headers = this.getHeaders();
     
-    console.log(`[API] ${opts.method || 'GET'} ${url}`);
-    console.log('[API] Headers:', headers);
-    if (opts.body) {
-      console.log('[API] Body:', opts.body);
-    }
-    
     try {
       const response = await fetch(url, {
-        ...opts,
+        ...options,
         headers
       });
 
-      // Ler como texto primeiro para debug
-      const textResponse = await response.text();
-      console.log('[API] Status:', response.status);
-      console.log('[API] Response:', textResponse);
-
-      let data;
-      try {
-        data = JSON.parse(textResponse);
-      } catch (e) {
-        data = { error: textResponse || 'Resposta vazia' };
-      }
+      const data = await response.json();
 
       if (response.status === 401) {
-        console.log('[API] Token expirado, limpando...');
         this.clearToken();
-        if (typeof window.showAuth === 'function') window.showAuth();
         throw new Error('Sessão expirada, faça login novamente');
       }
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || `Erro HTTP ${response.status}`);
+        throw new Error(data.error || `Erro HTTP ${response.status}`);
       }
       
       return data;
@@ -83,7 +60,6 @@ class TobbyAPI {
 
   // ===== AUTH =====
   async register(name, email, password, salary) {
-    console.log('[API] Registrando usuário:', email);
     const data = await this.request('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ name, email, password, salary })
@@ -93,7 +69,6 @@ class TobbyAPI {
   }
 
   async login(email, password) {
-    console.log('[API] Login:', email);
     const data = await this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password })
@@ -136,7 +111,6 @@ class TobbyAPI {
   }
 
   async createBill(name, value, due_day, category, status) {
-    console.log('[API] Criando conta:', name, value);
     return this.request('/bills', {
       method: 'POST',
       body: JSON.stringify({ name, value, due_day, category, status })

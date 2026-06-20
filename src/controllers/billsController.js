@@ -4,7 +4,7 @@ const billsController = {
   // ===== LISTAR CONTAS =====
   async getBills(req, res) {
     try {
-      console.log('📋 GET BILLS - User:', req.userId);
+      console.log('[BILLS] Listando contas para:', req.userId);
       
       const { status } = req.query;
       let query = supabase
@@ -16,57 +16,34 @@ const billsController = {
       if (status) query = query.eq('status', status);
 
       const { data, error } = await query;
-      if (error) {
-        console.error('❌ Erro Supabase:', error);
-        return res.status(500).json({ error: error.message });
-      }
+      if (error) throw error;
 
-      console.log('✅ Contas encontradas:', data?.length || 0);
       res.json({ data: data || [] });
     } catch (err) {
-      console.error('❌ getBills error:', err);
-      res.status(500).json({ error: err.message });
+      console.error('[BILLS] getBills error:', err);
+      res.status(500).json({ error: 'Erro ao listar contas' });
     }
   },
 
-  // ===== CRIAR CONTA (USANDO COLUNA value) =====
+  // ===== CRIAR CONTA =====
   async createBill(req, res) {
-    console.log('🔵🔵🔵 CREATE BILL CHAMADO 🔵🔵🔵');
-    console.log('📦 Body:', req.body);
-    console.log('👤 UserId:', req.userId);
-    
     try {
+      console.log('[BILLS] Criando conta:', req.body);
+      
       const { name, value, due_day, category = 'outros', status = 'pending' } = req.body;
 
-      // Validações
-      if (!name) {
-        console.log('❌ Nome faltando');
-        return res.status(400).json({ error: 'Nome é obrigatório' });
-      }
-
-      if (value === undefined || value === null) {
-        console.log('❌ Valor faltando');
-        return res.status(400).json({ error: 'Valor é obrigatório' });
-      }
-
-      if (!due_day) {
-        console.log('❌ Dia vencimento faltando');
-        return res.status(400).json({ error: 'Dia de vencimento é obrigatório' });
+      if (!name || value === undefined || !due_day) {
+        return res.status(400).json({ error: 'Nome, valor e dia de vencimento são obrigatórios' });
       }
 
       const numValue = parseFloat(value);
       if (isNaN(numValue) || numValue <= 0) {
-        console.log('❌ Valor inválido:', numValue);
         return res.status(400).json({ error: 'Valor inválido' });
       }
 
       if (due_day < 1 || due_day > 31) {
-        console.log('❌ Dia inválido:', due_day);
-        return res.status(400).json({ error: 'Dia deve ser entre 1 e 31' });
+        return res.status(400).json({ error: 'Dia de vencimento deve ser entre 1 e 31' });
       }
-
-      console.log('✅ Validações OK, inserindo no Supabase...');
-      console.log('📊 Dados:', { name, value: numValue, due_day, category, status });
 
       const { data, error } = await supabase
         .from('bills')
@@ -82,20 +59,19 @@ const billsController = {
         .single();
 
       if (error) {
-        console.error('❌ Supabase error:', error);
-        console.error('❌ Supabase error details:', JSON.stringify(error));
-        return res.status(500).json({ error: 'Erro no Supabase: ' + error.message });
+        console.error('[BILLS] Supabase error:', error);
+        return res.status(500).json({ error: 'Erro ao salvar: ' + error.message });
       }
 
-      console.log('✅ Conta criada com sucesso! ID:', data.id);
+      console.log('[BILLS] Conta criada:', data.id);
       res.status(201).json(data);
     } catch (err) {
-      console.error('❌❌❌ ERRO FATAL createBill:', err);
-      res.status(500).json({ error: 'Erro ao criar conta: ' + err.message });
+      console.error('[BILLS] createBill error:', err);
+      res.status(500).json({ error: 'Erro ao criar conta' });
     }
   },
 
-  // ===== BUSCAR CONTA =====
+  // ===== BUSCAR UMA CONTA =====
   async getBill(req, res) {
     try {
       const { id } = req.params;
@@ -115,7 +91,7 @@ const billsController = {
 
       res.json(data);
     } catch (err) {
-      console.error('❌ getBill error:', err);
+      console.error('[BILLS] getBill error:', err);
       res.status(500).json({ error: 'Erro ao buscar conta' });
     }
   },
@@ -157,7 +133,7 @@ const billsController = {
 
       res.json(data);
     } catch (err) {
-      console.error('❌ updateBill error:', err);
+      console.error('[BILLS] updateBill error:', err);
       res.status(500).json({ error: 'Erro ao atualizar conta' });
     }
   },
@@ -175,7 +151,7 @@ const billsController = {
       if (error) throw error;
       res.json({ success: true });
     } catch (err) {
-      console.error('❌ deleteBill error:', err);
+      console.error('[BILLS] deleteBill error:', err);
       res.status(500).json({ error: 'Erro ao deletar conta' });
     }
   },
@@ -207,7 +183,7 @@ const billsController = {
 
       res.json(data);
     } catch (err) {
-      console.error('❌ updateBillStatus error:', err);
+      console.error('[BILLS] updateBillStatus error:', err);
       res.status(500).json({ error: 'Erro ao atualizar status' });
     }
   },
@@ -237,8 +213,6 @@ const billsController = {
       const totalPaid = paid.reduce((s, b) => s + (b.value || 0), 0);
       const totalCommitted = allBills.reduce((s, b) => s + (b.value || 0), 0);
 
-      console.log('📊 Dashboard:', { salary, totalBills: allBills.length });
-
       res.json({
         salary,
         totalBills: allBills.length,
@@ -250,7 +224,7 @@ const billsController = {
         percentageCommitted: salary > 0 ? Math.round((totalCommitted / salary) * 100) : 0
       });
     } catch (err) {
-      console.error('❌ dashboard error:', err);
+      console.error('[BILLS] dashboard error:', err);
       res.status(500).json({ error: 'Erro ao gerar resumo' });
     }
   }
