@@ -70,7 +70,7 @@ app.use('/api/auth', require('./routes/auth'));
 const authMiddleware = require('./middleware/auth');
 
 // ============================================
-// ROTAS PROTEGIDAS (TODAS AS SUAS ROTAS)
+// ROTAS PROTEGIDAS
 // ============================================
 app.use('/api/user', authMiddleware, require('./routes/user'));
 app.use('/api/bills', authMiddleware, require('./routes/bills'));
