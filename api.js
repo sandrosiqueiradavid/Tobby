@@ -1,4 +1,4 @@
-// Tobby API Client v7.0 - CORRIGIDO
+// Tobby API Client v7.0
 const API_BASE = 'https://tobby-api.onrender.com/api';
 
 class TobbyAPI {
@@ -35,14 +35,15 @@ class TobbyAPI {
   }
 
   async request(endpoint, options = {}) {
+    const opts = options || {};
     const url = `${API_BASE}${endpoint}`;
     const headers = this.getHeaders();
     
-    console.log(`[API] ${options.method || 'GET'} ${url}`);
+    console.log(`[API] ${opts.method || 'GET'} ${url}`);
     
     try {
       const response = await fetch(url, {
-        ...options,
+        ...opts,
         headers
       });
 
