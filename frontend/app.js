@@ -49,6 +49,23 @@ function closeModal() {
   });
 }
 
+function checkResetToken() {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('reset');
+  if (token) {
+    resetToken = token;
+    showScreen('auth');
+    document.getElementById('reset-card').style.display = 'block';
+    document.getElementById('login-card').style.display = 'none';
+    document.getElementById('register-card').style.display = 'none';
+    document.getElementById('forgot-card').style.display = 'none';
+  }
+}
+
+// ============================================
+// TEMA
+// ============================================
+
 function initTheme() {
   var saved = localStorage.getItem('tobby_theme') || 'dark';
   document.body.classList.toggle('light-theme', saved === 'light');
@@ -70,27 +87,14 @@ function updateThemeIcon(theme) {
   }
 }
 
+// ============================================
+// TELAS E NAVEGAÇÃO
+// ============================================
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
 }
-
-function checkResetToken() {
-  var params = new URLSearchParams(window.location.search);
-  var token = params.get('reset');
-  if (token) {
-    resetToken = token;
-    showScreen('auth');
-    document.getElementById('reset-card').style.display = 'block';
-    document.getElementById('login-card').style.display = 'none';
-    document.getElementById('register-card').style.display = 'none';
-    document.getElementById('forgot-card').style.display = 'none';
-  }
-}
-
-// ============================================
-// AUTENTICAÇÃO
-// ============================================
 
 function showLogin() {
   document.getElementById('login-card').style.display = 'block';
@@ -112,6 +116,10 @@ function showForgotPassword() {
   document.getElementById('forgot-card').style.display = 'block';
   document.getElementById('reset-card').style.display = 'none';
 }
+
+// ============================================
+// AUTENTICAÇÃO
+// ============================================
 
 async function doLogin() {
   var email = document.getElementById('login-email').value.trim();
@@ -283,7 +291,7 @@ async function loadEmergencyFund() {
 async function loadGoals() {
   try {
     var response = await api.request('/goals/goals');
-    var goals = response.data || [];
+    var goals = response.goals || [];
     var container = document.getElementById('goals-list');
     if (!container) return;
     
@@ -334,7 +342,7 @@ async function loadMorningBriefing() {
 async function loadBills() {
   try {
     var bills = await api.getBills();
-    allBills = bills || [];
+    allBills = bills.data || [];
     renderBills();
   } catch (e) {
     console.error('Erro ao carregar contas:', e);
@@ -355,7 +363,6 @@ function renderBills() {
     return;
   }
   
-  // Ordenar por dia do vencimento
   filtered.sort(function(a, b) { return (a.due_day || 0) - (b.due_day || 0); });
   
   list.innerHTML = filtered.map(function(bill) {
@@ -461,12 +468,12 @@ async function loadInvestments() {
     var container = document.getElementById('investments-list');
     if (!container) return;
     
-    if (!investments || investments.length === 0) {
+    if (!investments.investments || investments.investments.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">Nenhum investimento cadastrado</div>';
       return;
     }
     
-    container.innerHTML = investments.map(function(inv) {
+    container.innerHTML = investments.investments.map(function(inv) {
       var total = (inv.quantity || 0) * (inv.purchase_price || 0);
       return '<div class="transaction-item">' +
         '<div class="transaction-icon" style="background:var(--blue-bg);">📈</div>' +
@@ -546,12 +553,12 @@ async function loadLoans() {
     var container = document.getElementById('loans-list');
     if (!container) return;
     
-    if (!loans || loans.length === 0) {
+    if (!loans.loans || loans.loans.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">Nenhum financiamento cadastrado</div>';
       return;
     }
     
-    container.innerHTML = loans.map(function(loan) {
+    container.innerHTML = loans.loans.map(function(loan) {
       return '<div class="transaction-item">' +
         '<div class="transaction-icon" style="background:var(--red-bg);">🏦</div>' +
         '<div class="transaction-info">' +
@@ -639,17 +646,17 @@ async function loadWealth() {
     var summary = await api.request('/wealth/summary');
     var assets = await api.request('/wealth/assets');
     
-    document.getElementById('wealth-total').textContent = fmt(summary.total || 0);
+    document.getElementById('wealth-total').textContent = fmt(summary.summary?.netWorth || 0);
     
     var container = document.getElementById('assets-list');
     if (!container) return;
     
-    if (!assets || assets.length === 0) {
+    if (!assets.assets || assets.assets.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhum bem cadastrado</div>';
       return;
     }
     
-    container.innerHTML = assets.map(function(asset) {
+    container.innerHTML = assets.assets.map(function(asset) {
       return '<div class="transaction-item">' +
         '<div class="transaction-icon" style="background:var(--green-bg);">🏠</div>' +
         '<div class="transaction-info">' +
@@ -722,12 +729,10 @@ var chatHistory = [];
 
 async function loadInsights() {
   try {
-    var response = await api.request('/ai/daily-insights');
+    var response = await api.request('/ai/daily-insights', { method: 'POST' });
     var container = document.getElementById('ai-insights');
-    if (container && response.insights) {
-      container.innerHTML = response.insights.map(function(i) {
-        return '<div style="padding:0.5rem;background:var(--bg-secondary);border-radius:8px;margin-bottom:0.5rem;">💡 ' + escapeHtml(i) + '</div>';
-      }).join('');
+    if (container && response.insight) {
+      container.innerHTML = response.insight.replace(/\n/g, '<br>');
     }
   } catch (e) {
     console.error('Erro ao carregar insights:', e);
@@ -749,7 +754,6 @@ async function sendMsg() {
   var chat = document.getElementById('chat-messages');
   if (!chat) return;
   
-  // Adicionar mensagem do usuário
   chat.innerHTML += '<div class="chat-message user"><div>' + escapeHtml(msg) + '</div></div>';
   input.value = '';
   chat.scrollTop = chat.scrollHeight;
@@ -757,11 +761,10 @@ async function sendMsg() {
   try {
     var response = await api.request('/ai/chat', {
       method: 'POST',
-      body: JSON.stringify({ message: msg, history: chatHistory })
+      body: JSON.stringify({ message: msg, context: { salary: currentUser?.salary || 0 } })
     });
     
     chat.innerHTML += '<div class="chat-message bot"><div>🐶 ' + escapeHtml(response.reply || 'Não entendi, pode repetir?') + '</div></div>';
-    chatHistory.push({ question: msg, answer: response.reply });
     chat.scrollTop = chat.scrollHeight;
   } catch (e) {
     chat.innerHTML += '<div class="chat-message bot"><div>🐶 Desculpe, tive um problema. Tente novamente.</div></div>';
@@ -1152,7 +1155,7 @@ async function editSalary() {
 async function loadCategories() {
   try {
     var response = await api.request('/categories');
-    allCategories = response.data || [];
+    allCategories = response.categories || [];
     renderCategories();
   } catch (e) {
     console.error('Erro ao carregar categorias:', e);
@@ -1243,11 +1246,11 @@ async function deleteCategory(id) {
 // METAS FINANCEIRAS
 // ============================================
 
-async function loadGoals() {
+async function loadGoalsList() {
   try {
     var response = await api.request('/goals/goals');
-    var goals = response.data || [];
-    var container = document.getElementById('goals-list');
+    var goals = response.goals || [];
+    var container = document.getElementById('goals-list-full');
     if (!container) return;
     
     if (goals.length === 0) {
@@ -1309,7 +1312,7 @@ async function saveGoal() {
     });
     showToast('Meta criada! 🎯');
     document.querySelector('.modal-overlay').remove();
-    loadGoals();
+    loadGoalsList();
   } catch (e) {
     showToast('Erro ao criar meta');
   }
@@ -1322,11 +1325,11 @@ async function updateGoalProgress(id) {
   if (isNaN(amount) || amount < 0) { showToast('Valor inválido'); return; }
   try {
     await api.request('/goals/goals/' + id, {
-      method: 'PATCH',
+      method: 'PUT',
       body: JSON.stringify({ current_amount: amount })
     });
     showToast('Progresso atualizado!');
-    loadGoals();
+    loadGoalsList();
   } catch (e) {
     showToast('Erro ao atualizar');
   }
@@ -1337,14 +1340,14 @@ async function deleteGoal(id) {
   try {
     await api.request('/goals/goals/' + id, { method: 'DELETE' });
     showToast('Meta removida');
-    loadGoals();
+    loadGoalsList();
   } catch (e) {
     showToast('Erro ao remover');
   }
 }
 
 // ============================================
-// FUNÇÕES ADICIONAIS (Scanner, Hollerith, etc)
+// FUNÇÕES ADICIONAIS
 // ============================================
 
 function openReceiptScanner() {
@@ -1398,5 +1401,4 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 // NOTA: As funções já estão no escopo global e podem ser chamadas pelo HTML
-// Não é necessário window.fmt = fmt pois as funções já são globais
 console.log('🐶 Tobby Frontend carregado com sucesso!');
