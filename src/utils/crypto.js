@@ -4,21 +4,14 @@ const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
 
-// Log de inicialização
-console.log('[CRYPTO] Inicializando...');
-console.log('[CRYPTO] ENCRYPTION_KEY configurada:', !!ENCRYPTION_KEY);
-if (ENCRYPTION_KEY) {
-  console.log('[CRYPTO] Tamanho da chave:', ENCRYPTION_KEY.length);
-}
-
 function encrypt(text) {
   if (!text && text !== 0) {
-    console.warn('[CRYPTO] encrypt: valor nulo, retornando null');
+    console.warn('[CRYPTO] encrypt: valor nulo');
     return null;
   }
   
   if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 64) {
-    console.error('[CRYPTO] ENCRYPTION_KEY não configurada corretamente');
+    console.error('[CRYPTO] ENCRYPTION_KEY não configurada');
     return null;
   }
   
@@ -30,9 +23,7 @@ function encrypt(text) {
     const encrypted = Buffer.concat([cipher.update(textStr, 'utf8'), cipher.final()]);
     const authTag = cipher.getAuthTag();
     
-    const result = iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted.toString('hex');
-    console.log('[CRYPTO] encrypt: sucesso');
-    return result;
+    return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted.toString('hex');
   } catch (err) {
     console.error('[CRYPTO] encrypt error:', err.message);
     return null;
@@ -41,8 +32,13 @@ function encrypt(text) {
 
 function decrypt(encryptedText) {
   if (!encryptedText) {
-    console.warn('[CRYPTO] decrypt: valor nulo');
     return null;
+  }
+  
+  // Fallback para dados em texto plano (começam com "plain:")
+  if (typeof encryptedText === 'string' && encryptedText.startsWith('plain:')) {
+    const value = encryptedText.replace('plain:', '');
+    return isNaN(value) ? value : parseFloat(value);
   }
   
   if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 64) {
@@ -52,15 +48,7 @@ function decrypt(encryptedText) {
   
   try {
     const parts = encryptedText.split(':');
-    
-    // Fallback para dados antigos (sem criptografia)
-    if (parts.length === 1) {
-      console.log('[CRYPTO] decrypt: dado não criptografado, retornando original');
-      return isNaN(encryptedText) ? encryptedText : parseFloat(encryptedText);
-    }
-    
     if (parts.length !== 3) {
-      console.warn('[CRYPTO] decrypt: formato inválido');
       return null;
     }
     
@@ -74,9 +62,7 @@ function decrypt(encryptedText) {
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     
-    const result = isNaN(decrypted) ? decrypted : parseFloat(decrypted);
-    console.log('[CRYPTO] decrypt: sucesso');
-    return result;
+    return isNaN(decrypted) ? decrypted : parseFloat(decrypted);
   } catch (err) {
     console.error('[CRYPTO] decrypt error:', err.message);
     return null;
@@ -84,14 +70,9 @@ function decrypt(encryptedText) {
 }
 
 function encryptNumber(value) {
-  if (value === undefined || value === null) {
-    return null;
-  }
+  if (value === undefined || value === null) return null;
   const num = parseFloat(value);
-  if (isNaN(num)) {
-    console.warn('[CRYPTO] encryptNumber: valor inválido', value);
-    return null;
-  }
+  if (isNaN(num)) return null;
   return encrypt(num.toString());
 }
 
