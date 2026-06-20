@@ -5,7 +5,7 @@ const billsController = {
   // ===== LISTAR CONTAS =====
   async getBills(req, res) {
     try {
-      console.log('[BILLS] Listando contas para usuário:', req.userId);
+      console.log('[BILLS] 📋 Listando contas para usuário:', req.userId);
       
       const { status } = req.query;
       let query = supabase
@@ -21,7 +21,7 @@ const billsController = {
       const { data, error } = await query;
       
       if (error) {
-        console.error('[BILLS] Erro Supabase:', error);
+        console.error('[BILLS] ❌ Erro Supabase:', error);
         return res.status(500).json({ error: 'Erro ao buscar contas no banco' });
       }
 
@@ -31,7 +31,7 @@ const billsController = {
           value = decryptNumber(bill.value_encrypted);
           if (isNaN(value) || value === null || value === undefined) value = 0;
         } catch (e) {
-          console.error(`[BILLS] Erro descriptografar conta ${bill.id}:`, e.message);
+          console.error(`[BILLS] ⚠️ Erro descriptografar conta ${bill.id}:`, e.message);
           value = 0;
         }
         return {
@@ -47,65 +47,126 @@ const billsController = {
         };
       });
 
-      console.log(`[BILLS] ${decryptedData.length} contas encontradas`);
+      console.log(`[BILLS] ✅ ${decryptedData.length} contas encontradas`);
       res.json({ data: decryptedData });
     } catch (err) {
-      console.error('[BILLS] Erro getBills:', err);
+      console.error('[BILLS] ❌ Erro getBills:', err);
       res.status(500).json({ error: 'Erro ao listar contas' });
     }
   },
 
-  // ===== CRIAR CONTA (CORRIGIDO COM FALLBACK) =====
+  // ===== CRIAR CONTA (COM LOGS DETALHADOS) =====
   async createBill(req, res) {
     try {
+      console.log('[BILLS] ========================================');
+      console.log('[BILLS] 🚀 INICIANDO CREATE BILL');
+      console.log('[BILLS] ========================================');
+      console.log('[BILLS] Headers:', req.headers);
+      console.log('[BILLS] Body:', req.body);
+      console.log('[BILLS] UserId:', req.userId);
+      console.log('[BILLS] ========================================');
+      
       const { name, value, due_day, category = 'outros', status = 'pending' } = req.body;
       
-      console.log('[BILLS] Criando conta:', { name, value, due_day, category, userId: req.userId });
+      console.log('[BILLS] 📊 Dados recebidos:');
+      console.log('[BILLS]   name:', name);
+      console.log('[BILLS]   value:', value);
+      console.log('[BILLS]   due_day:', due_day);
+      console.log('[BILLS]   category:', category);
+      console.log('[BILLS]   status:', status);
 
-      // VALIDAÇÕES
-      if (!name || value === undefined || !due_day) {
-        return res.status(400).json({ error: 'Nome, valor e dia de vencimento são obrigatórios' });
+      // ===== VALIDAÇÕES =====
+      if (!name) {
+        console.log('[BILLS] ❌ Nome faltando');
+        return res.status(400).json({ error: 'Nome é obrigatório' });
+      }
+
+      if (value === undefined || value === null) {
+        console.log('[BILLS] ❌ Valor faltando');
+        return res.status(400).json({ error: 'Valor é obrigatório' });
+      }
+
+      if (!due_day) {
+        console.log('[BILLS] ❌ Dia de vencimento faltando');
+        return res.status(400).json({ error: 'Dia de vencimento é obrigatório' });
       }
 
       const numValue = parseFloat(value);
+      console.log('[BILLS] 🔢 Valor convertido:', numValue);
+      
       if (isNaN(numValue) || numValue <= 0) {
+        console.log('[BILLS] ❌ Valor inválido:', numValue);
         return res.status(400).json({ error: 'Valor inválido' });
       }
 
       if (due_day < 1 || due_day > 31) {
+        console.log('[BILLS] ❌ Dia inválido:', due_day);
         return res.status(400).json({ error: 'Dia de vencimento deve ser entre 1 e 31' });
       }
 
-      // CRIPTOGRAFAR COM FALLBACK
-      let encryptedValue = encryptNumber(numValue);
-      
-      // Se a criptografia falhar, usar fallback
+      console.log('[BILLS] ✅ Validações OK');
+
+      // ===== CRIPTOGRAFIA =====
+      console.log('[BILLS] 🔐 Tentando criptografar valor:', numValue);
+      let encryptedValue;
+      try {
+        encryptedValue = encryptNumber(numValue);
+        console.log('[BILLS] 🔐 encryptNumber retornou:', encryptedValue ? '✅ Válido' : '❌ Nulo');
+        if (encryptedValue) {
+          console.log('[BILLS] 🔐 Valor criptografado (início):', encryptedValue.substring(0, 30) + '...');
+        }
+      } catch (e) {
+        console.error('[BILLS] ❌ Erro na criptografia:', e.message);
+        console.error('[BILLS] Stack:', e.stack);
+        encryptedValue = `plain:${numValue}`;
+        console.log('[BILLS] 🔐 Usando fallback plain');
+      }
+
       if (!encryptedValue) {
-        console.warn('[BILLS] ⚠️ Criptografia falhou, usando fallback com valor em texto');
+        console.log('[BILLS] ⚠️ encryptedValue é nulo, usando fallback');
         encryptedValue = `plain:${numValue}`;
       }
 
-      // INSERIR NO SUPABASE
+      console.log('[BILLS] 🔐 Valor final a salvar:', encryptedValue.substring(0, 30) + '...');
+
+      // ===== INSERIR NO SUPABASE =====
+      console.log('[BILLS] 💾 Inserindo no Supabase...');
+      const insertData = {
+        user_id: req.userId,
+        name: name.trim(),
+        value_encrypted: encryptedValue,
+        due_day: due_day,
+        category: category,
+        status: status
+      };
+      console.log('[BILLS] 📦 Dados para insert:', { 
+        user_id: insertData.user_id, 
+        name: insertData.name, 
+        due_day: insertData.due_day, 
+        category: insertData.category, 
+        status: insertData.status,
+        value_encrypted: '***' 
+      });
+
       const { data, error } = await supabase
         .from('bills')
-        .insert({
-          user_id: req.userId,
-          name: name.trim(),
-          value_encrypted: encryptedValue,
-          due_day: due_day,
-          category: category,
-          status: status
-        })
+        .insert(insertData)
         .select()
         .single();
 
       if (error) {
-        console.error('[BILLS] Erro Supabase insert:', error);
-        return res.status(500).json({ error: 'Erro ao salvar conta no banco: ' + error.message });
+        console.error('[BILLS] ❌ Supabase error:', error);
+        console.error('[BILLS] ❌ Supabase error code:', error.code);
+        console.error('[BILLS] ❌ Supabase error message:', error.message);
+        console.error('[BILLS] ❌ Supabase error details:', JSON.stringify(error));
+        return res.status(500).json({ error: 'Erro ao salvar no banco: ' + error.message });
       }
 
-      console.log('[BILLS] ✅ Conta criada com sucesso:', data.id);
-      
+      console.log('[BILLS] ✅ Conta criada com sucesso!');
+      console.log('[BILLS] 📋 ID:', data.id);
+      console.log('[BILLS] 📋 Nome:', data.name);
+      console.log('[BILLS] ========================================');
+
       res.status(201).json({
         id: data.id,
         name: data.name,
@@ -116,7 +177,10 @@ const billsController = {
         created_at: data.created_at
       });
     } catch (err) {
-      console.error('[BILLS] ❌ Erro createBill:', err);
+      console.error('[BILLS] ❌❌❌ ERRO FATAL createBill ❌❌❌');
+      console.error('[BILLS] Mensagem:', err.message);
+      console.error('[BILLS] Stack:', err.stack);
+      console.error('[BILLS] ========================================');
       res.status(500).json({ error: 'Erro ao criar conta: ' + err.message });
     }
   },
@@ -125,7 +189,7 @@ const billsController = {
   async getBill(req, res) {
     try {
       const { id } = req.params;
-      console.log('[BILLS] Buscando conta:', id);
+      console.log('[BILLS] 🔍 Buscando conta:', id);
 
       const { data, error } = await supabase
         .from('bills')
@@ -146,7 +210,7 @@ const billsController = {
         value = decryptNumber(data.value_encrypted);
         if (isNaN(value) || value === null || value === undefined) value = 0;
       } catch (e) {
-        console.error(`[BILLS] Erro descriptografar ${id}:`, e.message);
+        console.error(`[BILLS] ⚠️ Erro descriptografar ${id}:`, e.message);
         value = 0;
       }
 
@@ -160,7 +224,7 @@ const billsController = {
         created_at: data.created_at
       });
     } catch (err) {
-      console.error('[BILLS] Erro getBill:', err);
+      console.error('[BILLS] ❌ Erro getBill:', err);
       res.status(500).json({ error: 'Erro ao buscar conta' });
     }
   },
@@ -171,7 +235,7 @@ const billsController = {
       const { id } = req.params;
       const { name, value, due_day, category, status } = req.body;
       
-      console.log('[BILLS] Atualizando conta:', id);
+      console.log('[BILLS] ✏️ Atualizando conta:', id);
 
       const { data: existing, error: findError } = await supabase
         .from('bills')
@@ -195,11 +259,13 @@ const billsController = {
         if (isNaN(numValue) || numValue <= 0) {
           return res.status(400).json({ error: 'Valor inválido' });
         }
-        let encryptedValue = encryptNumber(numValue);
-        if (!encryptedValue) {
+        let encryptedValue;
+        try {
+          encryptedValue = encryptNumber(numValue);
+        } catch (e) {
           encryptedValue = `plain:${numValue}`;
-          console.warn('[BILLS] ⚠️ Criptografia falhou, usando fallback');
         }
+        if (!encryptedValue) encryptedValue = `plain:${numValue}`;
         updateData.value_encrypted = encryptedValue;
       }
 
@@ -212,8 +278,10 @@ const billsController = {
         .single();
 
       if (error) {
-        console.error('[BILLS] Erro update:', error);
-        return res.status(500).json({ error: 'Erro ao atualizar conta' });
+        if (error.code === 'PGRST116') {
+          return res.status(404).json({ error: 'Conta não encontrada' });
+        }
+        throw error;
       }
 
       let finalValue = 0;
@@ -233,7 +301,7 @@ const billsController = {
         status: data.status || 'pending'
       });
     } catch (err) {
-      console.error('[BILLS] Erro updateBill:', err);
+      console.error('[BILLS] ❌ Erro updateBill:', err);
       res.status(500).json({ error: 'Erro ao atualizar conta' });
     }
   },
@@ -242,7 +310,7 @@ const billsController = {
   async deleteBill(req, res) {
     try {
       const { id } = req.params;
-      console.log('[BILLS] Deletando conta:', id);
+      console.log('[BILLS] 🗑️ Deletando conta:', id);
 
       const { error } = await supabase
         .from('bills')
@@ -251,13 +319,13 @@ const billsController = {
         .eq('user_id', req.userId);
 
       if (error) {
-        console.error('[BILLS] Erro delete:', error);
+        console.error('[BILLS] ❌ Erro delete:', error);
         return res.status(500).json({ error: 'Erro ao deletar conta' });
       }
 
       res.json({ success: true });
     } catch (err) {
-      console.error('[BILLS] Erro deleteBill:', err);
+      console.error('[BILLS] ❌ Erro deleteBill:', err);
       res.status(500).json({ error: 'Erro ao deletar conta' });
     }
   },
@@ -268,7 +336,7 @@ const billsController = {
       const { id } = req.params;
       const { status } = req.body;
       
-      console.log('[BILLS] Atualizando status:', id, '->', status);
+      console.log('[BILLS] 🔄 Atualizando status:', id, '->', status);
 
       if (!['pending', 'paid', 'late'].includes(status)) {
         return res.status(400).json({ error: 'Status inválido' });
@@ -306,7 +374,7 @@ const billsController = {
         status: data.status
       });
     } catch (err) {
-      console.error('[BILLS] Erro updateBillStatus:', err);
+      console.error('[BILLS] ❌ Erro updateBillStatus:', err);
       res.status(500).json({ error: 'Erro ao atualizar status' });
     }
   },
@@ -314,7 +382,7 @@ const billsController = {
   // ===== DASHBOARD =====
   async getDashboardSummary(req, res) {
     try {
-      console.log('[BILLS] Dashboard para:', req.userId);
+      console.log('[BILLS] 📊 Dashboard para:', req.userId);
       
       const { data: user, error: userError } = await supabase
         .from('users')
@@ -323,7 +391,7 @@ const billsController = {
         .single();
 
       if (userError) {
-        console.error('[BILLS] Erro buscar usuário:', userError);
+        console.error('[BILLS] ❌ Erro buscar usuário:', userError);
         return res.status(500).json({ error: 'Erro ao buscar dados do usuário' });
       }
 
@@ -333,7 +401,7 @@ const billsController = {
         .eq('user_id', req.userId);
 
       if (error) {
-        console.error('[BILLS] Erro buscar contas:', error);
+        console.error('[BILLS] ❌ Erro buscar contas:', error);
         return res.status(500).json({ error: 'Erro ao buscar contas' });
       }
 
@@ -368,6 +436,8 @@ const billsController = {
       const freeBalance = salary - totalPaid;
       const percentageCommitted = salary > 0 ? Math.round((totalCommitted / salary) * 100) : 0;
 
+      console.log('[BILLS] ✅ Dashboard gerado com sucesso');
+
       res.json({
         salary,
         totalBills: allBills.length,
@@ -379,7 +449,7 @@ const billsController = {
         percentageCommitted: Math.min(100, percentageCommitted)
       });
     } catch (err) {
-      console.error('[BILLS] Erro dashboard:', err);
+      console.error('[BILLS] ❌ Erro dashboard:', err);
       res.status(500).json({ error: 'Erro ao gerar resumo' });
     }
   }
