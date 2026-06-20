@@ -1,5 +1,5 @@
 🐶 TOBBY - DOCUMENTAÇÃO COMPLETA DO PROJETO
-Versão 6.1 - AES-256-GCM, Categorias Customizáveis e IA Expandida
+Versão 7.0 - AES-256-GCM, Radar Financeiro, Simulador de Sonhos e Saúde Financeira Familiar
 
 📌 1. VISÃO GERAL DO PROJETO
 Tobby é um organizador financeiro pessoal com personalidade, projetado para ser um "companheiro financeiro". O nome é uma homenagem ao cachorro Tobby Maguire.
@@ -9,10 +9,13 @@ Filosofia
 - É um organizador e acompanhante financeiro
 - Foco em personalidade e conexão emocional com o usuário
 - IA que conversa de forma natural e personalizada
-- Privacidade em primeiro lugar (dados criptografados)
+- Privacidade em primeiro lugar (dados criptografados AES-256-GCM)
 - Gamificação e conquistas para engajamento
 - Análise financeira profunda com inteligência artificial
 - Categorias customizáveis pelo usuário
+- Radar Financeiro com alertas de mercado
+- Simulador de Sonhos para planejamento de metas
+- Saúde Financeira Familiar para compartilhar objetivos
 
 🏗️ 2. ARQUITETURA
 Stack Tecnológico
@@ -38,7 +41,7 @@ Tobby/
 │   ├── controllers/
 │   │   ├── authController.js      # Login, registro, recuperação de senha
 │   │   ├── userController.js      # Perfil, salário
-│   │   ├── billsController.js     # CRUD de contas, dashboard
+│   │   ├── billsController.js     # CRUD de contas com criptografia
 │   │   ├── hollerithController.js # Leitura de holerite
 │   │   ├── investmentController.js# Investimentos
 │   │   ├── bankController.js      # Importação de extrato
@@ -59,22 +62,24 @@ Tobby/
 │   │   ├── monthlyReport.js       # Relatório mensal
 │   │   ├── marketIndicators.js    # Indicadores econômicos
 │   │   ├── timeline.js            # Linha do tempo financeira
-│   │   └── ...
+│   │   ├── radar.js               # Radar Financeiro
+│   │   ├── dreamSimulator.js      # Simulador de Sonhos
+│   │   └── family.js              # Saúde Financeira Familiar
+│   ├── services/
+│   │   └── encryptionService.js   # Serviço AES-256-GCM
 │   ├── middleware/
 │   │   └── auth.js                # Verificação JWT
 │   ├── db/
 │   │   └── supabase.js            # Cliente Supabase
 │   ├── utils/
-│   │   └── crypto.js              # AES-256-GCM
+│   │   └── crypto.js              # AES-256-GCM (compatibilidade)
 │   ├── jobs/
 │   │   └── weeklyReportJob.js     # Relatório semanal por e-mail
-│   ├── scripts/
-│   │   └── migrate-to-gcm.js      # Migração CBC → GCM
 │   └── index.js                   # Servidor Express
 ├── admin/
 │   └── index.html                 # Painel administrativo
 ├── api.js                         # Cliente frontend
-├── index.html                     # Interface principal
+├── index.html                     # Interface principal com debug
 ├── manifest.json                  # PWA
 ├── sw.js                          # Service Worker
 └── package.json                   # Dependências
@@ -82,7 +87,7 @@ Tobby/
 🗄️ 4. BANCO DE DADOS (SUPABASE)
 Principais Tabelas:
 - users (usuários + criptografia AES-256-GCM)
-- bills (contas com value_encrypted)
+- bills (contas com value_encrypted + fallback value)
 - investments (investimentos criptografados)
 - loans (financiamentos criptografados)
 - assets (bens criptografados)
@@ -98,13 +103,18 @@ Principais Tabelas:
 - financial_timeline (linha do tempo)
 - cash_forecast (previsão de caixa)
 - monthly_reports (relatórios mensais)
+- radar_alerts (alertas do Radar Financeiro)
+- dream_simulator (simulador de sonhos)
+- family_members (membros da família)
+- family_goals (metas compartilhadas)
 
 🔐 5. CRIPTOGRAFIA
 - Algoritmo: AES-256-GCM (mais seguro que CBC)
 - Chave: 32 bytes (64 caracteres hex) via ENCRYPTION_KEY
 - IV: 12 bytes (recomendado para GCM)
 - Autenticação: GCM inclui auth tag para detectar adulteração
-- Fallback: Compatível com dados antigos (CBC)
+- Fallback: Compatível com dados em texto plano
+- Service Layer: Centralizado em encryptionService.js
 
 Campos criptografados:
 - salary_encrypted (users)
@@ -179,6 +189,20 @@ GET    /api/monthly-report/history
 GET    /api/market-indicators    # Selic, IPCA, Dólar, Bitcoin
 GET    /api/timeline             # Linha do tempo financeira
 
+Versão 7.0 - Novos Endpoints:
+GET    /api/radar                # Radar Financeiro (alertas de mercado)
+PUT    /api/radar/:id/read       # Marcar alerta como lido
+GET    /api/dream-simulator      # Listar sonhos
+POST   /api/dream-simulator      # Criar sonho
+PUT    /api/dream-simulator/:id  # Atualizar sonho
+DELETE /api/dream-simulator/:id  # Deletar sonho
+GET    /api/family/members       # Listar membros da família
+POST   /api/family/members       # Adicionar membro
+DELETE /api/family/members/:id   # Remover membro
+GET    /api/family/goals         # Metas compartilhadas
+POST   /api/family/goals         # Compartilhar meta
+GET    /api/family/summary       # Resumo familiar
+
 Admin (requer header x-admin-key):
 GET /api/admin/health
 GET /api/admin/metrics
@@ -196,6 +220,10 @@ Componentes Especiais:
 - Relatório Mensal: Carta personalizada do Tobby
 - Linha do Tempo: Evolução financeira do usuário
 - Categorias Customizáveis: Usuário pode criar suas próprias categorias
+- Radar Financeiro: Alertas automáticos sobre mudanças no mercado
+- Simulador de Sonhos: Planejamento de metas com aportes mensais
+- Saúde Financeira Familiar: Compartilhamento de objetivos com familiares
+- Painel de Debug: Ferramenta de diagnóstico para administradores
 - TobyMood: Cachorro que muda de expressão
 - Missão da Semana: Gamificação leve
 - Tema Claro/Escuro: Alternância com persistência
@@ -238,7 +266,11 @@ Verificar Groq: curl https://tobby-api.onrender.com/api/diagnose (groq_key_confi
 Testar análise IA: POST para /api/ai/analyze
 Testar revisão mensal: POST para /api/ai/monthly-review
 Testar insights diários: POST para /api/ai/daily-insights
+Testar Radar Financeiro: GET /api/radar
+Testar Simulador de Sonhos: GET /api/dream-simulator
+Testar Família: GET /api/family/summary
 Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#92Lm@Qz71P!kW)
+Painel de Debug: Disponível apenas para admin via botão 🐛
 
 🐛 11. PROBLEMAS CONHECIDOS E SOLUÇÕES
 - Supabase desconectado: Remover /rest/v1/ da URL
@@ -259,9 +291,9 @@ Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#
 - pdf-parse: ^1.1.1
 
 📝 13. FUNCIONALIDADES IMPLEMENTADAS (CHECKLIST)
-✅ Concluído na Versão 6.1:
+✅ Concluído na Versão 7.0:
 - Autenticação JWT completa
-- CRUD de contas a pagar/receber
+- CRUD de contas a pagar/receber com criptografia AES-256-GCM
 - Dashboard financeiro com saldo e percentuais
 - Investimentos com cotações
 - Financiamentos com simulação de amortização extra
@@ -275,6 +307,9 @@ Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#
 - IA Analista Financeira (análise profunda)
 - Revisão Mensal Automática
 - Insights Diários
+- Radar Financeiro (alertas de mercado)
+- Simulador de Sonhos (planejamento de metas)
+- Saúde Financeira Familiar (compartilhamento de objetivos)
 - Tema claro/escuro com persistência
 - Design responsivo (web + mobile)
 - Tobby reativo (muda de expressão)
@@ -282,7 +317,7 @@ Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#
 - Painel administrativo com métricas
 - PWA (instalável no celular)
 - Criptografia AES-256-GCM (mais segura)
-- Fallback para dados antigos (CBC)
+- Fallback para dados em texto plano
 - Auditoria completa (tabela audit_log)
 - Score Financeiro (0-100)
 - Metas Financeiras
@@ -295,11 +330,9 @@ Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#
 - Central de Indicadores (Selic, IPCA, Dólar, Bitcoin)
 - Categorias Customizáveis pelo usuário
 - Estrutura de Conquistas
+- Painel de Debug para administradores
 
-🚧 Em andamento / Pendentes para v7.0:
-- Radar Financeiro (alertas de mercado)
-- Simulador de Sonhos
-- Saúde Financeira Familiar
+🚧 Em andamento / Pendentes para v7.1:
 - Interface completa de Conquistas no frontend
 - Gamificação avançada
 - Envio de notificações WhatsApp
@@ -359,15 +392,36 @@ Todo mês o Tobby gera uma carta personalizada com:
 - Análise de gastos por categoria
 - Dicas personalizadas
 
-🔒 19. SEGURANÇA
+🔄 19. RADAR FINANCEIRO (NOVO)
+Alertas automáticos sobre mudanças no mercado:
+- Selic: alerta sobre mudanças na taxa básica de juros
+- IPCA: monitora a inflação oficial
+- Dólar: acompanha variação cambial
+- Bitcoin: alerta sobre volatilidade das criptomoedas
+
+🎯 20. SIMULADOR DE SONHOS (NOVO)
+Planejamento de metas com aportes mensais:
+- Defina um sonho (viagem, casa, carro)
+- Informe valor alvo e aporte mensal
+- Tobby calcula tempo necessário para alcançar
+- Acompanhamento de progresso
+
+👨‍👩‍👧‍👦 21. SAÚDE FINANCEIRA FAMILIAR (NOVO)
+Compartilhamento de objetivos com familiares:
+- Adicione membros da família
+- Compartilhe metas financeiras
+- Defina porcentagem de contribuição por membro
+- Acompanhe progresso coletivo
+
+🔒 22. SEGURANÇA
 - AES-256-GCM para dados sensíveis
 - JWT com bcrypt para senhas
 - Auditoria de todas as alterações
-- Rate limiting (planejado)
 - CORS configurado
 - Headers de segurança
+- Painel de Debug restrito a administradores
 
-🎯 20. RESUMO PARA IA
-Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS). Autenticação JWT. Criptografia AES-256-GCM para dados sensíveis com fallback para CBC. Funcionalidades: controle de contas, investimentos, financiamentos, patrimônio, leitura de nota fiscal, holerite, extrato, informe de IR, chat com IA Groq, IA Analista Financeira, Score Financeiro (0-100), Metas Financeiras, Reserva de Emergência, Previsão de Caixa, Relatório Mensal, Linha do Tempo Financeira, Central de Indicadores, Categorias Customizáveis, Auditoria completa, Conquistas. Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcionais: ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA), RESEND_API_KEY (e-mails).
+🎯 23. RESUMO PARA IA
+Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS). Autenticação JWT. Criptografia AES-256-GCM para dados sensíveis com fallback para texto plano. Funcionalidades: controle de contas, investimentos, financiamentos, patrimônio, leitura de nota fiscal, holerite, extrato, informe de IR, chat com IA Groq, IA Analista Financeira, Score Financeiro (0-100), Metas Financeiras, Reserva de Emergência, Previsão de Caixa, Relatório Mensal, Linha do Tempo Financeira, Central de Indicadores, Categorias Customizáveis, Auditoria completa, Conquistas, Radar Financeiro (alertas de mercado), Simulador de Sonhos (planejamento de metas), Saúde Financeira Familiar (compartilhamento de objetivos). Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcionais: ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA), RESEND_API_KEY (e-mails).
 
 Com este documento, qualquer IA pode entender exatamente o que foi construído e continuar o desenvolvimento! 🐶📚
