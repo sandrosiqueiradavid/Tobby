@@ -1,4 +1,4 @@
-// TOBBY - APP PRINCIPAL V8.0
+// frontend/app.js - TOBBY APP PRINCIPAL V8.0
 // COPILOTO FINANCEIRO PESSOAL
 
 var CATS = {
@@ -18,6 +18,10 @@ var allBills = [];
 var currentFilter = 'all';
 var resetToken = null;
 var allCategories = [];
+
+// ============================================
+// FUNÇÕES UTILITÁRIAS
+// ============================================
 
 function fmt(v) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v || 0);
@@ -71,6 +75,23 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
+function checkResetToken() {
+  var params = new URLSearchParams(window.location.search);
+  var token = params.get('reset');
+  if (token) {
+    resetToken = token;
+    showScreen('auth');
+    document.getElementById('reset-card').style.display = 'block';
+    document.getElementById('login-card').style.display = 'none';
+    document.getElementById('register-card').style.display = 'none';
+    document.getElementById('forgot-card').style.display = 'none';
+  }
+}
+
+// ============================================
+// AUTENTICAÇÃO
+// ============================================
+
 function showLogin() {
   document.getElementById('login-card').style.display = 'block';
   document.getElementById('register-card').style.display = 'none';
@@ -92,7 +113,6 @@ function showForgotPassword() {
   document.getElementById('reset-card').style.display = 'none';
 }
 
-// ===== AUTH =====
 async function doLogin() {
   var email = document.getElementById('login-email').value.trim();
   var pwd = document.getElementById('login-pwd').value;
@@ -174,19 +194,17 @@ function updateUserUI() {
   document.getElementById('prof-salary').textContent = fmt(currentUser.salary);
 }
 
+// ============================================
+// ENTRADA NO APP
+// ============================================
+
 async function enterApp() {
   showScreen('app');
   updateUserUI();
   navTo('home');
-  // Carregar briefing matinal (com tratamento de erro)
-  try {
-    await loadMorningBriefing();
-  } catch(e) {
-    console.warn('Briefing não disponível:', e.message);
-  }
+  loadMorningBriefing();
 }
 
-// ===== NAVIGATION =====
 var TABS = ['home', 'bills', 'investments', 'loans', 'wealth', 'ai', 'profile', 'journal', 'timeline', 'retirement', 'missions'];
 
 function navTo(tab) {
@@ -201,7 +219,7 @@ function navTo(tab) {
     loadFinancialScore();
     loadEmergencyFund();
     loadGoals();
-    try { loadMorningBriefing(); } catch(e) {}
+    loadMorningBriefing();
   }
   if (tab === 'bills') loadBills();
   if (tab === 'investments') loadInvestments();
@@ -214,715 +232,87 @@ function navTo(tab) {
   if (tab === 'profile') {
     loadCategories();
   }
-  if (tab === 'journal') { try { loadJournal(); } catch(e) { showToast('Diário indisponível'); } }
-  if (tab === 'timeline') { try { loadLifeEvents(); } catch(e) { showToast('Timeline indisponível'); } }
-  if (tab === 'retirement') { try { loadRetirement(); } catch(e) { showToast('Aposentadoria indisponível'); } }
-  if (tab === 'missions') { try { loadMissions(); } catch(e) { showToast('Missões indisponíveis'); } }
+  if (tab === 'journal') loadJournal();
+  if (tab === 'timeline') loadLifeEvents();
+  if (tab === 'retirement') loadRetirement();
+  if (tab === 'missions') loadMissions();
 }
 
-// ===== BILLS =====
-async function loadBills() {
+// ============================================
+// HOME
+// ============================================
+
+async function loadHome() {
   try {
-    var bills = await api.getBills(currentFilter === 'all' ? null : currentFilter);
-    allBills = bills;
-    renderBills();
-  } catch (e) { showToast('Erro ao carregar contas'); }
-}
-
-function filterBills(el, filter) {
-  currentFilter = filter;
-  var chips = document.querySelectorAll('.filter-chip');
-  for (var i = 0; i < chips.length; i++) {
-    chips[i].classList.remove('active');
+    var summary = await api.getDashboardSummary();
+    document.getElementById('home-total').textContent = fmt(summary.total || 0);
+    document.getElementById('home-pending').textContent = fmt(summary.pending || 0);
+    document.getElementById('home-paid').textContent = fmt(summary.paid || 0);
+    document.getElementById('home-count').textContent = (summary.count || 0) + ' contas';
+  } catch (e) {
+    console.error('Erro ao carregar home:', e);
   }
-  if (el) el.classList.add('active');
-  loadBills();
 }
 
-function renderBills() {
-  var today = new Date().getDate();
-  var bills = [...allBills];
-  if (currentFilter === 'pending') bills = bills.filter(function(b) { return b.status === 'pending'; });
-  else if (currentFilter === 'paid') bills = bills.filter(function(b) { return b.status === 'paid'; });
-  else if (currentFilter === 'late') bills = bills.filter(function(b) { return b.status === 'late' || (b.status === 'pending' && b.due_day < today); });
-  var el = document.getElementById('bills-list-main');
-  if (!bills.length) { el.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary)">Nenhuma transação encontrada</div>'; return; }
-  var html = '';
-  for (var i = 0; i < bills.length; i++) {
-    var b = bills[i];
-    var cat = CATS[b.category] || CATS.outros;
-    var isLate = b.status === 'pending' && b.due_day < today;
-    var statusClass = b.status === 'paid' ? 'status-paid' : (isLate ? 'status-late' : 'status-pending');
-    var statusText = b.status === 'paid' ? 'Pago' : (isLate ? 'Atrasado' : 'Pendente');
-    html += '<div class="transaction-item"><div class="transaction-icon" style="background: ' + cat.bg + '">' + cat.e + '</div><div class="transaction-info"><div class="transaction-name">' + b.name + '</div><div class="transaction-meta">' + b.due_day + ' de cada mês · ' + b.category + '</div></div><div class="transaction-right"><div class="transaction-value expense">' + fmt(b.value) + '</div><div class="transaction-status ' + statusClass + '">' + statusText + '</div></div><div class="transaction-actions"><div class="transaction-action" onclick="event.stopPropagation(); toggleStatus(\'' + b.id + '\',\'' + b.status + '\')">' + (b.status === 'paid' ? '↩️' : '✅') + '</div><div class="transaction-action" onclick="event.stopPropagation(); openBillModal(\'' + b.id + '\')">✏️</div><div class="transaction-action" onclick="event.stopPropagation(); deleteBill(\'' + b.id + '\')">🗑️</div></div></div>';
-  }
-  el.innerHTML = html;
-}
-
-async function toggleStatus(id, currentStatus) {
-  var newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
-  try {
-    await api.updateBillStatus(id, newStatus);
-    await loadBills();
-    await loadHome();
-    showToast(newStatus === 'paid' ? '✅ Marcada como paga' : '↩️ Marcada como pendente');
-  } catch (e) { showToast('Erro ao atualizar'); }
-}
-
-async function deleteBill(id) {
-  if (!confirm('Remover esta conta?')) return;
-  try {
-    await api.deleteBill(id);
-    await loadBills();
-    await loadHome();
-    showToast('Conta removida');
-  } catch (e) { showToast('Erro ao remover'); }
-}
-
-function openBillModal(id) {
-  var modalDiv = document.getElementById('modal');
-  if (!modalDiv) return;
-  if (id) {
-    var b = allBills.find(function(x) { return x.id == id; });
-    if (!b) return;
-    document.getElementById('modal-title').textContent = 'Editar Conta';
-    document.getElementById('f-id').value = b.id;
-    document.getElementById('f-name').value = b.name;
-    document.getElementById('f-val').value = b.value;
-    document.getElementById('f-day').value = b.due_day;
-    document.getElementById('f-cat').value = b.category;
-    document.getElementById('f-status').value = b.status;
-  } else {
-    document.getElementById('modal-title').textContent = 'Nova Conta';
-    document.getElementById('f-id').value = '';
-    document.getElementById('f-name').value = '';
-    document.getElementById('f-val').value = '';
-    document.getElementById('f-day').value = '';
-    document.getElementById('f-cat').value = 'outros';
-    document.getElementById('f-status').value = 'pending';
-  }
-  modalDiv.style.display = 'block';
-  setTimeout(function() { loadCategoryOptions(); }, 100);
-}
-
-async function saveBill() {
-  var name = document.getElementById('f-name').value.trim();
-  var value = parseFloat(document.getElementById('f-val').value);
-  var due_day = parseInt(document.getElementById('f-day').value);
-  if (!name || !value || !due_day) { showToast('Preencha todos os campos'); return; }
-  var category = document.getElementById('f-cat').value;
-  var status = document.getElementById('f-status').value;
-  var eid = document.getElementById('f-id').value;
-  try {
-    if (eid) await api.updateBill(eid, name, value, due_day, category, status);
-    else await api.createBill(name, value, due_day, category, status);
-    closeModal();
-    await loadBills();
-    await loadHome();
-    showToast('Conta salva com sucesso 🐶');
-  } catch (e) { showToast(e.message || 'Erro ao salvar'); }
-}
-
-// ===== SCORE FINANCEIRO =====
 async function loadFinancialScore() {
   try {
     var response = await api.request('/score');
-    if (response.score) {
-      document.getElementById('score-value').innerHTML = response.score + '<span style="font-size: 14px;">/100</span>';
-      document.getElementById('score-label').innerHTML = response.classification.name;
-      document.getElementById('score-bar').style.width = response.score + '%';
-      if (response.score >= 90) document.getElementById('score-emoji').innerHTML = '🏆';
-      else if (response.score >= 70) document.getElementById('score-emoji').innerHTML = '😊';
-      else if (response.score >= 50) document.getElementById('score-emoji').innerHTML = '🐶';
-      else if (response.score >= 30) document.getElementById('score-emoji').innerHTML = '🧐';
-      else document.getElementById('score-emoji').innerHTML = '😟';
+    var score = response.score || 0;
+    document.getElementById('score-value').textContent = score;
+    var bar = document.getElementById('score-bar');
+    if (bar) {
+      bar.style.width = Math.min(score, 100) + '%';
+      bar.style.background = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--yellow)' : 'var(--red)';
     }
-  } catch (error) {
-    console.error('Erro ao carregar score:', error);
+  } catch (e) {
+    console.error('Erro ao carregar score:', e);
   }
 }
 
-// ===== RESERVA DE EMERGÊNCIA =====
 async function loadEmergencyFund() {
   try {
     var response = await api.request('/emergency-fund');
-    if (response) {
-      document.getElementById('emergency-amount').innerHTML = fmt(response.current_amount);
-      document.getElementById('emergency-months').innerHTML = response.months_of_safety + ' meses';
-      document.getElementById('emergency-progress').style.width = response.progress + '%';
-      document.getElementById('emergency-recommended').innerHTML = 'Recomendado: ' + fmt(response.recommended_amount);
-    }
-  } catch (error) {
-    console.error('Erro ao carregar reserva:', error);
+    var fund = response.data || {};
+    document.getElementById('emergency-amount').textContent = fmt(fund.current_amount || 0);
+    document.getElementById('emergency-target').textContent = (fund.target_months || 6) + ' meses';
+  } catch (e) {
+    console.error('Erro ao carregar reserva:', e);
   }
 }
 
-// ===== METAS FINANCEIRAS =====
 async function loadGoals() {
   try {
     var response = await api.request('/goals/goals');
-    var goals = response.goals || [];
+    var goals = response.data || [];
     var container = document.getElementById('goals-list');
-    if (goals.length === 0) {
-      container.innerHTML = '<div class="stat-card" style="text-align: center; cursor: pointer;" onclick="openGoalModal()"><div style="font-size: 24px; margin-bottom: 8px;">🎯</div><div style="font-size: 13px; color: var(--text-secondary);">Crie sua primeira meta!</div><div style="font-size: 11px; color: var(--green); margin-top: 4px;">Clique para adicionar →</div></div>';
-      return;
-    }
-    var html = '';
-    for (var i = 0; i < goals.length; i++) {
-      var goal = goals[i];
-      var progress = goal.progress || 0;
-      var remaining = goal.remaining || 0;
-      var monthlyNeeded = goal.monthly_needed || 0;
-      html += '<div class="stat-card" style="margin-bottom: 0.5rem;">';
-      html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">';
-      html += '<div><div style="font-weight: 700;">' + escapeHtml(goal.name) + '</div>';
-      html += '<div style="font-size: 10px; color: var(--text-muted);">' + new Date(goal.deadline).toLocaleDateString('pt-BR') + '</div></div>';
-      html += '<div style="text-align: right;"><div style="font-weight: 700;">' + fmt(goal.current_amount) + '</div>';
-      html += '<div style="font-size: 10px; color: var(--text-muted);">de ' + fmt(goal.target_amount) + '</div></div></div>';
-      html += '<div style="height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 8px;"><div style="width: ' + progress + '%; height: 100%; background: var(--green); border-radius: 3px;"></div></div>';
-      html += '<div style="display: flex; justify-content: space-between; font-size: 10px;"><span>' + progress.toFixed(0) + '% concluído</span><span>Faltam ' + fmt(remaining) + '</span></div>';
-      if (monthlyNeeded > 0) html += '<div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">💰 Precisaria de ' + fmt(monthlyNeeded) + '/mês</div>';
-      html += '<div style="display: flex; gap: 8px; margin-top: 8px; justify-content: flex-end;">';
-      html += '<button class="chip" onclick="event.stopPropagation(); updateGoalProgress(\'' + goal.id + '\')" style="font-size: 10px;">📈 Atualizar</button>';
-      html += '<button class="chip" onclick="event.stopPropagation(); deleteGoal(\'' + goal.id + '\')" style="font-size: 10px; background: var(--red-bg);">🗑️ Remover</button>';
-      html += '</div></div>';
-    }
-    container.innerHTML = html;
-  } catch (error) {
-    console.error('Erro ao carregar metas:', error);
-  }
-}
-
-function openGoalModal() {
-  var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>🎯 Nova Meta Financeira</h3><div class="field"><label>Nome da meta</label><input type="text" id="goal-name" placeholder="Ex: Comprar moto, Viagem, Casa própria"></div><div class="field"><label>Valor alvo (R$)</label><input type="number" id="goal-target" step="0.01" placeholder="0,00"></div><div class="field"><label>Valor já guardado (R$)</label><input type="number" id="goal-current" step="0.01" placeholder="0,00" value="0"></div><div class="field"><label>Data limite</label><input type="date" id="goal-deadline"></div><div style="display: flex; gap: 0.5rem; margin-top: 1rem"><button class="btn-primary" style="flex: 1" onclick="saveGoal()">Salvar meta</button><button class="btn-secondary" style="flex: 1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
-  document.body.appendChild(modal);
-}
-
-async function saveGoal() {
-  var name = document.getElementById('goal-name').value;
-  var target_amount = parseFloat(document.getElementById('goal-target').value);
-  var current_amount = parseFloat(document.getElementById('goal-current').value) || 0;
-  var deadline = document.getElementById('goal-deadline').value;
-  if (!name || !target_amount || !deadline) { showToast('Preencha todos os campos'); return; }
-  try {
-    await api.request('/goals/goals', { method: 'POST', body: JSON.stringify({ name: name, target_amount: target_amount, current_amount: current_amount, deadline: deadline }) });
-    showToast('Meta criada com sucesso! 🎯');
-    document.querySelector('.modal-overlay').remove();
-    loadGoals();
-  } catch (error) {
-    showToast('Erro ao criar meta');
-  }
-}
-
-async function updateGoalProgress(goalId) {
-  var newAmount = prompt('Digite o novo valor guardado (R$):');
-  if (newAmount === null) return;
-  var current_amount = parseFloat(newAmount);
-  if (isNaN(current_amount)) { showToast('Valor inválido'); return; }
-  try {
-    await api.request('/goals/goals/' + goalId, { method: 'PUT', body: JSON.stringify({ current_amount: current_amount }) });
-    showToast('Progresso atualizado! 📈');
-    loadGoals();
-  } catch (error) {
-    showToast('Erro ao atualizar progresso');
-  }
-}
-
-async function deleteGoal(goalId) {
-  if (!confirm('Tem certeza que deseja remover esta meta?')) return;
-  try {
-    await api.request('/goals/goals/' + goalId, { method: 'DELETE' });
-    showToast('Meta removida');
-    loadGoals();
-  } catch (error) {
-    showToast('Erro ao remover meta');
-  }
-}
-
-// ===== CATEGORIAS =====
-async function loadCategories() {
-  try {
-    var response = await api.request('/categories');
-    allCategories = response.categories || [];
-    var container = document.getElementById('categories-list');
     if (!container) return;
-    if (allCategories.length === 0) {
-      container.innerHTML = '<div class="stat-card" style="text-align: center; cursor: pointer;" onclick="openCategoryModal()"><div style="font-size: 24px; margin-bottom: 8px;">🏷️</div><div style="font-size: 13px; color: var(--text-secondary);">Crie suas próprias categorias!</div><div style="font-size: 11px; color: var(--green); margin-top: 4px;">Clique para adicionar →</div></div>';
+    
+    if (goals.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhuma meta ativa</div>';
       return;
     }
-    var defaultCats = allCategories.filter(function(c) { return c.is_default === true; });
-    var userCats = allCategories.filter(function(c) { return c.is_default === false; });
-    var html = '';
-    if (userCats.length > 0) {
-      html += '<div style="margin-bottom: 0.5rem;"><strong>📝 Minhas Categorias</strong></div>';
-      for (var i = 0; i < userCats.length; i++) {
-        var cat = userCats[i];
-        html += '<div class="transaction-item" style="padding: 0.75rem;">';
-        html += '<div class="transaction-icon" style="background: ' + (cat.color || '#6B7280') + '20; width: 40px; height: 40px;">' + (cat.emoji || '📦') + '</div>';
-        html += '<div class="transaction-info" style="flex: 1;"><div class="transaction-name">' + escapeHtml(cat.name) + '</div><div class="transaction-meta">Personalizada</div></div>';
-        html += '<div class="transaction-actions">';
-        html += '<div class="transaction-action" onclick="event.stopPropagation(); editCategory(\'' + cat.id + '\', \'' + escapeHtml(cat.name) + '\', \'' + (cat.emoji || '📦') + '\', \'' + (cat.color || '#6B7280') + '\')">✏️</div>';
-        html += '<div class="transaction-action" onclick="event.stopPropagation(); deleteCategory(\'' + cat.id + '\')">🗑️</div>';
-        html += '</div></div>';
-      }
-    }
-    if (defaultCats.length > 0) {
-      html += '<div style="margin-top: 0.75rem; margin-bottom: 0.5rem;"><strong>⭐ Categorias Padrão</strong></div>';
-      html += '<div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">';
-      for (var j = 0; j < defaultCats.length; j++) {
-        var defCat = defaultCats[j];
-        html += '<div class="category-badge" style="background: ' + (defCat.color || '#6B7280') + '20; border: 1px solid ' + (defCat.color || '#6B7280') + '30;"><span>' + (defCat.emoji || '📦') + '</span><span style="font-size: 12px;">' + escapeHtml(defCat.name) + '</span></div>';
-      }
-      html += '</div>';
-    }
-    container.innerHTML = html;
-    loadCategoryOptions();
-  } catch (error) {
-    console.error('Erro ao carregar categorias:', error);
-  }
-}
-
-function openCategoryModal() {
-  var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>🏷️ Nova Categoria</h3><div class="field"><label>Nome da categoria</label><input type="text" id="cat-name" placeholder="Ex: Pet, Farmácia, Academia"></div><div class="field-row"><div class="field"><label>Emoji</label><input type="text" id="cat-emoji" placeholder="🐶" maxlength="2" value="📦"></div><div class="field"><label>Cor</label><input type="color" id="cat-color" value="#10B981"></div></div><div style="display: flex; gap: 0.5rem; margin-top: 1rem"><button class="btn-primary" style="flex: 1" onclick="saveCategory()">Salvar categoria</button><button class="btn-secondary" style="flex: 1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
-  document.body.appendChild(modal);
-}
-
-function editCategory(id, name, emoji, color) {
-  var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>✏️ Editar Categoria</h3><div class="field"><label>Nome da categoria</label><input type="text" id="cat-name" value="' + escapeHtml(name) + '"></div><div class="field-row"><div class="field"><label>Emoji</label><input type="text" id="cat-emoji" value="' + emoji + '" maxlength="2"></div><div class="field"><label>Cor</label><input type="color" id="cat-color" value="' + (color || '#10B981') + '"></div></div><div style="display: flex; gap: 0.5rem; margin-top: 1rem"><button class="btn-primary" style="flex: 1" onclick="updateCategory(\'' + id + '\')">Salvar alterações</button><button class="btn-secondary" style="flex: 1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
-  document.body.appendChild(modal);
-}
-
-async function saveCategory() {
-  var name = document.getElementById('cat-name').value.trim();
-  var emoji = document.getElementById('cat-emoji').value.trim() || '📦';
-  var color = document.getElementById('cat-color').value;
-  if (!name) { showToast('Digite o nome da categoria'); return; }
-  try {
-    await api.request('/categories', { method: 'POST', body: JSON.stringify({ name: name, emoji: emoji, color: color, parent_category: 'custom' }) });
-    showToast('Categoria criada com sucesso! 🏷️');
-    document.querySelector('.modal-overlay').remove();
-    loadCategories();
-  } catch (error) {
-    showToast(error.message || 'Erro ao criar categoria');
-  }
-}
-
-async function updateCategory(id) {
-  var name = document.getElementById('cat-name').value.trim();
-  var emoji = document.getElementById('cat-emoji').value.trim() || '📦';
-  var color = document.getElementById('cat-color').value;
-  if (!name) { showToast('Digite o nome da categoria'); return; }
-  try {
-    await api.request('/categories/' + id, { method: 'PUT', body: JSON.stringify({ name: name, emoji: emoji, color: color }) });
-    showToast('Categoria atualizada! ✏️');
-    document.querySelector('.modal-overlay').remove();
-    loadCategories();
-  } catch (error) {
-    showToast(error.message || 'Erro ao atualizar categoria');
-  }
-}
-
-async function deleteCategory(id) {
-  if (!confirm('Tem certeza que deseja remover esta categoria?\n\nContas que usam esta categoria serão movidas para "Outros".')) return;
-  try {
-    await api.request('/categories/' + id, { method: 'DELETE' });
-    showToast('Categoria removida');
-    loadCategories();
-  } catch (error) {
-    showToast(error.message || 'Erro ao deletar categoria');
-  }
-}
-
-async function loadCategoryOptions() {
-  try {
-    if (allCategories.length === 0) {
-      var response = await api.request('/categories');
-      allCategories = response.categories || [];
-    }
-    var categorySelect = document.getElementById('f-cat');
-    if (categorySelect) {
-      var currentValue = categorySelect.value;
-      var options = '';
-      for (var i = 0; i < allCategories.length; i++) {
-        var cat = allCategories[i];
-        var selected = (cat.name === currentValue) ? 'selected' : '';
-        options += '<option value="' + cat.name + '" ' + selected + '>' + (cat.emoji || '📦') + ' ' + cat.name + '</option>';
-      }
-      categorySelect.innerHTML = options;
-    }
-  } catch (error) {
-    console.error('Erro ao carregar opções de categorias:', error);
-  }
-}
-
-// ===== HOME =====
-async function loadHome() {
-  try {
-    var dash = await api.getDashboard();
-    var bills = await api.getBills();
-    allBills = bills;
-    var today = new Date();
-    document.getElementById('bal-date').textContent = 'Saldo em ' + today.getDate() + ' de ' + today.toLocaleString('pt-BR', { month: 'long' });
-    document.getElementById('bal-free').textContent = fmt(dash.freeBalance);
-    document.getElementById('bal-in').textContent = fmt(dash.salary);
-    document.getElementById('bal-out').textContent = fmt(dash.totalPaid || 0);
-    document.getElementById('bal-pct').textContent = (dash.percentageCommitted || 0) + '%';
-    document.getElementById('stat-paid').textContent = dash.paidBills || 0;
-    document.getElementById('stat-pend').textContent = dash.pendingBills || 0;
-    document.getElementById('stat-late').textContent = dash.lateBills || 0;
-    document.getElementById('stat-total').textContent = dash.totalBills || 0;
-    if (dash.salary !== undefined && currentUser) currentUser.salary = dash.salary;
-    var paidBills = bills.filter(function(b) { return b.status === 'paid'; });
-    var totalPaid = paidBills.reduce(function(s, b) { return s + b.value; }, 0);
-    var avgDaily = totalPaid / 30;
-    document.getElementById('daily-avg').textContent = fmt(avgDaily);
-    document.getElementById('safe-balance').textContent = fmt(dash.freeBalance * 0.7);
-    updateTobyMood(dash);
-    updateCategoryChart(bills);
-    renderHomeBills(bills);
-  } catch (e) { console.error(e); }
-}
-
-function updateTobyMood(dash) {
-  var free = dash.freeBalance || 0;
-  var late = dash.lateBills || 0;
-  var avatar = '🐶', msg = '', badge = '🐶';
-  if (late > 0) { avatar = '😟'; msg = 'Você tem ' + late + ' conta(s) atrasada(s). Vamos resolver?'; badge = 'Preocupado'; }
-  else if (free < 500 && free > 0) { avatar = '🧐'; msg = 'Saldo livre de ' + fmt(free) + '. Vamos com cuidado!'; badge = 'Atento'; }
-  else if (free > 2000) { avatar = '😊'; msg = fmt(free) + ' livres! Você está indo muito bem!'; badge = 'Feliz'; }
-  else { avatar = '🐶'; msg = 'Tudo dentro do esperado. Continue assim!'; badge = 'Normal'; }
-  document.getElementById('toby-avatar').textContent = avatar;
-  document.getElementById('toby-message').textContent = msg;
-  document.getElementById('toby-badge').textContent = badge;
-}
-
-function updateCategoryChart(bills) {
-  var categories = {};
-  bills.filter(function(b) { return b.status === 'paid'; }).forEach(function(b) {
-    var cat = b.category || 'outros';
-    categories[cat] = (categories[cat] || 0) + b.value;
-  });
-  var total = Object.values(categories).reduce(function(s, v) { return s + v; }, 0);
-  var legendDiv = document.getElementById('category-legend');
-  if (total === 0) { legendDiv.innerHTML = '<div style="font-size: 12px; color: var(--text-muted)">Nenhuma despesa registrada</div>'; return; }
-  var colors = { moradia: '#3B82F6', alimentacao: '#10B981', saude: '#8B5CF6', transporte: '#F59E0B', lazer: '#EC4899', educacao: '#06B6D4', tecnologia: '#6366F1', financeiro: '#EF4444', outros: '#6B7280' };
-  var html = '';
-  var items = Object.entries(categories).slice(0, 5);
-  for (var i = 0; i < items.length; i++) {
-    var cat = items[i][0];
-    var val = items[i][1];
-    html += '<div class="legend-item"><div class="legend-color" style="background: ' + (colors[cat] || '#6B7280') + '"></div><div class="legend-label">' + cat + '</div><div class="legend-value">' + fmt(val) + '</div><div style="font-size: 11px; color: var(--text-muted)">' + Math.round((val / total) * 100) + '%</div></div>';
-  }
-  legendDiv.innerHTML = html;
-}
-
-function renderHomeBills(bills) {
-  var today = new Date().getDate();
-  var upcoming = bills.filter(function(b) { return b.status === 'pending' || b.status === 'late'; }).sort(function(a, b) { return a.due_day - b.due_day; }).slice(0, 5);
-  var el = document.getElementById('home-bills-list');
-  if (!upcoming.length) { el.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: var(--text-secondary)">Sem contas pendentes 🎉</div>'; return; }
-  var html = '';
-  for (var i = 0; i < upcoming.length; i++) {
-    var b = upcoming[i];
-    var cat = CATS[b.category] || CATS.outros;
-    var isLate = b.status === 'late' || (b.status === 'pending' && b.due_day < today);
-    html += '<div class="transaction-item" onclick="navTo(\'bills\')"><div class="transaction-icon" style="background: ' + cat.bg + '">' + cat.e + '</div><div class="transaction-info"><div class="transaction-name">' + b.name + '</div><div class="transaction-meta">' + (isLate ? 'Atrasada' : 'Vence dia ' + b.due_day) + '</div></div><div class="transaction-right"><div class="transaction-value expense">' + fmt(b.value) + '</div><div class="transaction-status ' + (isLate ? 'status-late' : 'status-pending') + '">' + (isLate ? 'Atrasado' : 'Pendente') + '</div></div></div>';
-  }
-  el.innerHTML = html;
-}
-
-// ===== INVESTMENTS =====
-async function loadInvestments() {
-  try {
-    var data = await api.getInvestments();
-    var investments = data.investments || [];
-    var totalInvested = investments.reduce(function(s, i) { return s + (i.quantity * i.purchase_price); }, 0);
-    var totalCurrent = investments.reduce(function(s, i) { return s + (i.quantity * (i.current_price || i.purchase_price)); }, 0);
-    document.getElementById('total-invested').textContent = fmt(totalInvested);
-    document.getElementById('current-value').textContent = fmt(totalCurrent);
-    var container = document.getElementById('investments-list-container');
-    if (!investments.length) { container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary)">Nenhum investimento cadastrado</div>'; return; }
-    var html = '';
-    for (var i = 0; i < investments.length; i++) {
-      var inv = investments[i];
-      html += '<div class="transaction-item"><div class="transaction-icon">' + (inv.asset_type === 'crypto' ? '₿' : '📈') + '</div><div class="transaction-info"><div class="transaction-name">' + inv.symbol + '</div><div class="transaction-meta">' + inv.quantity + ' unidades · Preço: ' + fmt(inv.purchase_price) + '</div></div><div class="transaction-right"><div class="transaction-value">' + fmt(inv.quantity * (inv.current_price || inv.purchase_price)) + '</div><div class="transaction-action" onclick="deleteInvestment(\'' + inv.id + '\')">🗑️</div></div></div>';
-    }
-    container.innerHTML = html;
-  } catch (e) { console.error(e); }
-}
-
-async function deleteInvestment(id) {
-  if (!confirm('Remover este investimento?')) return;
-  try { await api.deleteInvestment(id); loadInvestments(); showToast('Investimento removido'); } catch (e) { showToast('Erro ao remover'); }
-}
-
-function showAddInvestmentModal() {
-  var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Investimento</h3><div class="field"><label>Símbolo</label><input type="text" id="inv-symbol" placeholder="PETR4, BTC, ITSA4"></div><div class="field"><label>Tipo</label><select id="inv-type"><option value="stock">Ação (B3)</option><option value="crypto">Criptomoeda</option><option value="fii">FII</option></select></div><div class="field-row"><div class="field"><label>Quantidade</label><input type="number" id="inv-quantity" step="0.00001"></div><div class="field"><label>Preço médio (R$)</label><input type="number" id="inv-price" step="0.01"></div></div><div class="field"><label>Data da compra</label><input type="date" id="inv-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveInvestment()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
-  document.body.appendChild(modal);
-}
-
-async function saveInvestment() {
-  var symbol = document.getElementById('inv-symbol').value.toUpperCase();
-  var quantity = parseFloat(document.getElementById('inv-quantity').value);
-  var price = parseFloat(document.getElementById('inv-price').value);
-  var date = document.getElementById('inv-date').value;
-  var assetType = document.getElementById('inv-type').value;
-  if (!symbol || !quantity || !price || !date) { showToast('Preencha todos os campos'); return; }
-  try {
-    await api.createInvestment({ symbol: symbol, quantity: quantity, purchasePrice: price, purchaseDate: date, assetType: assetType });
-    showToast('Investimento cadastrado!');
-    document.querySelector('.modal-overlay').remove();
-    loadInvestments();
-  } catch (e) { showToast(e.message || 'Erro ao cadastrar'); }
-}
-
-// ===== LOANS =====
-async function loadLoans() {
-  try {
-    var data = await api.getLoans();
-    var loans = data.loans || [];
-    var summary = data.summary || { totalDebt: 0, totalMonthlyPayment: 0 };
-    document.getElementById('total-debt').textContent = fmt(summary.totalDebt);
-    document.getElementById('total-monthly').textContent = fmt(summary.totalMonthlyPayment);
-    var container = document.getElementById('loans-list-container');
-    if (!loans.length) { container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-secondary)">Nenhum financiamento cadastrado</div>'; return; }
-    var html = '';
-    for (var i = 0; i < loans.length; i++) {
-      var loan = loans[i];
-      html += '<div class="transaction-item"><div class="transaction-icon">🏠</div><div class="transaction-info"><div class="transaction-name">' + loan.name + '</div><div class="transaction-meta">' + loan.remaining_installments + ' parcelas · ' + loan.interest_rate + '% a.m.</div></div><div class="transaction-right"><div class="transaction-value expense">' + fmt(loan.outstanding_balance) + '</div><div class="transaction-action" onclick="deleteLoan(\'' + loan.id + '\')">🗑️</div></div></div>';
-    }
-    container.innerHTML = html;
-  } catch (e) { console.error(e); }
-}
-
-async function deleteLoan(id) {
-  if (!confirm('Remover este financiamento?')) return;
-  try { await api.deleteLoan(id); loadLoans(); showToast('Financiamento removido'); } catch (e) { showToast('Erro ao remover'); }
-}
-
-function showAddLoanModal() {
-  var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Financiamento</h3><div class="field"><label>Nome</label><input type="text" id="loan-name" placeholder="Ex: Financiamento Casa"></div><div class="field"><label>Tipo</label><select id="loan-type"><option value="mortgage">Financiamento Imobiliário</option><option value="car">Financiamento Veículo</option><option value="personal">Empréstimo Pessoal</option></select></div><div class="field-row"><div class="field"><label>Valor Total</label><input type="number" id="loan-total" step="0.01"></div><div class="field"><label>Saldo Devedor</label><input type="number" id="loan-balance" step="0.01"></div></div><div class="field-row"><div class="field"><label>Taxa Juros (% mês)</label><input type="number" id="loan-rate" step="0.01"></div><div class="field"><label>Parcelas Restantes</label><input type="number" id="loan-installments"></div></div><div class="field"><label>Data Início</label><input type="date" id="loan-date"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveLoan()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
-  document.body.appendChild(modal);
-}
-
-async function saveLoan() {
-  var name = document.getElementById('loan-name').value;
-  var type = document.getElementById('loan-type').value;
-  var totalPrincipal = parseFloat(document.getElementById('loan-total').value);
-  var outstandingBalance = parseFloat(document.getElementById('loan-balance').value);
-  var interestRate = parseFloat(document.getElementById('loan-rate').value);
-  var remainingInstallments = parseInt(document.getElementById('loan-installments').value);
-  var startDate = document.getElementById('loan-date').value;
-  if (!name || !totalPrincipal || !outstandingBalance || !interestRate || !remainingInstallments || !startDate) { showToast('Preencha todos os campos'); return; }
-  try {
-    await api.createLoan({ name: name, type: type, totalPrincipal: totalPrincipal, outstandingBalance: outstandingBalance, interestRate: interestRate, remainingInstallments: remainingInstallments, startDate: startDate });
-    showToast('Financiamento cadastrado!');
-    document.querySelector('.modal-overlay').remove();
-    loadLoans();
-  } catch (e) { showToast(e.message); }
-}
-
-// ===== WEALTH =====
-async function loadWealth() {
-  try {
-    var summary = await api.getWealthSummary();
-    var wealthSummary = summary.summary || {};
-    document.getElementById('net-worth').textContent = fmt(wealthSummary.netWorth || 0);
-    document.getElementById('total-assets').textContent = fmt(wealthSummary.totalAssets || 0);
-    document.getElementById('total-liabilities').textContent = fmt(wealthSummary.totalLiabilities || 0);
-    var assets = await api.getAssets();
-    var assetsList = assets.assets || [];
-    var container = document.getElementById('assets-list-container');
-    if (!assetsList.length) { container.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary)">Nenhum bem cadastrado</div>'; return; }
-    var html = '';
-    for (var i = 0; i < assetsList.length; i++) {
-      var a = assetsList[i];
-      html += '<div class="transaction-item"><div class="transaction-icon">🏠</div><div class="transaction-info"><div class="transaction-name">' + a.name + '</div><div class="transaction-meta">' + (a.asset_type === 'real_estate' ? 'Imóvel' : a.asset_type === 'vehicle' ? 'Veículo' : 'Outro') + '</div></div><div class="transaction-right"><div class="transaction-value">' + fmt(a.estimated_value) + '</div><div class="transaction-action" onclick="deleteAsset(\'' + a.id + '\')">🗑️</div></div></div>';
-    }
-    container.innerHTML = html;
-  } catch (e) { showToast('Erro ao carregar patrimônio'); }
-}
-
-async function deleteAsset(id) {
-  if (!confirm('Remover este bem?')) return;
-  try { await api.deleteAsset(id); loadWealth(); showToast('Bem removido'); } catch (e) { showToast('Erro ao remover'); }
-}
-
-function showAddAssetModal() {
-  var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>➕ Adicionar Bem</h3><div class="field"><label>Nome</label><input type="text" id="asset-name" placeholder="Ex: Apartamento, Carro"></div><div class="field"><label>Tipo</label><select id="asset-type"><option value="real_estate">Imóvel</option><option value="vehicle">Veículo</option><option value="savings">Reserva Financeira</option><option value="other">Outro</option></select></div><div class="field"><label>Valor Estimado (R$)</label><input type="number" id="asset-value" step="0.01"></div><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="saveAsset()">Salvar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
-  document.body.appendChild(modal);
-}
-
-async function saveAsset() {
-  var name = document.getElementById('asset-name').value;
-  var assetType = document.getElementById('asset-type').value;
-  var estimatedValue = parseFloat(document.getElementById('asset-value').value);
-  if (!name || !estimatedValue) { showToast('Preencha todos os campos'); return; }
-  try {
-    await api.createAsset({ name: name, assetType: assetType, estimatedValue: estimatedValue });
-    showToast('Bem cadastrado!');
-    document.querySelector('.modal-overlay').remove();
-    loadWealth();
-  } catch (e) { showToast(e.message || 'Erro ao cadastrar bem'); }
-}
-
-// ===== INSIGHTS =====
-function loadInsights() {
-  var bills = allBills;
-  var salary = currentUser?.salary || 0;
-  var today = new Date().getDate();
-  var late = bills.filter(function(b) { return b.status === 'late' || (b.status === 'pending' && b.due_day < today); });
-  var free = salary - bills.filter(function(b) { return b.status === 'paid'; }).reduce(function(s, b) { return s + b.value; }, 0);
-  var pct = salary > 0 ? Math.round((bills.reduce(function(s, b) { return s + b.value; }, 0) / salary) * 100) : 0;
-  var el = document.getElementById('insights-list');
-  if (!bills.length) { el.innerHTML = '<div style="text-align: center; padding: 1rem; color: var(--text-secondary)">Cadastre contas para receber análises</div>'; return; }
-  var cards = [];
-  if (late.length > 0) cards.push('<div class="indicator-card" style="text-align:left; cursor:pointer" onclick="navTo(\'bills\')"><div class="indicator-label">⚠️ Contas atrasadas</div><div class="indicator-value small" style="color: var(--red)">' + late.length + ' conta(s)</div><div style="font-size: 10px; color: var(--text-muted)">Regularize para evitar juros</div></div>');
-  if (pct > 70) cards.push('<div class="indicator-card" style="text-align:left" onclick="navTo(\'bills\')"><div class="indicator-label">📊 Comprometimento</div><div class="indicator-value small" style="color: var(--orange)">' + pct + '% da renda</div><div style="font-size: 10px; color: var(--text-muted)">Ideal é abaixo de 50%</div></div>');
-  if (free > 500) cards.push('<div class="indicator-card" style="text-align:left" onclick="navTo(\'investments\')"><div class="indicator-label">💰 Saldo disponível</div><div class="indicator-value small" style="color: var(--green)">' + fmt(free) + '</div><div style="font-size: 10px; color: var(--text-muted)">Considere investir!</div></div>');
-  if (!cards.length) cards.push('<div class="indicator-card" style="text-align:left" onclick="navTo(\'bills\')"><div class="indicator-label">🐶 Continue assim!</div><div class="indicator-value small">' + bills.length + ' contas cadastradas</div><div style="font-size: 10px; color: var(--text-muted)">Adicione mais contas para melhores análises</div></div>');
-  el.innerHTML = '<div class="stats-grid" style="grid-template-columns: 1fr; gap: 0.5rem">' + cards.map(function(c) { return '<div class="stat-card">' + c + '</div>'; }).join('') + '</div>';
-}
-
-// ===== MENSAGEM DE PRIVACIDADE =====
-function showPrivacyMessage() {
-  var msgs = document.getElementById('chat-msgs');
-  if (document.getElementById('privacy-msg')) return;
-  var privacyMsg = '<div class="msg msg-ai" id="privacy-msg" style="background: rgba(16, 185, 129, 0.05); border: 1px solid var(--green);"><span class="msg-ai-label">🔒 PRIVACIDADE E SEGURANÇA</span>Seus dados são protegidos! 🔐<br><br>• Seus dados financeiros NÃO são armazenados pela IA<br>• Apenas o contexto da sua pergunta é enviado para análise<br>• A IA responde e tudo é descartado imediatamente<br>• Suas informações pessoais (nome, e-mail) NUNCA são compartilhadas<br><br><span style="font-size: 11px; color: var(--text-muted);">✓ Chat 100% seguro e privado</span></div>';
-  msgs.innerHTML = privacyMsg + msgs.innerHTML;
-}
-
-// ===== LIMPAR CHAT =====
-function clearChat() {
-  var msgs = document.getElementById('chat-msgs');
-  msgs.innerHTML = '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Como posso te ajudar?</div>';
-  showPrivacyMessage();
-  showToast('Conversa limpa! 🧹');
-}
-
-// ===== CHAT COM IA =====
-async function sendMsg() {
-  var input = document.getElementById('chat-input');
-  var q = input.value.trim();
-  if (!q) return;
-  input.value = '';
-  var msgs = document.getElementById('chat-msgs');
-  msgs.innerHTML += '<div class="msg msg-user">' + escapeHtml(q) + '</div>';
-  msgs.scrollTop = msgs.scrollHeight;
-  document.getElementById('typing-ind').style.display = 'block';
-  try {
-    var pendingBills = allBills.filter(function(b) { return b.status === 'pending'; }).length;
-    var lateBills = allBills.filter(function(b) { return b.status === 'late'; }).length;
-    var totalCommitted = allBills.reduce(function(s, b) { return s + b.value; }, 0);
-    var salary = currentUser?.salary || 0;
-    var commitmentPercent = salary > 0 ? (totalCommitted / salary) * 100 : 0;
-    var freeMoney = salary - totalCommitted;
-    var response = await api.request('/ai/chat', {
-      method: 'POST',
-      body: JSON.stringify({
-        message: q,
-        context: {
-          salary: salary,
-          billsCount: allBills.length,
-          pendingBills: pendingBills,
-          lateBills: lateBills,
-          totalCommitted: totalCommitted,
-          commitmentPercent: commitmentPercent.toFixed(1),
-          freeMoney: freeMoney
-        }
-      })
-    });
-    var reply = response.reply || 'Desculpe, não consegui processar sua mensagem.';
-    document.getElementById('typing-ind').style.display = 'none';
-    msgs.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>' + reply + '</div>';
-    msgs.scrollTop = msgs.scrollHeight;
+    
+    container.innerHTML = goals.slice(0, 3).map(function(g) {
+      var progress = g.target_amount > 0 ? (g.current_amount / g.target_amount * 100) : 0;
+      return '<div class="stat-card" style="padding:0.75rem;">' +
+        '<div style="display:flex;justify-content:space-between;">' +
+        '<span>' + escapeHtml(g.name) + '</span>' +
+        '<span style="font-size:12px;">' + fmt(g.current_amount) + ' / ' + fmt(g.target_amount) + '</span>' +
+        '</div>' +
+        '<div style="height:4px;background:var(--border);border-radius:2px;margin-top:4px;">' +
+        '<div style="width:' + Math.min(progress, 100) + '%;height:100%;background:var(--blue);border-radius:2px;"></div>' +
+        '</div>' +
+        '</div>';
+    }).join('');
   } catch (e) {
-    console.error('Erro no chat:', e);
-    document.getElementById('typing-ind').style.display = 'none';
-    msgs.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Desculpe, estou com dificuldades técnicas. Tente novamente em alguns instantes!</div>';
+    console.error('Erro ao carregar metas:', e);
   }
 }
 
-// ===== PROFILE =====
-async function editSalary() {
-  var cur = currentUser?.salary || 0;
-  var novo = prompt('Informe seu salário mensal (R$):', cur);
-  if (novo === null) return;
-  var val = parseFloat(novo);
-  if (isNaN(val) || val < 0) { showToast('Valor inválido'); return; }
-  try {
-    var updated = await api.updateSalary(val);
-    currentUser.salary = updated.salary;
-    document.getElementById('prof-salary').textContent = fmt(updated.salary);
-    loadHome();
-    showToast('Salário atualizado 💰');
-  } catch (e) { showToast('Erro ao atualizar salário'); }
-}
-
-// ===== UTILITIES =====
-function openReceiptScanner() { showToast('📸 Câmera - Funcionalidade em desenvolvimento'); }
-
-function showHollerithModal() {
-  var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>📄 Leitor de Holerite</h3><textarea id="holerite-text" rows="6" placeholder="Cole aqui o texto do seu holerite..."></textarea><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="processHollerith()">Processar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div><div id="holerite-result" style="margin-top:1rem;display:none"></div></div>';
-  document.body.appendChild(modal);
-}
-
-async function processHollerith() {
-  var text = document.getElementById('holerite-text')?.value;
-  if (!text) { showToast('Cole o texto do holerite'); return; }
-  try {
-    var data = await api.processHollerith(text);
-    showToast(data.message);
-    document.querySelector('.modal-overlay').remove();
-    loadHome();
-  } catch (e) { showToast(e.message || 'Erro ao processar'); }
-}
-
-function showBankExtractModal() {
-  var modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = '<div class="modal"><div class="modal-handle"></div><h3>🏦 Importar Extrato</h3><select id="extract-format"><option value="text">📝 Texto simples</option><option value="csv">📊 CSV</option><option value="ofx">🏦 OFX</option></select><textarea id="extract-text" rows="6" placeholder="Cole aqui o texto do seu extrato..." style="margin-top:1rem"></textarea><div style="display:flex;gap:0.5rem;margin-top:1rem"><button class="btn-primary" style="flex:1" onclick="processBankExtract()">Processar</button><button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button></div></div>';
-  document.body.appendChild(modal);
-}
-
-async function processBankExtract() {
-  var text = document.getElementById('extract-text')?.value;
-  var format = document.getElementById('extract-format')?.value || 'text';
-  if (!text) { showToast('Cole o texto do extrato'); return; }
-  try {
-    var data = await api.processBankExtract(text, format);
-    showToast(data.message);
-    document.querySelector('.modal-overlay').remove();
-    loadHome();
-  } catch (e) { showToast(e.message || 'Erro ao processar'); }
-}
-
-async function showIncomeReport() {
-  try {
-    var report = await api.request('/hollerith/report');
-    alert('📊 INFORME DE RENDIMENTOS\n\nUsuário: ' + report.user + '\nAno: ' + report.year + '\nRendimentos Totais: ' + fmt(report.totalIncome) + '\nDespesas Dedutíveis: ' + fmt(report.totalExpenses) + '\nIRRF Retido: ' + fmt(report.annualIRRF));
-  } catch (e) { showToast('Erro ao gerar informe'); }
-}
-
 // ============================================
-// NOVAS FUNÇÕES V8.0
+// BRIEFING MATINAL
 // ============================================
 
-// ===== BRIEFING MATINAL (TOBBY PROATIVO) =====
 async function loadMorningBriefing() {
   try {
     var response = await api.request('/briefing/morning');
@@ -933,15 +323,463 @@ async function loadMorningBriefing() {
       }
     }
   } catch (e) {
-    console.warn('Briefing não disponível:', e.message);
-    var briefingDiv = document.getElementById('morning-briefing');
-    if (briefingDiv) {
-      briefingDiv.innerHTML = '🐶 Bom dia! O briefing matinal será carregado em breve.';
-    }
+    console.error('Erro ao carregar briefing:', e);
   }
 }
 
-// ===== DIÁRIO FINANCEIRO =====
+// ============================================
+// CONTAS (BILLS)
+// ============================================
+
+async function loadBills() {
+  try {
+    var bills = await api.getBills();
+    allBills = bills || [];
+    renderBills();
+  } catch (e) {
+    console.error('Erro ao carregar contas:', e);
+  }
+}
+
+function renderBills() {
+  var list = document.getElementById('bills-list');
+  if (!list) return;
+  
+  var filtered = allBills;
+  if (currentFilter !== 'all') {
+    filtered = allBills.filter(function(b) { return b.status === currentFilter; });
+  }
+  
+  if (filtered.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">Nenhuma conta encontrada</div>';
+    return;
+  }
+  
+  // Ordenar por dia do vencimento
+  filtered.sort(function(a, b) { return (a.due_day || 0) - (b.due_day || 0); });
+  
+  list.innerHTML = filtered.map(function(bill) {
+    var cat = CATS[bill.category] || CATS.outros;
+    var statusClass = bill.status === 'paid' ? 'paid' : bill.status === 'late' ? 'late' : '';
+    var statusText = bill.status === 'paid' ? '✅ Pago' : bill.status === 'late' ? '⚠️ Atrasado' : '⏳ Pendente';
+    
+    return '<div class="transaction-item ' + statusClass + '">' +
+      '<div class="transaction-icon" style="background:' + cat.bg + ';">' + cat.e + '</div>' +
+      '<div class="transaction-info">' +
+      '<div class="transaction-name">' + escapeHtml(bill.name) + '</div>' +
+      '<div class="transaction-desc">Vence dia ' + bill.due_day + ' · ' + statusText + '</div>' +
+      '</div>' +
+      '<div class="transaction-amount">' +
+      '<div style="font-weight:600;">' + fmt(bill.value) + '</div>' +
+      '<div style="display:flex;gap:4px;margin-top:4px;">' +
+      '<button class="chip" onclick="toggleStatus(\'' + bill.id + '\')" style="font-size:9px;">' + (bill.status === 'paid' ? '↩️ Reabrir' : '✅ Pagar') + '</button>' +
+      '<button class="chip" onclick="deleteBill(\'' + bill.id + '\')" style="font-size:9px;background:var(--red-bg);">🗑️</button>' +
+      '</div>' +
+      '</div>' +
+      '</div>';
+  }).join('');
+}
+
+function filterBills(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(function(c) {
+    c.classList.toggle('active', c.dataset.filter === filter);
+  });
+  renderBills();
+}
+
+function openBillModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal">' +
+    '<div class="modal-handle"></div>' +
+    '<h3>➕ Nova Conta</h3>' +
+    '<div class="field"><label>Nome</label><input type="text" id="bill-name" placeholder="Ex: Aluguel"></div>' +
+    '<div class="field"><label>Valor (R$)</label><input type="number" id="bill-value" step="0.01" placeholder="0,00"></div>' +
+    '<div class="field-row">' +
+    '<div class="field"><label>Dia de Vencimento</label><input type="number" id="bill-due" min="1" max="31" placeholder="5"></div>' +
+    '<div class="field"><label>Categoria</label><select id="bill-category">' +
+    Object.keys(CATS).map(function(c) { return '<option value="' + c + '">' + CATS[c].e + ' ' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>'; }).join('') +
+    '</select></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:0.5rem;margin-top:1rem">' +
+    '<button class="btn-primary" style="flex:1" onclick="saveBill()">Salvar</button>' +
+    '<button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveBill() {
+  var name = document.getElementById('bill-name').value.trim();
+  var value = parseFloat(document.getElementById('bill-value').value);
+  var due_day = parseInt(document.getElementById('bill-due').value);
+  var category = document.getElementById('bill-category').value;
+  
+  if (!name || !value || !due_day) { showToast('Preencha todos os campos'); return; }
+  if (due_day < 1 || due_day > 31) { showToast('Dia inválido (1-31)'); return; }
+  
+  try {
+    await api.createBill({ name, value, due_day, category });
+    showToast('Conta criada! ✅');
+    document.querySelector('.modal-overlay').remove();
+    loadBills();
+  } catch (e) {
+    showToast('Erro ao criar conta');
+  }
+}
+
+async function deleteBill(id) {
+  if (!confirm('Remover esta conta?')) return;
+  try {
+    await api.deleteBill(id);
+    showToast('Conta removida');
+    loadBills();
+  } catch (e) {
+    showToast('Erro ao remover');
+  }
+}
+
+async function toggleStatus(id) {
+  var bill = allBills.find(function(b) { return b.id === id; });
+  if (!bill) return;
+  var newStatus = bill.status === 'paid' ? 'pending' : 'paid';
+  try {
+    await api.updateBillStatus(id, newStatus);
+    loadBills();
+  } catch (e) {
+    showToast('Erro ao atualizar');
+  }
+}
+
+// ============================================
+// INVESTIMENTOS
+// ============================================
+
+async function loadInvestments() {
+  try {
+    var investments = await api.request('/investments');
+    var container = document.getElementById('investments-list');
+    if (!container) return;
+    
+    if (!investments || investments.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">Nenhum investimento cadastrado</div>';
+      return;
+    }
+    
+    container.innerHTML = investments.map(function(inv) {
+      var total = (inv.quantity || 0) * (inv.purchase_price || 0);
+      return '<div class="transaction-item">' +
+        '<div class="transaction-icon" style="background:var(--blue-bg);">📈</div>' +
+        '<div class="transaction-info">' +
+        '<div class="transaction-name">' + escapeHtml(inv.symbol) + '</div>' +
+        '<div class="transaction-desc">' + inv.quantity + ' unidades · ' + (inv.asset_type || 'ações') + '</div>' +
+        '</div>' +
+        '<div class="transaction-amount">' +
+        '<div style="font-weight:600;">' + fmt(total) + '</div>' +
+        '<button class="chip" onclick="deleteInvestment(\'' + inv.id + '\')" style="font-size:9px;background:var(--red-bg);">🗑️</button>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+  } catch (e) {
+    console.error('Erro ao carregar investimentos:', e);
+  }
+}
+
+function showAddInvestmentModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal">' +
+    '<div class="modal-handle"></div>' +
+    '<h3>📈 Novo Investimento</h3>' +
+    '<div class="field"><label>Ativo (ex: PETR4)</label><input type="text" id="inv-symbol" placeholder="PETR4"></div>' +
+    '<div class="field-row">' +
+    '<div class="field"><label>Quantidade</label><input type="number" id="inv-quantity" step="0.0001" placeholder="10"></div>' +
+    '<div class="field"><label>Preço (R$)</label><input type="number" id="inv-price" step="0.01" placeholder="25.50"></div>' +
+    '</div>' +
+    '<div class="field"><label>Tipo</label><select id="inv-type"><option value="stock">Ações</option><option value="fii">FIIs</option><option value="crypto">Cripto</option><option value="fixed_income">Renda Fixa</option></select></div>' +
+    '<div style="display:flex;gap:0.5rem;margin-top:1rem">' +
+    '<button class="btn-primary" style="flex:1" onclick="saveInvestment()">Salvar</button>' +
+    '<button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveInvestment() {
+  var symbol = document.getElementById('inv-symbol').value.trim().toUpperCase();
+  var quantity = parseFloat(document.getElementById('inv-quantity').value);
+  var purchase_price = parseFloat(document.getElementById('inv-price').value);
+  var asset_type = document.getElementById('inv-type').value;
+  
+  if (!symbol || !quantity || !purchase_price) { showToast('Preencha todos os campos'); return; }
+  
+  try {
+    await api.request('/investments', {
+      method: 'POST',
+      body: JSON.stringify({ symbol, quantity, purchase_price, asset_type, purchase_date: new Date().toISOString().split('T')[0] })
+    });
+    showToast('Investimento adicionado! 📈');
+    document.querySelector('.modal-overlay').remove();
+    loadInvestments();
+  } catch (e) {
+    showToast('Erro ao adicionar');
+  }
+}
+
+async function deleteInvestment(id) {
+  if (!confirm('Remover este investimento?')) return;
+  try {
+    await api.request('/investments/' + id, { method: 'DELETE' });
+    showToast('Investimento removido');
+    loadInvestments();
+  } catch (e) {
+    showToast('Erro ao remover');
+  }
+}
+
+// ============================================
+// FINANCIAMENTOS
+// ============================================
+
+async function loadLoans() {
+  try {
+    var loans = await api.request('/loans');
+    var container = document.getElementById('loans-list');
+    if (!container) return;
+    
+    if (!loans || loans.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted);">Nenhum financiamento cadastrado</div>';
+      return;
+    }
+    
+    container.innerHTML = loans.map(function(loan) {
+      return '<div class="transaction-item">' +
+        '<div class="transaction-icon" style="background:var(--red-bg);">🏦</div>' +
+        '<div class="transaction-info">' +
+        '<div class="transaction-name">' + escapeHtml(loan.name) + '</div>' +
+        '<div class="transaction-desc">' + (loan.remaining_installments || 0) + ' parcelas restantes</div>' +
+        '</div>' +
+        '<div class="transaction-amount">' +
+        '<div style="font-weight:600;">' + fmt(loan.outstanding_balance || 0) + '</div>' +
+        '<button class="chip" onclick="deleteLoan(\'' + loan.id + '\')" style="font-size:9px;background:var(--red-bg);">🗑️</button>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+  } catch (e) {
+    console.error('Erro ao carregar financiamentos:', e);
+  }
+}
+
+function showAddLoanModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal">' +
+    '<div class="modal-handle"></div>' +
+    '<h3>🏦 Novo Financiamento</h3>' +
+    '<div class="field"><label>Nome</label><input type="text" id="loan-name" placeholder="Ex: Financiamento Casa"></div>' +
+    '<div class="field"><label>Valor Total (R$)</label><input type="number" id="loan-total" step="0.01" placeholder="100000"></div>' +
+    '<div class="field-row">' +
+    '<div class="field"><label>Taxa de Juros (%)</label><input type="number" id="loan-rate" step="0.01" placeholder="8.5"></div>' +
+    '<div class="field"><label>Parcelas</label><input type="number" id="loan-installments" placeholder="120"></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:0.5rem;margin-top:1rem">' +
+    '<button class="btn-primary" style="flex:1" onclick="saveLoan()">Salvar</button>' +
+    '<button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveLoan() {
+  var name = document.getElementById('loan-name').value.trim();
+  var total_principal = parseFloat(document.getElementById('loan-total').value);
+  var interest_rate = parseFloat(document.getElementById('loan-rate').value);
+  var remaining_installments = parseInt(document.getElementById('loan-installments').value);
+  
+  if (!name || !total_principal || !interest_rate || !remaining_installments) {
+    showToast('Preencha todos os campos');
+    return;
+  }
+  
+  try {
+    await api.request('/loans', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        total_principal,
+        outstanding_balance: total_principal,
+        interest_rate,
+        remaining_installments,
+        start_date: new Date().toISOString().split('T')[0]
+      })
+    });
+    showToast('Financiamento adicionado! 🏦');
+    document.querySelector('.modal-overlay').remove();
+    loadLoans();
+  } catch (e) {
+    showToast('Erro ao adicionar');
+  }
+}
+
+async function deleteLoan(id) {
+  if (!confirm('Remover este financiamento?')) return;
+  try {
+    await api.request('/loans/' + id, { method: 'DELETE' });
+    showToast('Financiamento removido');
+    loadLoans();
+  } catch (e) {
+    showToast('Erro ao remover');
+  }
+}
+
+// ============================================
+// PATRIMÔNIO
+// ============================================
+
+async function loadWealth() {
+  try {
+    var summary = await api.request('/wealth/summary');
+    var assets = await api.request('/wealth/assets');
+    
+    document.getElementById('wealth-total').textContent = fmt(summary.total || 0);
+    
+    var container = document.getElementById('assets-list');
+    if (!container) return;
+    
+    if (!assets || assets.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhum bem cadastrado</div>';
+      return;
+    }
+    
+    container.innerHTML = assets.map(function(asset) {
+      return '<div class="transaction-item">' +
+        '<div class="transaction-icon" style="background:var(--green-bg);">🏠</div>' +
+        '<div class="transaction-info">' +
+        '<div class="transaction-name">' + escapeHtml(asset.name) + '</div>' +
+        '<div class="transaction-desc">' + (asset.asset_type || 'outro') + '</div>' +
+        '</div>' +
+        '<div class="transaction-amount">' +
+        '<div style="font-weight:600;">' + fmt(asset.estimated_value || 0) + '</div>' +
+        '<button class="chip" onclick="deleteAsset(\'' + asset.id + '\')" style="font-size:9px;background:var(--red-bg);">🗑️</button>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+  } catch (e) {
+    console.error('Erro ao carregar patrimônio:', e);
+  }
+}
+
+function showAddAssetModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal">' +
+    '<div class="modal-handle"></div>' +
+    '<h3>🏠 Novo Bem</h3>' +
+    '<div class="field"><label>Nome</label><input type="text" id="asset-name" placeholder="Ex: Apartamento"></div>' +
+    '<div class="field"><label>Valor Estimado (R$)</label><input type="number" id="asset-value" step="0.01" placeholder="300000"></div>' +
+    '<div class="field"><label>Tipo</label><select id="asset-type"><option value="real_estate">Imóvel</option><option value="vehicle">Veículo</option><option value="savings">Poupança</option><option value="other">Outro</option></select></div>' +
+    '<div style="display:flex;gap:0.5rem;margin-top:1rem">' +
+    '<button class="btn-primary" style="flex:1" onclick="saveAsset()">Salvar</button>' +
+    '<button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveAsset() {
+  var name = document.getElementById('asset-name').value.trim();
+  var estimated_value = parseFloat(document.getElementById('asset-value').value);
+  var asset_type = document.getElementById('asset-type').value;
+  
+  if (!name || !estimated_value) { showToast('Preencha todos os campos'); return; }
+  
+  try {
+    await api.request('/wealth/assets', {
+      method: 'POST',
+      body: JSON.stringify({ name, estimated_value, asset_type })
+    });
+    showToast('Bem adicionado! 🏠');
+    document.querySelector('.modal-overlay').remove();
+    loadWealth();
+  } catch (e) {
+    showToast('Erro ao adicionar');
+  }
+}
+
+async function deleteAsset(id) {
+  if (!confirm('Remover este bem?')) return;
+  try {
+    await api.request('/wealth/assets/' + id, { method: 'DELETE' });
+    showToast('Bem removido');
+    loadWealth();
+  } catch (e) {
+    showToast('Erro ao remover');
+  }
+}
+
+// ============================================
+// IA - ASSISTENTE
+// ============================================
+
+var chatHistory = [];
+
+async function loadInsights() {
+  try {
+    var response = await api.request('/ai/daily-insights');
+    var container = document.getElementById('ai-insights');
+    if (container && response.insights) {
+      container.innerHTML = response.insights.map(function(i) {
+        return '<div style="padding:0.5rem;background:var(--bg-secondary);border-radius:8px;margin-bottom:0.5rem;">💡 ' + escapeHtml(i) + '</div>';
+      }).join('');
+    }
+  } catch (e) {
+    console.error('Erro ao carregar insights:', e);
+  }
+}
+
+function showPrivacyMessage() {
+  var container = document.getElementById('privacy-message');
+  if (container) {
+    container.innerHTML = '🔒 Todas as conversas são criptografadas e privadas. Seus dados estão seguros.';
+  }
+}
+
+async function sendMsg() {
+  var input = document.getElementById('chat-input');
+  var msg = input.value.trim();
+  if (!msg) return;
+  
+  var chat = document.getElementById('chat-messages');
+  if (!chat) return;
+  
+  // Adicionar mensagem do usuário
+  chat.innerHTML += '<div class="chat-message user"><div>' + escapeHtml(msg) + '</div></div>';
+  input.value = '';
+  chat.scrollTop = chat.scrollHeight;
+  
+  try {
+    var response = await api.request('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify({ message: msg, history: chatHistory })
+    });
+    
+    chat.innerHTML += '<div class="chat-message bot"><div>🐶 ' + escapeHtml(response.reply || 'Não entendi, pode repetir?') + '</div></div>';
+    chatHistory.push({ question: msg, answer: response.reply });
+    chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    chat.innerHTML += '<div class="chat-message bot"><div>🐶 Desculpe, tive um problema. Tente novamente.</div></div>';
+  }
+}
+
+function clearChat() {
+  var chat = document.getElementById('chat-messages');
+  if (chat) {
+    chat.innerHTML = '<div class="chat-message bot"><div>🐶 Olá! Sou o Tobby, seu assistente financeiro. Como posso ajudar hoje?</div></div>';
+  }
+  chatHistory = [];
+}
+
+// ============================================
+// DIÁRIO FINANCEIRO
+// ============================================
+
 async function loadJournal() {
   try {
     var response = await api.request('/journal');
@@ -950,13 +788,11 @@ async function loadJournal() {
     
     var entries = response.data || [];
     if (entries.length === 0) {
-      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhum registro no diário. Comece a escrever! 📝</div>';
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhum registro no diário. Comece a escrever!</div>';
       return;
     }
     
-    var html = '';
-    for (var i = 0; i < entries.length; i++) {
-      var entry = entries[i];
+    container.innerHTML = entries.map(function(entry) {
       var moodEmoji = {
         happy: '😊',
         worried: '😟',
@@ -965,7 +801,7 @@ async function loadJournal() {
         neutral: '😐'
       }[entry.mood] || '😐';
       
-      html += '<div class="transaction-item" style="flex-direction:column;align-items:flex-start;">' +
+      return '<div class="transaction-item" style="flex-direction:column;align-items:flex-start;">' +
         '<div style="display:flex;justify-content:space-between;width:100%;">' +
         '<span style="font-weight:600;">' + escapeHtml(entry.text.substring(0, 100)) + (entry.text.length > 100 ? '...' : '') + '</span>' +
         '<span>' + moodEmoji + '</span>' +
@@ -979,14 +815,9 @@ async function loadJournal() {
         '<button class="chip" onclick="deleteJournal(\'' + entry.id + '\')" style="font-size:10px;background:var(--red-bg);">🗑️</button>' +
         '</div>' +
         '</div>';
-    }
-    container.innerHTML = html;
+    }).join('');
   } catch (e) {
-    console.warn('Diário não disponível:', e.message);
-    var container = document.getElementById('journal-list');
-    if (container) {
-      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Diário indisponível no momento. Tente novamente mais tarde.</div>';
-    }
+    console.error('Erro ao carregar diário:', e);
   }
 }
 
@@ -1014,7 +845,7 @@ async function saveJournal() {
   try {
     await api.request('/journal', {
       method: 'POST',
-      body: JSON.stringify({ text: text, mood: mood })
+      body: JSON.stringify({ text, mood })
     });
     showToast('Registro salvo! 📝');
     document.querySelector('.modal-overlay').remove();
@@ -1052,7 +883,10 @@ async function deleteJournal(id) {
   }
 }
 
-// ===== LINHA DO TEMPO DA VIDA =====
+// ============================================
+// LINHA DO TEMPO DA VIDA
+// ============================================
+
 async function loadLifeEvents() {
   try {
     var response = await api.request('/life-events');
@@ -1061,18 +895,15 @@ async function loadLifeEvents() {
     
     var events = response.data || [];
     if (events.length === 0) {
-      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhum evento registrado. Marque sua história! 📅</div>';
+      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Nenhum evento registrado. Marque sua história!</div>';
       return;
     }
     
     var grouped = response.grouped || {};
     var html = '';
-    var years = Object.keys(grouped).sort().reverse();
-    for (var y = 0; y < years.length; y++) {
-      var year = years[y];
+    Object.keys(grouped).sort().reverse().forEach(function(year) {
       html += '<div style="margin-top:1rem;"><strong style="font-size:18px;">📅 ' + year + '</strong></div>';
-      for (var e = 0; e < grouped[year].length; e++) {
-        var event = grouped[year][e];
+      grouped[year].forEach(function(event) {
         var categoryEmoji = { career: '💼', family: '👨‍👩‍👧‍👦', education: '🎓', health: '🏥', finance: '💰', other: '📌' }[event.category] || '📌';
         html += '<div class="transaction-item" style="flex-direction:column;align-items:flex-start;">' +
           '<div style="display:flex;justify-content:space-between;width:100%;">' +
@@ -1083,15 +914,11 @@ async function loadLifeEvents() {
           '<div style="display:flex;gap:8px;margin-top:8px;">' +
           '<button class="chip" onclick="deleteLifeEvent(\'' + event.id + '\')" style="font-size:10px;background:var(--red-bg);">🗑️</button>' +
           '</div></div>';
-      }
-    }
+      });
+    });
     container.innerHTML = html;
   } catch (e) {
-    console.warn('Timeline não disponível:', e.message);
-    var container = document.getElementById('timeline-list');
-    if (container) {
-      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Linha do tempo indisponível. Tente novamente mais tarde.</div>';
-    }
+    console.error('Erro ao carregar timeline:', e);
   }
 }
 
@@ -1123,7 +950,7 @@ async function saveLifeEvent() {
   try {
     await api.request('/life-events', {
       method: 'POST',
-      body: JSON.stringify({ title: title, description: description, event_date: event_date, category: category })
+      body: JSON.stringify({ title, description, event_date, category })
     });
     showToast('Evento salvo! 📅');
     document.querySelector('.modal-overlay').remove();
@@ -1144,7 +971,10 @@ async function deleteLifeEvent(id) {
   }
 }
 
-// ===== PLANEJADOR DE APOSENTADORIA =====
+// ============================================
+// PLANEJADOR DE APOSENTADORIA
+// ============================================
+
 async function loadRetirement() {
   try {
     var response = await api.request('/retirement');
@@ -1171,11 +1001,7 @@ async function loadRetirement() {
       '<button class="btn-secondary" style="flex:1;" onclick="openRetirementModal()">✏️ Editar</button>' +
       '</div>';
   } catch (e) {
-    console.warn('Aposentadoria não disponível:', e.message);
-    var container = document.getElementById('retirement-container');
-    if (container) {
-      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Planejador de aposentadoria indisponível. Tente novamente mais tarde.</div>';
-    }
+    console.error('Erro ao carregar aposentadoria:', e);
   }
 }
 
@@ -1213,7 +1039,7 @@ async function saveRetirement() {
   try {
     await api.request('/retirement', {
       method: 'POST',
-      body: JSON.stringify({ current_age: current_age, retirement_age: retirement_age, current_savings: current_savings, monthly_contribution: monthly_contribution, expected_return: expected_return })
+      body: JSON.stringify({ current_age, retirement_age, current_savings, monthly_contribution, expected_return })
     });
     showToast('Plano salvo! 🏖️');
     document.querySelector('.modal-overlay').remove();
@@ -1223,7 +1049,10 @@ async function saveRetirement() {
   }
 }
 
-// ===== MISSÕES =====
+// ============================================
+// MISSÕES
+// ============================================
+
 async function loadMissions() {
   try {
     var response = await api.request('/missions');
@@ -1239,12 +1068,10 @@ async function loadMissions() {
       return;
     }
     
-    var html = '';
-    for (var i = 0; i < missions.length; i++) {
-      var mission = missions[i];
+    container.innerHTML = missions.map(function(mission) {
       var statusEmoji = { pending: '⏳', in_progress: '🔄', completed: '✅', failed: '❌' }[mission.status] || '⏳';
       var progress = mission.progress || 0;
-      html += '<div class="stat-card">' +
+      return '<div class="stat-card">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;">' +
         '<div style="font-weight:600;">' + statusEmoji + ' ' + escapeHtml(mission.title) + '</div>' +
         '<div style="font-size:12px;color:var(--text-muted);">' + progress + '%</div>' +
@@ -1257,14 +1084,9 @@ async function loadMissions() {
         (mission.status !== 'completed' ? '<button class="chip" onclick="updateMissionProgress(\'' + mission.id + '\')" style="font-size:10px;">📈 Progresso</button>' : '') +
         (mission.status !== 'completed' ? '<button class="chip" onclick="completeMission(\'' + mission.id + '\')" style="font-size:10px;background:var(--green);">✅ Concluir</button>' : '') +
         '</div></div>';
-    }
-    container.innerHTML = html;
+    }).join('');
   } catch (e) {
-    console.warn('Missões não disponíveis:', e.message);
-    var container = document.getElementById('missions-list');
-    if (container) {
-      container.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-secondary)">Missões indisponíveis. Tente novamente mais tarde.</div>';
-    }
+    console.error('Erro ao carregar missões:', e);
   }
 }
 
@@ -1307,19 +1129,251 @@ async function completeMission(id) {
   }
 }
 
-// ===== INIT =====
-function checkResetToken() {
-  var urlParams = new URLSearchParams(window.location.search);
-  var token = urlParams.get('token');
-  if (token) {
-    resetToken = token;
-    showScreen('auth');
-    document.getElementById('login-card').style.display = 'none';
-    document.getElementById('register-card').style.display = 'none';
-    document.getElementById('forgot-card').style.display = 'none';
-    document.getElementById('reset-card').style.display = 'block';
+// ============================================
+// PERFIL
+// ============================================
+
+async function editSalary() {
+  var current = currentUser ? currentUser.salary : 0;
+  var newSalary = prompt('Digite seu salário mensal:', current);
+  if (newSalary === null) return;
+  var salary = parseFloat(newSalary);
+  if (isNaN(salary) || salary < 0) { showToast('Valor inválido'); return; }
+  try {
+    await api.updateSalary(salary);
+    currentUser.salary = salary;
+    updateUserUI();
+    showToast('Salário atualizado!');
+  } catch (e) {
+    showToast('Erro ao atualizar');
   }
 }
+
+async function loadCategories() {
+  try {
+    var response = await api.request('/categories');
+    allCategories = response.data || [];
+    renderCategories();
+  } catch (e) {
+    console.error('Erro ao carregar categorias:', e);
+  }
+}
+
+function renderCategories() {
+  var container = document.getElementById('categories-list');
+  if (!container) return;
+  
+  if (allCategories.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhuma categoria personalizada</div>';
+    return;
+  }
+  
+  container.innerHTML = allCategories.map(function(c) {
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg-secondary);border-radius:8px;margin-bottom:0.5rem;">' +
+      '<div><span style="font-size:20px;">' + (c.emoji || '📌') + '</span> ' + escapeHtml(c.name) + '</div>' +
+      '<div><button class="chip" onclick="editCategory(\'' + c.id + '\')" style="font-size:10px;">✏️</button>' +
+      '<button class="chip" onclick="deleteCategory(\'' + c.id + '\')" style="font-size:10px;background:var(--red-bg);">🗑️</button></div>' +
+      '</div>';
+  }).join('');
+}
+
+function openCategoryModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal">' +
+    '<div class="modal-handle"></div>' +
+    '<h3>📂 Nova Categoria</h3>' +
+    '<div class="field"><label>Nome</label><input type="text" id="cat-name" placeholder="Ex: Supermercado"></div>' +
+    '<div class="field"><label>Emoji</label><input type="text" id="cat-emoji" placeholder="🛒" maxlength="2"></div>' +
+    '<div style="display:flex;gap:0.5rem;margin-top:1rem">' +
+    '<button class="btn-primary" style="flex:1" onclick="saveCategory()">Salvar</button>' +
+    '<button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveCategory() {
+  var name = document.getElementById('cat-name').value.trim();
+  var emoji = document.getElementById('cat-emoji').value.trim() || '📌';
+  if (!name) { showToast('Digite o nome da categoria'); return; }
+  try {
+    await api.request('/categories', {
+      method: 'POST',
+      body: JSON.stringify({ name, emoji })
+    });
+    showToast('Categoria criada! 📂');
+    document.querySelector('.modal-overlay').remove();
+    loadCategories();
+  } catch (e) {
+    showToast('Erro ao criar categoria');
+  }
+}
+
+async function editCategory(id) {
+  var cat = allCategories.find(function(c) { return c.id === id; });
+  if (!cat) return;
+  var newName = prompt('Novo nome:', cat.name);
+  if (newName === null) return;
+  var newEmoji = prompt('Novo emoji:', cat.emoji || '📌');
+  if (newEmoji === null) return;
+  try {
+    await api.request('/categories/' + id, {
+      method: 'PUT',
+      body: JSON.stringify({ name: newName.trim(), emoji: newEmoji.trim() })
+    });
+    showToast('Categoria atualizada!');
+    loadCategories();
+  } catch (e) {
+    showToast('Erro ao atualizar');
+  }
+}
+
+async function deleteCategory(id) {
+  if (!confirm('Remover esta categoria?')) return;
+  try {
+    await api.request('/categories/' + id, { method: 'DELETE' });
+    showToast('Categoria removida');
+    loadCategories();
+  } catch (e) {
+    showToast('Erro ao remover');
+  }
+}
+
+// ============================================
+// METAS FINANCEIRAS
+// ============================================
+
+async function loadGoals() {
+  try {
+    var response = await api.request('/goals/goals');
+    var goals = response.data || [];
+    var container = document.getElementById('goals-list');
+    if (!container) return;
+    
+    if (goals.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhuma meta cadastrada</div>';
+      return;
+    }
+    
+    container.innerHTML = goals.map(function(g) {
+      var progress = g.target_amount > 0 ? (g.current_amount / g.target_amount * 100) : 0;
+      return '<div class="stat-card">' +
+        '<div style="display:flex;justify-content:space-between;">' +
+        '<span style="font-weight:600;">' + escapeHtml(g.name) + '</span>' +
+        '<span style="font-size:12px;color:var(--text-muted);">' + g.status + '</span>' +
+        '</div>' +
+        '<div style="font-size:14px;margin:4px 0;">' + fmt(g.current_amount) + ' / ' + fmt(g.target_amount) + '</div>' +
+        '<div style="height:4px;background:var(--border);border-radius:2px;">' +
+        '<div style="width:' + Math.min(progress, 100) + '%;height:100%;background:var(--blue);border-radius:2px;"></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;margin-top:8px;">' +
+        '<button class="chip" onclick="updateGoalProgress(\'' + g.id + '\')" style="font-size:10px;">📈 Atualizar</button>' +
+        '<button class="chip" onclick="deleteGoal(\'' + g.id + '\')" style="font-size:10px;background:var(--red-bg);">🗑️</button>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+  } catch (e) {
+    console.error('Erro ao carregar metas:', e);
+  }
+}
+
+function openGoalModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal">' +
+    '<div class="modal-handle"></div>' +
+    '<h3>🎯 Nova Meta</h3>' +
+    '<div class="field"><label>Nome da Meta</label><input type="text" id="goal-name" placeholder="Ex: Viagem para Europa"></div>' +
+    '<div class="field"><label>Valor Alvo (R$)</label><input type="number" id="goal-target" step="0.01" placeholder="10000"></div>' +
+    '<div class="field"><label>Valor Atual (R$)</label><input type="number" id="goal-current" step="0.01" placeholder="0"></div>' +
+    '<div class="field"><label>Data Limite</label><input type="date" id="goal-deadline"></div>' +
+    '<div style="display:flex;gap:0.5rem;margin-top:1rem">' +
+    '<button class="btn-primary" style="flex:1" onclick="saveGoal()">Salvar</button>' +
+    '<button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+}
+
+async function saveGoal() {
+  var name = document.getElementById('goal-name').value.trim();
+  var target_amount = parseFloat(document.getElementById('goal-target').value);
+  var current_amount = parseFloat(document.getElementById('goal-current').value) || 0;
+  var deadline = document.getElementById('goal-deadline').value;
+  
+  if (!name || !target_amount || !deadline) { showToast('Preencha todos os campos'); return; }
+  
+  try {
+    await api.request('/goals/goals', {
+      method: 'POST',
+      body: JSON.stringify({ name, target_amount, current_amount, deadline })
+    });
+    showToast('Meta criada! 🎯');
+    document.querySelector('.modal-overlay').remove();
+    loadGoals();
+  } catch (e) {
+    showToast('Erro ao criar meta');
+  }
+}
+
+async function updateGoalProgress(id) {
+  var newAmount = prompt('Digite o valor atual:', '0');
+  if (newAmount === null) return;
+  var amount = parseFloat(newAmount);
+  if (isNaN(amount) || amount < 0) { showToast('Valor inválido'); return; }
+  try {
+    await api.request('/goals/goals/' + id, {
+      method: 'PATCH',
+      body: JSON.stringify({ current_amount: amount })
+    });
+    showToast('Progresso atualizado!');
+    loadGoals();
+  } catch (e) {
+    showToast('Erro ao atualizar');
+  }
+}
+
+async function deleteGoal(id) {
+  if (!confirm('Remover esta meta?')) return;
+  try {
+    await api.request('/goals/goals/' + id, { method: 'DELETE' });
+    showToast('Meta removida');
+    loadGoals();
+  } catch (e) {
+    showToast('Erro ao remover');
+  }
+}
+
+// ============================================
+// FUNÇÕES ADICIONAIS (Scanner, Hollerith, etc)
+// ============================================
+
+function openReceiptScanner() {
+  showToast('📸 Funcionalidade em desenvolvimento');
+}
+
+function showHollerithModal() {
+  showToast('📄 Funcionalidade em desenvolvimento');
+}
+
+function processHollerith() {
+  showToast('⏳ Processando...');
+}
+
+function showBankExtractModal() {
+  showToast('🏦 Funcionalidade em desenvolvimento');
+}
+
+function processBankExtract() {
+  showToast('⏳ Processando...');
+}
+
+function showIncomeReport() {
+  showToast('📊 Funcionalidade em desenvolvimento');
+}
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
 
 document.addEventListener('DOMContentLoaded', async function() {
   initTheme();
@@ -1343,69 +1397,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.getElementById('loading').classList.add('hidden');
 });
 
-// ===== EXPORTAÇÕES GLOBAIS =====
-window.fmt = fmt;
-window.showToast = showToast;
-window.closeModal = closeModal;
-window.toggleTheme = toggleTheme;
-window.showLogin = showLogin;
-window.showRegister = showRegister;
-window.showForgotPassword = showForgotPassword;
-window.doLogin = doLogin;
-window.doRegister = doRegister;
-window.doForgotPassword = doForgotPassword;
-window.doResetPassword = doResetPassword;
-window.doLogout = doLogout;
-window.navTo = navTo;
-window.filterBills = filterBills;
-window.openBillModal = openBillModal;
-window.saveBill = saveBill;
-window.deleteBill = deleteBill;
-window.toggleStatus = toggleStatus;
-window.showAddInvestmentModal = showAddInvestmentModal;
-window.saveInvestment = saveInvestment;
-window.deleteInvestment = deleteInvestment;
-window.showAddLoanModal = showAddLoanModal;
-window.saveLoan = saveLoan;
-window.deleteLoan = deleteLoan;
-window.showAddAssetModal = showAddAssetModal;
-window.saveAsset = saveAsset;
-window.deleteAsset = deleteAsset;
-window.sendMsg = sendMsg;
-window.clearChat = clearChat;
-window.editSalary = editSalary;
-window.openReceiptScanner = openReceiptScanner;
-window.showHollerithModal = showHollerithModal;
-window.processHollerith = processHollerith;
-window.showBankExtractModal = showBankExtractModal;
-window.processBankExtract = processBankExtract;
-window.showIncomeReport = showIncomeReport;
-window.openGoalModal = openGoalModal;
-window.saveGoal = saveGoal;
-window.updateGoalProgress = updateGoalProgress;
-window.deleteGoal = deleteGoal;
-window.openCategoryModal = openCategoryModal;
-window.editCategory = editCategory;
-window.saveCategory = saveCategory;
-window.updateCategory = updateCategory;
-window.deleteCategory = deleteCategory;
-window.loadCategories = loadCategories;
-
-// Exportações V8.0
-window.loadMorningBriefing = loadMorningBriefing;
-window.loadJournal = loadJournal;
-window.openJournalModal = openJournalModal;
-window.saveJournal = saveJournal;
-window.analyzeJournal = analyzeJournal;
-window.deleteJournal = deleteJournal;
-window.loadLifeEvents = loadLifeEvents;
-window.openLifeEventModal = openLifeEventModal;
-window.saveLifeEvent = saveLifeEvent;
-window.deleteLifeEvent = deleteLifeEvent;
-window.loadRetirement = loadRetirement;
-window.openRetirementModal = openRetirementModal;
-window.saveRetirement = saveRetirement;
-window.loadMissions = loadMissions;
-window.generateMissions = generateMissions;
-window.updateMissionProgress = updateMissionProgress;
-window.completeMission = completeMission;
+// NOTA: As funções já estão no escopo global e podem ser chamadas pelo HTML
+// Não é necessário window.fmt = fmt pois as funções já são globais
+console.log('🐶 Tobby Frontend carregado com sucesso!');
