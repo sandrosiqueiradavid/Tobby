@@ -1,23 +1,6 @@
-// crypto.js - Versão simplificada (sem criptografia real)
+// Este arquivo está deprecated - use o encryptionService
 // Mantido apenas para compatibilidade com código existente
 
-function encryptNumber(value) {
-  if (value === undefined || value === null) return null;
-  return value.toString();
-}
-
-function decryptNumber(value) {
-  if (!value) return 0;
-  const num = parseFloat(value);
-  return isNaN(num) ? 0 : num;
-}
-
-function encrypt(text) {
-  return text;
-}
-
-function decrypt(text) {
-  return text;
-}
+const { encrypt, decrypt, encryptNumber, decryptNumber } = require('../services/encryptionService');
 
 module.exports = { encrypt, decrypt, encryptNumber, decryptNumber };

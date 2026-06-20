@@ -1,8 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const supabase = require('../db/supabase');
+const { encryptNumber, decryptNumber } = require('../services/encryptionService');
 
 const authController = {
+  // ===== REGISTRO =====
   async register(req, res) {
     try {
       const { name, email, password, salary = 0 } = req.body;
@@ -17,6 +19,7 @@ const authController = {
         return res.status(400).json({ error: 'Senha deve ter pelo menos 6 caracteres' });
       }
 
+      // Verificar se usuário já existe
       const { data: existing } = await supabase
         .from('users')
         .select('id')
@@ -28,6 +31,10 @@ const authController = {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Criptografar salário
+      const encryptedSalary = encryptNumber(salary);
+      console.log('[AUTH] Salário criptografado:', encryptedSalary ? '✅ OK' : '⚠️ FALHA');
 
       const { data: user, error } = await supabase
         .from('users')
@@ -35,7 +42,8 @@ const authController = {
           name, 
           email, 
           password: hashedPassword, 
-          salary: salary,
+          salary_encrypted: encryptedSalary,
+          salary: salary, // Mantém em texto plano para fallback
           created_at: new Date(),
           updated_at: new Date()
         })
@@ -57,6 +65,7 @@ const authController = {
     }
   },
 
+  // ===== LOGIN =====
   async login(req, res) {
     try {
       const { email, password } = req.body;
@@ -69,7 +78,7 @@ const authController = {
 
       const { data: user, error } = await supabase
         .from('users')
-        .select('id, name, email, password, salary')
+        .select('id, name, email, password, salary_encrypted, salary')
         .eq('email', email)
         .maybeSingle();
 
@@ -84,6 +93,19 @@ const authController = {
         return res.status(401).json({ error: 'E-mail ou senha inválidos' });
       }
 
+      // Descriptografar salário
+      let salary = 0;
+      try {
+        if (user.salary_encrypted) {
+          salary = decryptNumber(user.salary_encrypted);
+        } else if (user.salary !== undefined && user.salary !== null) {
+          salary = parseFloat(user.salary) || 0;
+        }
+      } catch (e) {
+        console.warn('[AUTH] Erro ao descriptografar salário:', e.message);
+        salary = parseFloat(user.salary) || 0;
+      }
+
       const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '30d' });
       
       console.log('[AUTH] Login bem-sucedido:', user.id);
@@ -93,7 +115,7 @@ const authController = {
           id: user.id,
           name: user.name, 
           email: user.email, 
-          salary: user.salary || 0 
+          salary: salary 
         } 
       });
     } catch (err) {
@@ -102,6 +124,7 @@ const authController = {
     }
   },
 
+  // ===== FORGOT PASSWORD =====
   async forgotPassword(req, res) {
     try {
       const { email } = req.body;
@@ -115,6 +138,7 @@ const authController = {
     }
   },
 
+  // ===== RESET PASSWORD =====
   async resetPassword(req, res) {
     try {
       const { token, newPassword } = req.body;
@@ -128,6 +152,52 @@ const authController = {
     } catch (err) {
       console.error('[AUTH] Reset password error:', err);
       res.status(500).json({ error: 'Erro ao redefinir senha' });
+    }
+  },
+
+  // ===== ATUALIZAR PERFIL =====
+  async updateProfile(req, res) {
+    try {
+      const { name, salary } = req.body;
+      
+      const updateData = { updated_at: new Date() };
+      if (name !== undefined) updateData.name = name.trim();
+      
+      if (salary !== undefined) {
+        const numSalary = parseFloat(salary);
+        if (isNaN(numSalary) || numSalary < 0) {
+          return res.status(400).json({ error: 'Salário inválido' });
+        }
+        updateData.salary = numSalary;
+        updateData.salary_encrypted = encryptNumber(numSalary);
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .update(updateData)
+        .eq('id', req.userId)
+        .select('id, name, email, salary')
+        .single();
+
+      if (error) throw error;
+      
+      // Descriptografar salário para resposta
+      let salaryValue = 0;
+      if (data.salary_encrypted) {
+        salaryValue = decryptNumber(data.salary_encrypted);
+      } else if (data.salary !== undefined) {
+        salaryValue = parseFloat(data.salary) || 0;
+      }
+
+      res.json({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        salary: salaryValue
+      });
+    } catch (err) {
+      console.error('[AUTH] Update profile error:', err);
+      res.status(500).json({ error: 'Erro ao atualizar perfil' });
     }
   }
 };

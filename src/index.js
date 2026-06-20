@@ -9,6 +9,13 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 console.log('🐶 TOBBY API v7.0 - INICIANDO');
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
+// ===== VERIFICAR VARIÁVEIS DE AMBIENTE =====
+if (process.env.ENCRYPTION_KEY) {
+  console.log('✅ ENCRYPTION_KEY configurada');
+} else {
+  console.warn('⚠️ ENCRYPTION_KEY não configurada (dados em texto plano)');
+}
+
 // ===== MIDDLEWARES =====
 app.use(cors({
   origin: ['https://sandrosiqueiradavid.github.io', 'http://localhost:3000', 'http://localhost:5500'],
@@ -55,6 +62,7 @@ app.get('/', (req, res) => {
     status: 'ok',
     app: '🐶 Tobby API v7.0',
     supabase: !!process.env.SUPABASE_URL,
+    encryption: !!process.env.ENCRYPTION_KEY,
     timestamp: new Date().toISOString()
   });
 });
@@ -72,7 +80,8 @@ app.get('/api/diagnose', async (req, res) => {
   res.json({
     timestamp: new Date().toISOString(),
     environment: {
-      NODE_ENV: process.env.NODE_ENV || 'development'
+      NODE_ENV: process.env.NODE_ENV || 'development',
+      encryption_key_configured: !!process.env.ENCRYPTION_KEY
     },
     supabase_configured: {
       SUPABASE_URL: !!process.env.SUPABASE_URL,
@@ -100,6 +109,8 @@ app.use((err, req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log(`🐶 Tobby API v7.0 rodando na porta ${PORT}`);
+  console.log(`📍 Health: http://localhost:${PORT}/health`);
+  console.log(`🔍 Diagnóstico: http://localhost:${PORT}/api/diagnose`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });
 
