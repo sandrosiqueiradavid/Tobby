@@ -40,6 +40,10 @@ class TobbyAPI {
     const headers = this.getHeaders();
     
     console.log(`[API] ${opts.method || 'GET'} ${url}`);
+    console.log('[API] Headers:', headers);
+    if (opts.body) {
+      console.log('[API] Body:', opts.body);
+    }
     
     try {
       const response = await fetch(url, {
@@ -47,12 +51,16 @@ class TobbyAPI {
         headers
       });
 
+      // Ler como texto primeiro para debug
+      const textResponse = await response.text();
+      console.log('[API] Status:', response.status);
+      console.log('[API] Response:', textResponse);
+
       let data;
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        data = { error: await response.text() };
+      try {
+        data = JSON.parse(textResponse);
+      } catch (e) {
+        data = { error: textResponse || 'Resposta vazia' };
       }
 
       if (response.status === 401) {
@@ -63,7 +71,7 @@ class TobbyAPI {
       }
 
       if (!response.ok) {
-        throw new Error(data.error || `Erro HTTP ${response.status}`);
+        throw new Error(data.error || data.message || `Erro HTTP ${response.status}`);
       }
       
       return data;
