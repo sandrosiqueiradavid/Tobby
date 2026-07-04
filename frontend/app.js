@@ -1507,4 +1507,147 @@ document.addEventListener('DOMContentLoaded', async function() {
   document.getElementById('loading').classList.add('hidden');
 });
 
-console.log('🐶 Tobby Frontend v9.0 carregado com sucesso!');
+// ============================================
+// FUNÇÕES ADICIONAIS PARA O HTML
+// ============================================
+
+// Função para processar holerite (stub)
+function processHollerith() {
+  showToast('⏳ Processando holerite...');
+  // Implementação futura
+}
+
+// Função para processar extrato bancário (stub)
+function processBankExtract() {
+  showToast('⏳ Processando extrato...');
+  // Implementação futura
+}
+
+// Função para mostrar modal de holerite
+function showHollerithModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal">' +
+    '<div class="modal-handle"></div>' +
+    '<h3>📄 Ler Holerite</h3>' +
+    '<div class="field"><label>Cole o texto do holerite</label>' +
+    '<textarea id="hollerith-text" rows="6" placeholder="Cole aqui o texto do seu holerite..."></textarea></div>' +
+    '<div style="display:flex;gap:0.5rem;margin-top:1rem">' +
+    '<button class="btn-primary" style="flex:1" onclick="processHollerith()">Processar</button>' +
+    '<button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+}
+
+// Função para mostrar modal de extrato bancário
+function showBankExtractModal() {
+  var modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = '<div class="modal">' +
+    '<div class="modal-handle"></div>' +
+    '<h3>🏦 Importar Extrato</h3>' +
+    '<div class="field"><label>Cole o texto do extrato</label>' +
+    '<textarea id="extract-text" rows="6" placeholder="Cole aqui o texto do seu extrato..."></textarea></div>' +
+    '<div class="field"><label>Formato</label>' +
+    '<select id="extract-format"><option value="text">Texto</option><option value="csv">CSV</option><option value="ofx">OFX</option></select></div>' +
+    '<div style="display:flex;gap:0.5rem;margin-top:1rem">' +
+    '<button class="btn-primary" style="flex:1" onclick="processBankExtract()">Processar</button>' +
+    '<button class="btn-secondary" style="flex:1" onclick="this.closest(\'.modal-overlay\').remove()">Cancelar</button>' +
+    '</div></div>';
+  document.body.appendChild(modal);
+}
+
+// Função para mostrar informe de rendimentos
+function showIncomeReport() {
+  showToast('📊 Gerando informe de rendimentos...');
+  // Implementação futura
+}
+
+// Função para abrir scanner de nota fiscal
+function openReceiptScanner() {
+  showToast('📸 Funcionalidade em desenvolvimento');
+}
+
+// ============================================
+// FUNÇÕES DE METAS (complementares)
+// ============================================
+
+// Função para carregar lista completa de metas (usada no profile)
+async function loadGoalsList() {
+  try {
+    var response = await api.request('/goals/goals');
+    var goals = response.goals || [];
+    var container = document.getElementById('goals-list-full');
+    if (!container) {
+      // Se não encontrar o container específico, usa o da home
+      container = document.getElementById('goals-list');
+    }
+    if (!container) return;
+    
+    if (goals.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhuma meta cadastrada</div>';
+      return;
+    }
+    
+    container.innerHTML = goals.map(function(g) {
+      var progress = g.target_amount > 0 ? (g.current_amount / g.target_amount * 100) : 0;
+      return '<div class="stat-card" style="margin-bottom:0.5rem;">' +
+        '<div style="display:flex;justify-content:space-between;">' +
+        '<span style="font-weight:600;">' + escapeHtml(g.name) + '</span>' +
+        '<span style="font-size:12px;color:var(--text-muted);">' + g.status + '</span>' +
+        '</div>' +
+        '<div style="font-size:14px;margin:4px 0;">' + fmt(g.current_amount) + ' / ' + fmt(g.target_amount) + '</div>' +
+        '<div style="height:4px;background:var(--border);border-radius:2px;">' +
+        '<div style="width:' + Math.min(progress, 100) + '%;height:100%;background:var(--blue);border-radius:2px;"></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;margin-top:8px;">' +
+        '<button class="chip" onclick="updateGoalProgress(\'' + g.id + '\')" style="font-size:10px;">📈 Atualizar</button>' +
+        '<button class="chip" onclick="deleteGoal(\'' + g.id + '\')" style="font-size:10px;background:var(--red-bg);">🗑️</button>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+  } catch (e) {
+    console.error('Erro ao carregar metas:', e);
+  }
+}
+
+// ============================================
+// FUNÇÕES DE CATEGORIAS (complementares)
+// ============================================
+
+// Função para atualizar categoria
+async function updateCategory(id) {
+  var cat = allCategories.find(function(c) { return c.id === id; });
+  if (!cat) return;
+  var newName = prompt('Novo nome:', cat.name);
+  if (newName === null) return;
+  var newEmoji = prompt('Novo emoji:', cat.emoji || '📌');
+  if (newEmoji === null) return;
+  try {
+    await api.request('/categories/' + id, {
+      method: 'PUT',
+      body: JSON.stringify({ name: newName.trim(), emoji: newEmoji.trim() })
+    });
+    showToast('Categoria atualizada!');
+    loadCategories();
+  } catch (e) {
+    showToast('Erro ao atualizar');
+  }
+}
+
+// ============================================
+// EXPORTAÇÕES PARA O ESCOPO GLOBAL (window)
+// ============================================
+
+// Funções principais já estão no escopo global
+// Mas algumas precisam ser explicitamente expostas
+window.processHollerith = processHollerith;
+window.processBankExtract = processBankExtract;
+window.showHollerithModal = showHollerithModal;
+window.showBankExtractModal = showBankExtractModal;
+window.showIncomeReport = showIncomeReport;
+window.openReceiptScanner = openReceiptScanner;
+window.loadGoalsList = loadGoalsList;
+window.updateCategory = updateCategory;
+
+console.log('🐶 Tobby Frontend v9.0 - Todas as funções carregadas!');
