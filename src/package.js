@@ -1,11 +1,12 @@
 {
   "name": "tobby-backend",
-  "version": "7.0.0",
-  "description": "Tobby Financial App - Backend",
+  "version": "9.0.0",
+  "description": "Tobby Financial App - Backend API",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
@@ -13,14 +14,28 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "express-validator": "^7.0.1",
+    "groq-sdk": "^0.3.0",
+    "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.1",
+    "xss": "^1.0.14"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "keywords": [
+    "financial",
+    "assistant",
+    "tobby",
+    "personal-finance",
+    "ai"
+  ],
+  "author": "Tobby Team",
+  "license": "MIT"
 }
