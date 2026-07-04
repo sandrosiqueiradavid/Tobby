@@ -6,13 +6,13 @@
 <meta name="theme-color" content="#10B981">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tobby">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="/Tobby/manifest.json">
+<link rel="apple-touch-icon" href="/Tobby/icon-192.png">
 <title>Tobby 🐶 — Copiloto Financeiro v9.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="/Tobby/styles.css">
 <style>
   /* ============================================ */
   /* ESTILOS COMPLETOS DO APP                    */
@@ -171,49 +171,57 @@
         </div>
         
         <div id="login-card">
-          <div class="field">
-            <label>E-mail</label>
-            <input type="email" id="login-email" placeholder="seu@email.com">
-          </div>
-          <div class="field">
-            <label>Senha</label>
-            <input type="password" id="login-pwd" placeholder="••••••••">
-          </div>
-          <div style="text-align:right;margin-bottom:1rem">
-            <span style="font-size:12px;color:var(--green);cursor:pointer" onclick="window.showForgotPassword()">Esqueci minha senha?</span>
-          </div>
-          <div id="login-err" class="error-msg" style="display:none">E-mail ou senha inválidos</div>
-          <button class="btn-primary" onclick="window.doLogin()">Entrar →</button>
+          <form id="login-form" onsubmit="event.preventDefault(); window.doLogin();">
+            <div class="field">
+              <label>E-mail</label>
+              <input type="email" id="login-email" placeholder="seu@email.com" required>
+            </div>
+            <div class="field">
+              <label>Senha</label>
+              <input type="password" id="login-pwd" placeholder="••••••••" required>
+            </div>
+            <div style="text-align:right;margin-bottom:1rem">
+              <span style="font-size:12px;color:var(--green);cursor:pointer" onclick="window.showForgotPassword()">Esqueci minha senha?</span>
+            </div>
+            <div id="login-err" class="error-msg" style="display:none">E-mail ou senha inválidos</div>
+            <button type="submit" class="btn-primary">Entrar →</button>
+          </form>
           <div style="text-align:center;margin-top:1rem;font-size:13px;color:var(--text-secondary)">
             Não tem conta? <span style="color:var(--green);cursor:pointer;font-weight:600" onclick="window.showRegister()">Criar conta</span>
           </div>
         </div>
 
         <div id="register-card" style="display:none">
-          <div class="field"><label>Nome completo</label><input type="text" id="reg-name" placeholder="Seu nome"></div>
-          <div class="field"><label>E-mail</label><input type="email" id="reg-email" placeholder="seu@email.com"></div>
-          <div class="field"><label>Senha</label><input type="password" id="reg-pwd" placeholder="Mínimo 6 caracteres"></div>
-          <div class="field"><label>Salário mensal (R$)</label><input type="number" id="reg-salary" placeholder="Ex: 5000" step="0.01"></div>
-          <div id="reg-err" class="error-msg" style="display:none"></div>
-          <button class="btn-primary" onclick="window.doRegister()" style="background:linear-gradient(135deg,var(--purple),var(--pink))">Criar conta →</button>
+          <form id="register-form" onsubmit="event.preventDefault(); window.doRegister();">
+            <div class="field"><label>Nome completo</label><input type="text" id="reg-name" placeholder="Seu nome" required></div>
+            <div class="field"><label>E-mail</label><input type="email" id="reg-email" placeholder="seu@email.com" required></div>
+            <div class="field"><label>Senha</label><input type="password" id="reg-pwd" placeholder="Mínimo 6 caracteres" required></div>
+            <div class="field"><label>Salário mensal (R$)</label><input type="number" id="reg-salary" placeholder="Ex: 5000" step="0.01"></div>
+            <div id="reg-err" class="error-msg" style="display:none"></div>
+            <button type="submit" class="btn-primary" style="background:linear-gradient(135deg,var(--purple),var(--pink))">Criar conta →</button>
+          </form>
           <div style="text-align:center;margin-top:1rem;font-size:13px;color:var(--text-secondary)">
             Já tem conta? <span style="color:var(--green);cursor:pointer;font-weight:600" onclick="window.showLogin()">Entrar</span>
           </div>
         </div>
 
         <div id="forgot-card" style="display:none">
-          <div class="field"><label>E-mail</label><input type="email" id="forgot-email" placeholder="seu@email.com"></div>
-          <div id="forgot-err" class="error-msg" style="display:none"></div>
-          <div id="forgot-success" style="display:none;padding:0.75rem;background:var(--green-bg);border-radius:8px;color:var(--green);margin-bottom:1rem"></div>
-          <button class="btn-primary" onclick="window.doForgotPassword()">Enviar instruções →</button>
+          <form id="forgot-form" onsubmit="event.preventDefault(); window.doForgotPassword();">
+            <div class="field"><label>E-mail</label><input type="email" id="forgot-email" placeholder="seu@email.com" required></div>
+            <div id="forgot-err" class="error-msg" style="display:none"></div>
+            <div id="forgot-success" style="display:none;padding:0.75rem;background:var(--green-bg);border-radius:8px;color:var(--green);margin-bottom:1rem"></div>
+            <button type="submit" class="btn-primary">Enviar instruções →</button>
+          </form>
           <button class="btn-secondary" onclick="window.showLogin()" style="margin-top:0.5rem">Voltar ao login</button>
         </div>
 
         <div id="reset-card" style="display:none">
-          <div class="field"><label>Nova senha</label><input type="password" id="reset-pwd" placeholder="Mínimo 6 caracteres"></div>
-          <div class="field"><label>Confirmar senha</label><input type="password" id="reset-pwd-confirm" placeholder="Digite novamente"></div>
-          <div id="reset-err" class="error-msg" style="display:none"></div>
-          <button class="btn-primary" onclick="window.doResetPassword()">Redefinir senha →</button>
+          <form id="reset-form" onsubmit="event.preventDefault(); window.doResetPassword();">
+            <div class="field"><label>Nova senha</label><input type="password" id="reset-pwd" placeholder="Mínimo 6 caracteres" required></div>
+            <div class="field"><label>Confirmar senha</label><input type="password" id="reset-pwd-confirm" placeholder="Digite novamente" required></div>
+            <div id="reset-err" class="error-msg" style="display:none"></div>
+            <button type="submit" class="btn-primary">Redefinir senha →</button>
+          </form>
           <button class="btn-secondary" onclick="window.showLogin()" style="margin-top:0.5rem">Voltar ao login</button>
         </div>
       </div>
@@ -533,13 +541,23 @@
 <!-- ========================================== -->
 <!-- SCRIPTS                                    -->
 <!-- ========================================== -->
-<script src="api.js"></script>
-<script src="app.js"></script>
+<script src="/Tobby/api.js"></script>
+<script src="/Tobby/app.js"></script>
 
 <!-- ========================================== -->
-<!-- FUNÇÕES CORRIGIDAS (SUBSTITUEM AS DO app.js) -->
+<!-- FUNÇÕES CORRIGIDAS (SOBRESCREVEM AS DO app.js) -->
 <!-- ========================================== -->
 <script>
+// ============================================
+// FUNÇÕES DE ESCAPE (para segurança)
+// ============================================
+function escapeHtml(text) {
+  if (!text) return '';
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // ============================================
 // SERVICE WORKER CORRIGIDO
 // ============================================
@@ -549,11 +567,10 @@ async function registerServiceWorker() {
     return;
   }
   try {
-    // CAMINHO CORRIGIDO: /Tobby/sw.js
+    // CAMINHO CORRIGIDO: /Tobby/sw.js (NÃO na raiz)
     const registration = await navigator.serviceWorker.register('/Tobby/sw.js');
     console.log('✅ Service Worker registrado com sucesso!', registration);
     
-    // Verificar atualizações
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
       console.log('🔄 Novo Service Worker:', newWorker);
@@ -572,7 +589,7 @@ async function registerServiceWorker() {
 }
 
 // ============================================
-// CHAT CORRIGIDO (USA BACKEND COMO PROXY)
+// CHAT CORRIGIDO (USA BACKEND COMO PROXY - SEM CORS)
 // ============================================
 async function sendMsg() {
   const input = document.getElementById('chat-input');
@@ -590,7 +607,7 @@ async function sendMsg() {
   if (typing) typing.style.display = 'block';
   
   try {
-    // USANDO O BACKEND COMO PROXY - NÃO CHAMA A API DIRETAMENTE!
+    // ✅ CHAMADA VIA BACKEND (PROXY) - SEM CORS
     const response = await api.request('/ai/chat', {
       method: 'POST',
       body: JSON.stringify({ 
@@ -617,13 +634,13 @@ async function sendMsg() {
 }
 
 // ============================================
-// ESCAPE HTML (para segurança)
+// LIMPAR CHAT
 // ============================================
-function escapeHtml(text) {
-  if (!text) return '';
-  var div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+function clearChat() {
+  const chat = document.getElementById('chat-msgs');
+  if (chat) {
+    chat.innerHTML = '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Como posso te ajudar?</div>';
+  }
 }
 
 // ============================================
@@ -638,9 +655,18 @@ if (originalEnterApp) {
   };
 }
 
+// ============================================
+// EXPORTAÇÕES PARA O ESCOPO GLOBAL
+// ============================================
+window.sendMsg = sendMsg;
+window.clearChat = clearChat;
+window.registerServiceWorker = registerServiceWorker;
+window.escapeHtml = escapeHtml;
+
 console.log('🐶 Tobby - Scripts corrigidos carregados!');
 console.log('✅ Service Worker caminho: /Tobby/sw.js');
 console.log('✅ Chat usando backend como proxy (sem CORS)');
+console.log('✅ Formulários de autenticação com <form> (sem warnings)');
 </script>
 
 </body>
