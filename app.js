@@ -90,6 +90,58 @@ function updateThemeIcon(theme) {
 }
 
 // ============================================
+// SERVICE WORKER (CORRIGIDO)
+// ============================================
+
+async function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) {
+    console.log('❌ Service Worker não suportado neste navegador');
+    return;
+  }
+  
+  try {
+    // CORRIGIDO: caminho absoluto para o sw.js na raiz do projeto
+    const registration = await navigator.serviceWorker.register('/Tobby/sw.js');
+    console.log('✅ Service Worker registrado com sucesso!', registration);
+    
+    // Verificar se há atualizações
+    registration.addEventListener('updatefound', () => {
+      const newWorker = registration.installing;
+      console.log('🔄 Novo Service Worker encontrado:', newWorker);
+      
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'activated') {
+          console.log('✅ Novo Service Worker ativado!');
+        }
+      });
+    });
+    
+    // Notificações pendentes
+    const stored = localStorage.getItem('tobby_notifications');
+    if (stored) {
+      try {
+        const notifications = JSON.parse(stored);
+        for (const notif of notifications) {
+          await registration.showNotification(notif.title, { 
+            body: notif.body, 
+            icon: '/Tobby/icon-192.png',
+            badge: '/Tobby/icon-192.png'
+          });
+        }
+        localStorage.removeItem('tobby_notifications');
+      } catch (e) {
+        console.warn('Erro ao mostrar notificações pendentes:', e);
+      }
+    }
+    
+    return registration;
+  } catch (error) {
+    console.error('❌ Erro ao registrar Service Worker:', error);
+    console.warn('💡 Verifique se o arquivo /Tobby/sw.js existe e está acessível');
+  }
+}
+
+// ============================================
 // TELAS E NAVEGAÇÃO
 // ============================================
 
@@ -247,6 +299,9 @@ async function enterApp() {
   updateUserUI();
   navTo('home');
   loadMorningBriefing();
+  
+  // Registrar Service Worker em background
+  setTimeout(registerServiceWorker, 2000);
 }
 
 var TABS = ['home', 'bills', 'investments', 'loans', 'wealth', 'ai', 'profile', 'journal', 'timeline', 'retirement', 'missions'];
@@ -903,15 +958,25 @@ async function sendMsg() {
   try {
     var response = await api.request('/ai/chat', {
       method: 'POST',
-      body: JSON.stringify({ message: msg, context: { salary: currentUser?.salary || 0 } })
+      body: JSON.stringify({ 
+        message: msg, 
+        context: { 
+          salary: currentUser?.salary || 0,
+          billsCount: allBills.length,
+          pendingBills: allBills.filter(function(b) { return b.status === 'pending'; }).length,
+          lateBills: allBills.filter(function(b) { return b.status === 'late'; }).length
+        }
+      })
     });
     
     if (typing) typing.style.display = 'none';
     chat.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>' + escapeHtml(response.reply || 'Não entendi, pode repetir?') + '</div>';
     chat.scrollTop = chat.scrollHeight;
+    chatHistory.push({ question: msg, answer: response.reply });
   } catch (e) {
     if (typing) typing.style.display = 'none';
     chat.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Desculpe, tive um problema. Tente novamente.</div>';
+    chat.scrollTop = chat.scrollHeight;
   }
 }
 
@@ -1478,52 +1543,17 @@ async function deleteGoal(id) {
 }
 
 // ============================================
-// INICIALIZAÇÃO
-// ============================================
-
-document.addEventListener('DOMContentLoaded', async function() {
-  initTheme();
-  
-  var token = localStorage.getItem('token');
-  
-  if (token) {
-    try {
-      var profile = await api.getProfile();
-      currentUser = profile;
-      enterApp();
-    } catch (e) {
-      localStorage.removeItem('token');
-      api.clearToken();
-      showScreen('auth');
-      showLogin();
-      checkResetToken();
-    }
-  } else {
-    showScreen('auth');
-    showLogin();
-    checkResetToken();
-  }
-  
-  document.getElementById('loading').classList.add('hidden');
-});
-
-// ============================================
 // FUNÇÕES ADICIONAIS PARA O HTML
 // ============================================
 
-// Função para processar holerite (stub)
 function processHollerith() {
   showToast('⏳ Processando holerite...');
-  // Implementação futura
 }
 
-// Função para processar extrato bancário (stub)
 function processBankExtract() {
   showToast('⏳ Processando extrato...');
-  // Implementação futura
 }
 
-// Função para mostrar modal de holerite
 function showHollerithModal() {
   var modal = document.createElement('div');
   modal.className = 'modal-overlay';
@@ -1539,7 +1569,6 @@ function showHollerithModal() {
   document.body.appendChild(modal);
 }
 
-// Função para mostrar modal de extrato bancário
 function showBankExtractModal() {
   var modal = document.createElement('div');
   modal.className = 'modal-overlay';
@@ -1557,13 +1586,10 @@ function showBankExtractModal() {
   document.body.appendChild(modal);
 }
 
-// Função para mostrar informe de rendimentos
 function showIncomeReport() {
   showToast('📊 Gerando informe de rendimentos...');
-  // Implementação futura
 }
 
-// Função para abrir scanner de nota fiscal
 function openReceiptScanner() {
   showToast('📸 Funcionalidade em desenvolvimento');
 }
@@ -1572,14 +1598,12 @@ function openReceiptScanner() {
 // FUNÇÕES DE METAS (complementares)
 // ============================================
 
-// Função para carregar lista completa de metas (usada no profile)
 async function loadGoalsList() {
   try {
     var response = await api.request('/goals/goals');
     var goals = response.goals || [];
     var container = document.getElementById('goals-list-full');
     if (!container) {
-      // Se não encontrar o container específico, usa o da home
       container = document.getElementById('goals-list');
     }
     if (!container) return;
@@ -1615,7 +1639,6 @@ async function loadGoalsList() {
 // FUNÇÕES DE CATEGORIAS (complementares)
 // ============================================
 
-// Função para atualizar categoria
 async function updateCategory(id) {
   var cat = allCategories.find(function(c) { return c.id === id; });
   if (!cat) return;
@@ -1636,11 +1659,39 @@ async function updateCategory(id) {
 }
 
 // ============================================
+// INICIALIZAÇÃO
+// ============================================
+
+document.addEventListener('DOMContentLoaded', async function() {
+  initTheme();
+  
+  var token = localStorage.getItem('token');
+  
+  if (token) {
+    try {
+      var profile = await api.getProfile();
+      currentUser = profile;
+      enterApp();
+    } catch (e) {
+      localStorage.removeItem('token');
+      api.clearToken();
+      showScreen('auth');
+      showLogin();
+      checkResetToken();
+    }
+  } else {
+    showScreen('auth');
+    showLogin();
+    checkResetToken();
+  }
+  
+  document.getElementById('loading').classList.add('hidden');
+});
+
+// ============================================
 // EXPORTAÇÕES PARA O ESCOPO GLOBAL (window)
 // ============================================
 
-// Funções principais já estão no escopo global
-// Mas algumas precisam ser explicitamente expostas
 window.processHollerith = processHollerith;
 window.processBankExtract = processBankExtract;
 window.showHollerithModal = showHollerithModal;
@@ -1649,5 +1700,6 @@ window.showIncomeReport = showIncomeReport;
 window.openReceiptScanner = openReceiptScanner;
 window.loadGoalsList = loadGoalsList;
 window.updateCategory = updateCategory;
+window.registerServiceWorker = registerServiceWorker;
 
 console.log('🐶 Tobby Frontend v9.0 - Todas as funções carregadas!');
