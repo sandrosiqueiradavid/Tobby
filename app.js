@@ -338,6 +338,7 @@ function navTo(tab) {
 
 async function loadHome() {
   try {
+    // CORRIGIDO: /bills/dashboard-summary (com hífen, NÃO barra)
     var summary = await api.request('/bills/dashboard-summary');
     var salario = currentUser?.salary || 0;
     var total = summary.total || 0;
@@ -461,6 +462,7 @@ async function loadEmergencyFund() {
 
 async function loadGoals() {
   try {
+    // CORRIGIDO: /financial-goals (NÃO /goals/goals)
     var response = await api.request('/financial-goals');
     var goals = response.goals || [];
     var container = document.getElementById('goals-list');
