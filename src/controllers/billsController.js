@@ -1,3 +1,4 @@
+// src/controllers/billsController.js
 const supabase = require('../db/supabase');
 const { encryptNumber, decryptNumber } = require('../services/encryptionService');
 
@@ -32,11 +33,9 @@ const billsController = {
       const decryptedData = (data || []).map(bill => {
         let value = 0;
         try {
-          // Tentar descriptografar da coluna criptografada
           if (bill.value_encrypted) {
             value = decryptNumber(bill.value_encrypted);
           } else if (bill.value !== undefined && bill.value !== null) {
-            // Fallback para coluna value (texto plano)
             value = parseFloat(bill.value) || 0;
           }
         } catch (e) {
@@ -129,7 +128,7 @@ const billsController = {
           user_id: req.userId,
           name: name.trim(),
           value_encrypted: encryptedValue,
-          value: numValue, // Mantém texto plano para fallback
+          value: numValue,
           due_day: numDueDay,
           category: category || 'outros',
           status: status || 'pending'
@@ -147,7 +146,6 @@ const billsController = {
 
       console.log('[BILLS] ✅ Conta criada com sucesso! ID:', data.id);
       
-      // Retornar com valor descriptografado
       res.status(201).json({
         success: true,
         message: 'Conta criada com sucesso',
@@ -193,7 +191,6 @@ const billsController = {
         throw error;
       }
 
-      // Descriptografar o valor
       let value = 0;
       try {
         if (data.value_encrypted) {
@@ -236,7 +233,6 @@ const billsController = {
       
       console.log('[BILLS] ✏️ Atualizando conta:', id);
 
-      // Verificar se a conta existe
       const { data: existing, error: findError } = await supabase
         .from('bills')
         .select('*')
@@ -251,10 +247,7 @@ const billsController = {
         });
       }
 
-      // Construir dados de atualização
-      const updateData = {
-        updated_at: new Date()
-      };
+      const updateData = { updated_at: new Date() };
 
       if (name !== undefined && name.trim() !== '') {
         updateData.name = name.trim();
@@ -297,7 +290,6 @@ const billsController = {
         updateData.status = status;
       }
 
-      // Atualizar no banco
       const { data, error } = await supabase
         .from('bills')
         .update(updateData)
@@ -314,7 +306,6 @@ const billsController = {
         });
       }
 
-      // Descriptografar o valor para resposta
       let finalValue = 0;
       try {
         if (data.value_encrypted) {
@@ -422,7 +413,6 @@ const billsController = {
         });
       }
 
-      // Descriptografar o valor para resposta
       let value = 0;
       try {
         if (data.value_encrypted) {
@@ -458,7 +448,6 @@ const billsController = {
     try {
       console.log('[BILLS] 📊 Gerando resumo do dashboard para:', req.userId);
       
-      // Buscar salário do usuário
       const { data: user, error: userError } = await supabase
         .from('users')
         .select('salary')
@@ -473,7 +462,6 @@ const billsController = {
         });
       }
 
-      // Buscar todas as contas
       const { data: bills, error } = await supabase
         .from('bills')
         .select('value_encrypted, value, status, due_day')
@@ -490,7 +478,6 @@ const billsController = {
       const salary = user?.salary || 0;
       const today = new Date().getDate();
 
-      // Processar contas com descriptografia
       const allBills = (bills || []).map(b => {
         let value = 0;
         try {

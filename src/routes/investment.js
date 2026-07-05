@@ -1,3 +1,4 @@
+// src/routes/investment.js
 const express = require('express');
 const router = express.Router();
 const investmentController = require('../controllers/investmentController');
@@ -7,6 +8,7 @@ router.use(authMiddleware);
 
 router.get('/', investmentController.getInvestments);
 router.post('/', investmentController.createInvestment);
+router.patch('/:id/price', investmentController.updateInvestmentPrice);
 router.delete('/:id', investmentController.deleteInvestment);
 
 module.exports = router;

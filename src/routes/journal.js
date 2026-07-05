@@ -1,3 +1,4 @@
+// src/routes/journal.js
 const express = require('express');
 const router = express.Router();
 const journalController = require('../controllers/journalController');

@@ -1,3 +1,4 @@
+// src/controllers/lifeEventsController.js
 const supabase = require('../db/supabase');
 
 const lifeEventsController = {
@@ -55,16 +56,6 @@ const lifeEventsController = {
         .single();
 
       if (error) throw error;
-
-      // Adicionar à linha do tempo
-      await supabase
-        .from('financial_timeline')
-        .insert({
-          user_id: req.userId,
-          event_type: 'life_event',
-          title: `📅 ${title}`,
-          description: description || ''
-        });
 
       res.status(201).json({ success: true, data });
     } catch (err) {

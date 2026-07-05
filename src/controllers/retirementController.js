@@ -1,3 +1,4 @@
+// src/controllers/retirementController.js
 const supabase = require('../db/supabase');
 
 const retirementController = {
@@ -12,7 +13,6 @@ const retirementController = {
 
       if (error && error.code !== 'PGRST116') throw error;
 
-      // Se não tiver plano, retornar vazio
       if (!data) {
         return res.json({ success: true, data: null });
       }
@@ -33,7 +33,6 @@ const retirementController = {
         return res.status(400).json({ error: 'Idade atual e idade de aposentadoria são obrigatórias' });
       }
 
-      // Simular resultado
       const simulation = this.simulateRetirement({
         currentAge: current_age,
         retirementAge: retirement_age,
@@ -74,18 +73,13 @@ const retirementController = {
     const monthsToRetirement = yearsToRetirement * 12;
     const monthlyRate = expectedReturn / 100 / 12;
     
-    // Cálculo do montante futuro (série de pagamentos)
     let futureValue = currentSavings;
     for (let i = 0; i < monthsToRetirement; i++) {
       futureValue = futureValue * (1 + monthlyRate) + monthlyContribution;
     }
 
-    // Renda mensal estimada (retirada de 4% ao ano)
     const annualWithdrawal = futureValue * 0.04;
     const monthlyIncome = annualWithdrawal / 12;
-
-    // Anos de duração da reserva
-    const yearsOfFunds = 30; // Estimativa
 
     return {
       futureValue: Math.round(futureValue * 100) / 100,
@@ -95,7 +89,7 @@ const retirementController = {
       yearsToRetirement,
       monthsToRetirement,
       monthlyRate: (monthlyRate * 100).toFixed(2),
-      yearsOfFunds,
+      yearsOfFunds: 30,
       chartData: this.generateChartData(currentAge, retirementAge, currentSavings, monthlyContribution, monthlyRate, monthsToRetirement)
     };
   },

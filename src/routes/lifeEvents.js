@@ -1,3 +1,4 @@
+// src/routes/lifeEvents.js
 const express = require('express');
 const router = express.Router();
 const lifeEventsController = require('../controllers/lifeEventsController');

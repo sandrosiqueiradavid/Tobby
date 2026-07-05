@@ -1,3 +1,4 @@
+// src/routes/bank.js
 const express = require('express');
 const router = express.Router();
 const bankController = require('../controllers/bankController');

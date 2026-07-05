@@ -20,4 +20,14 @@ router.post('/analyze', riskController.analyzeRisks);
 // PATCH /api/risks/:id/resolve - Marcar um risco como resolvido
 router.patch('/:id/resolve', riskController.resolveRisk);
 
+// GET /api/risks/summary - Resumo dos riscos (opcional)
+if (typeof riskController.getSummary === 'function') {
+  router.get('/summary', riskController.getSummary);
+}
+
+// GET /api/risks/history - Histórico de riscos (opcional)
+if (typeof riskController.getHistory === 'function') {
+  router.get('/history', riskController.getHistory);
+}
+
 module.exports = router;

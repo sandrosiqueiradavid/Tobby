@@ -1,5 +1,6 @@
+// src/controllers/wealthController.js
 const supabase = require('../db/supabase');
-const { encryptNumber, decryptNumber } = require('../utils/crypto');
+const { encryptNumber, decryptNumber } = require('../services/encryptionService');
 
 const wealthController = {
   getWealthSummary: async (req, res) => {
@@ -34,25 +35,6 @@ const wealthController = {
       const totalLiabilities = loansValue;
       const netWorth = totalAssets - totalLiabilities;
 
-      const recommendations = [];
-      if (loansValue > netWorth * 0.5 && netWorth > 0) {
-        recommendations.push({
-          type: 'debt',
-          priority: 'high',
-          message: 'Suas dívidas representam mais de 50% do seu patrimônio. Priorize a quitação!',
-          action: 'Ver dívidas'
-        });
-      }
-
-      if (investmentsValue < netWorth * 0.2 && netWorth > 0) {
-        recommendations.push({
-          type: 'investment',
-          priority: 'medium',
-          message: 'Seus investimentos estão abaixo do ideal. Considere diversificar.',
-          action: 'Ver investimentos'
-        });
-      }
-
       res.json({
         summary: {
           totalAssets,
@@ -63,7 +45,7 @@ const wealthController = {
           assetsValue,
           monthlyIncome: salary
         },
-        recommendations
+        recommendations: []
       });
     } catch (err) {
       console.error('Wealth summary error:', err);
@@ -117,7 +99,7 @@ const wealthController = {
 
       if (error) throw error;
 
-      res.status(201).json({ ...data, estimated_value: estimatedValue, estimated_value_encrypted: undefined });
+      res.status(201).json({ ...data, estimated_value: estimatedValue });
     } catch (err) {
       console.error('Create asset error:', err);
       res.status(500).json({ error: 'Erro ao cadastrar bem' });

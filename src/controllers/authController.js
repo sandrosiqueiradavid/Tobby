@@ -1,3 +1,4 @@
+// src/controllers/authController.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const supabase = require('../db/supabase');
@@ -34,7 +35,6 @@ const authController = {
       
       // Criptografar salário
       const encryptedSalary = encryptNumber(salary);
-      console.log('[AUTH] Salário criptografado:', encryptedSalary ? '✅ OK' : '⚠️ FALHA');
 
       const { data: user, error } = await supabase
         .from('users')
@@ -43,7 +43,7 @@ const authController = {
           email, 
           password: hashedPassword, 
           salary_encrypted: encryptedSalary,
-          salary: salary, // Mantém em texto plano para fallback
+          salary: salary,
           created_at: new Date(),
           updated_at: new Date()
         })
@@ -152,52 +152,6 @@ const authController = {
     } catch (err) {
       console.error('[AUTH] Reset password error:', err);
       res.status(500).json({ error: 'Erro ao redefinir senha' });
-    }
-  },
-
-  // ===== ATUALIZAR PERFIL =====
-  async updateProfile(req, res) {
-    try {
-      const { name, salary } = req.body;
-      
-      const updateData = { updated_at: new Date() };
-      if (name !== undefined) updateData.name = name.trim();
-      
-      if (salary !== undefined) {
-        const numSalary = parseFloat(salary);
-        if (isNaN(numSalary) || numSalary < 0) {
-          return res.status(400).json({ error: 'Salário inválido' });
-        }
-        updateData.salary = numSalary;
-        updateData.salary_encrypted = encryptNumber(numSalary);
-      }
-
-      const { data, error } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', req.userId)
-        .select('id, name, email, salary')
-        .single();
-
-      if (error) throw error;
-      
-      // Descriptografar salário para resposta
-      let salaryValue = 0;
-      if (data.salary_encrypted) {
-        salaryValue = decryptNumber(data.salary_encrypted);
-      } else if (data.salary !== undefined) {
-        salaryValue = parseFloat(data.salary) || 0;
-      }
-
-      res.json({
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        salary: salaryValue
-      });
-    } catch (err) {
-      console.error('[AUTH] Update profile error:', err);
-      res.status(500).json({ error: 'Erro ao atualizar perfil' });
     }
   }
 };

@@ -1,3 +1,4 @@
+// src/controllers/memoryController.js
 const supabase = require('../db/supabase');
 
 const memoryController = {
@@ -5,6 +6,8 @@ const memoryController = {
   async getRelevantMemories(req, res) {
     try {
       const { limit = 10, importance = 3 } = req.query;
+
+      console.log(`[MEMORY] 📖 Buscando memórias relevantes para usuário ${req.userId}`);
 
       const { data, error } = await supabase
         .from('tobby_memory')
@@ -16,9 +19,16 @@ const memoryController = {
         .limit(parseInt(limit));
 
       if (error) throw error;
-      res.json({ success: true, data: data || [] });
+
+      console.log(`[MEMORY] ✅ ${data?.length || 0} memórias relevantes encontradas`);
+
+      res.json({ 
+        success: true, 
+        data: data || [],
+        count: data?.length || 0
+      });
     } catch (err) {
-      console.error('Get memories error:', err);
+      console.error('[MEMORY] ❌ Get memories error:', err);
       res.status(500).json({ error: err.message });
     }
   },
@@ -32,15 +42,41 @@ const memoryController = {
         return res.status(400).json({ error: 'Texto é obrigatório' });
       }
 
+      if (text.length < 10) {
+        return res.status(400).json({ error: 'Texto muito curto para extrair memórias' });
+      }
+
+      console.log(`[MEMORY] 🔍 Extraindo memórias do texto para usuário ${req.userId}`);
+
       // Analisar texto para extrair memórias
       const memories = await extractMemoriesFromText(text);
 
       if (memories.length === 0) {
-        return res.json({ success: true, message: 'Nenhuma memória relevante identificada' });
+        console.log('[MEMORY] ℹ️ Nenhuma memória relevante identificada');
+        return res.json({ 
+          success: true, 
+          message: 'Nenhuma memória relevante identificada',
+          extracted: 0
+        });
       }
 
       const savedMemories = [];
+      let skippedCount = 0;
+
       for (const memory of memories) {
+        // Verificar se já existe uma memória similar
+        const { data: existing } = await supabase
+          .from('tobby_memory')
+          .select('id')
+          .eq('user_id', req.userId)
+          .eq('memory_text', memory.text)
+          .maybeSingle();
+
+        if (existing) {
+          skippedCount++;
+          continue;
+        }
+
         const { data, error } = await supabase
           .from('tobby_memory')
           .insert({
@@ -49,17 +85,42 @@ const memoryController = {
             memory_text: memory.text,
             importance: memory.importance || 2,
             source: source,
-            context: memory.context || null
+            context: memory.context || null,
+            created_at: new Date()
           })
           .select()
           .single();
 
-        if (!error) savedMemories.push(data);
+        if (!error && data) {
+          savedMemories.push(data);
+        }
       }
 
-      res.status(201).json({ success: true, data: savedMemories });
+      console.log(`[MEMORY] ✅ ${savedMemories.length} memórias salvas (${skippedCount} duplicatas ignoradas)`);
+
+      // Registrar no audit_log
+      await supabase
+        .from('audit_log')
+        .insert({
+          user_id: req.userId,
+          action: 'MEMORY_EXTRACTED',
+          table_name: 'tobby_memory',
+          new_value: { 
+            extracted: savedMemories.length,
+            source: source,
+            skipped: skippedCount
+          }
+        });
+
+      res.status(201).json({ 
+        success: true, 
+        data: savedMemories,
+        extracted: savedMemories.length,
+        skipped: skippedCount,
+        message: `${savedMemories.length} memórias extraídas com sucesso`
+      });
     } catch (err) {
-      console.error('Extract memory error:', err);
+      console.error('[MEMORY] ❌ Extract memory error:', err);
       res.status(500).json({ error: err.message });
     }
   },
@@ -67,12 +128,16 @@ const memoryController = {
   // ===== HISTÓRICO DE MEMÓRIAS =====
   async getMemoryHistory(req, res) {
     try {
-      const { type, startDate, endDate } = req.query;
+      const { type, startDate, endDate, limit = 50 } = req.query;
+
+      console.log(`[MEMORY] 📜 Buscando histórico para usuário ${req.userId}`);
+
       let query = supabase
         .from('tobby_memory')
         .select('*')
         .eq('user_id', req.userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(parseInt(limit));
 
       if (type) query = query.eq('memory_type', type);
       if (startDate) query = query.gte('created_at', startDate);
@@ -83,14 +148,31 @@ const memoryController = {
 
       // Agrupar por tipo
       const grouped = {};
+      const typeCounts = {};
       (data || []).forEach(m => {
-        if (!grouped[m.memory_type]) grouped[m.memory_type] = [];
+        if (!grouped[m.memory_type]) {
+          grouped[m.memory_type] = [];
+          typeCounts[m.memory_type] = 0;
+        }
         grouped[m.memory_type].push(m);
+        typeCounts[m.memory_type]++;
       });
 
-      res.json({ success: true, data: data || [], grouped });
+      // Ordenar grupos por quantidade
+      const sortedTypes = Object.keys(typeCounts).sort((a, b) => typeCounts[b] - typeCounts[a]);
+
+      console.log(`[MEMORY] ✅ ${data?.length || 0} memórias encontradas`);
+
+      res.json({ 
+        success: true, 
+        data: data || [],
+        grouped,
+        typeCounts,
+        sortedTypes,
+        total: data?.length || 0
+      });
     } catch (err) {
-      console.error('Memory history error:', err);
+      console.error('[MEMORY] ❌ Memory history error:', err);
       res.status(500).json({ error: err.message });
     }
   },
@@ -100,6 +182,12 @@ const memoryController = {
     try {
       const { id } = req.params;
 
+      if (!id) {
+        return res.status(400).json({ error: 'ID da memória é obrigatório' });
+      }
+
+      console.log(`[MEMORY] 🔔 Recordando memória ${id} para usuário ${req.userId}`);
+
       const { data, error } = await supabase
         .from('tobby_memory')
         .update({ recalled_at: new Date() })
@@ -108,10 +196,36 @@ const memoryController = {
         .select()
         .single();
 
-      if (error) throw error;
-      res.json({ success: true, data });
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return res.status(404).json({ error: 'Memória não encontrada' });
+        }
+        throw error;
+      }
+
+      console.log(`[MEMORY] ✅ Memória ${id} recordada com sucesso`);
+
+      // Registrar no audit_log
+      await supabase
+        .from('audit_log')
+        .insert({
+          user_id: req.userId,
+          action: 'MEMORY_RECALLED',
+          table_name: 'tobby_memory',
+          new_value: { 
+            memory_id: id,
+            memory_type: data.memory_type,
+            memory_text: data.memory_text.substring(0, 50) + '...'
+          }
+        });
+
+      res.json({ 
+        success: true, 
+        data,
+        message: 'Memória recordada com sucesso'
+      });
     } catch (err) {
-      console.error('Recall memory error:', err);
+      console.error('[MEMORY] ❌ Recall memory error:', err);
       res.status(500).json({ error: err.message });
     }
   },
@@ -121,6 +235,24 @@ const memoryController = {
     try {
       const { id } = req.params;
 
+      if (!id) {
+        return res.status(400).json({ error: 'ID da memória é obrigatório' });
+      }
+
+      console.log(`[MEMORY] 🗑️ Deletando memória ${id} para usuário ${req.userId}`);
+
+      // Buscar a memória antes de deletar para auditoria
+      const { data: existing } = await supabase
+        .from('tobby_memory')
+        .select('memory_type, memory_text')
+        .eq('id', id)
+        .eq('user_id', req.userId)
+        .single();
+
+      if (!existing) {
+        return res.status(404).json({ error: 'Memória não encontrada' });
+      }
+
       const { error } = await supabase
         .from('tobby_memory')
         .delete()
@@ -128,9 +260,29 @@ const memoryController = {
         .eq('user_id', req.userId);
 
       if (error) throw error;
-      res.json({ success: true });
+
+      console.log(`[MEMORY] ✅ Memória ${id} deletada com sucesso`);
+
+      // Registrar no audit_log
+      await supabase
+        .from('audit_log')
+        .insert({
+          user_id: req.userId,
+          action: 'MEMORY_DELETED',
+          table_name: 'tobby_memory',
+          old_value: { 
+            memory_id: id,
+            memory_type: existing.memory_type,
+            memory_text: existing.memory_text.substring(0, 50) + '...'
+          }
+        });
+
+      res.json({ 
+        success: true, 
+        message: 'Memória deletada com sucesso' 
+      });
     } catch (err) {
-      console.error('Delete memory error:', err);
+      console.error('[MEMORY] ❌ Delete memory error:', err);
       res.status(500).json({ error: err.message });
     }
   }
@@ -199,6 +351,25 @@ async function extractMemoriesFromText(text) {
       type: 'life_event',
       importance: 4,
       extract: (m) => `${m[1]}: ${m[2]}`
+    },
+    // Padrões adicionais
+    {
+      regex: /quero muito (.+?)(\.|$)/i,
+      type: 'dream',
+      importance: 4,
+      extract: (m) => `Quer muito ${m[1]}`
+    },
+    {
+      regex: /não gosto de (.+?)(\.|$)/i,
+      type: 'preference',
+      importance: 2,
+      extract: (m) => `Não gosta de ${m[1]}`
+    },
+    {
+      regex: /preciso de ajuda com (.+?)(\.|$)/i,
+      type: 'concern',
+      importance: 4,
+      extract: (m) => `Precisa de ajuda com ${m[1]}`
     }
   ];
 

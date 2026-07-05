@@ -4,7 +4,6 @@ const router = express.Router();
 const memoryController = require('../controllers/memoryController');
 const authMiddleware = require('../middleware/auth');
 
-// Aplicar middleware de autenticação em todas as rotas
 router.use(authMiddleware);
 
 // ============================================

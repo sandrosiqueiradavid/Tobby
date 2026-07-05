@@ -1,5 +1,6 @@
+// src/controllers/bankController.js
 const supabase = require('../db/supabase');
-const { encryptNumber } = require('../utils/crypto');
+const { encryptNumber } = require('../services/encryptionService');
 
 const bankController = {
   processBankExtract: async (req, res) => {

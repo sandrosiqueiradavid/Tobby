@@ -1,6 +1,5 @@
+// src/controllers/journalController.js
 const supabase = require('../db/supabase');
-const AIService = require('../services/aiService');
-const aiService = new AIService();
 
 const journalController = {
   // ===== LISTAR REGISTROS =====
@@ -35,9 +34,6 @@ const journalController = {
         return res.status(400).json({ error: 'Texto é obrigatório' });
       }
 
-      // Analisar com IA
-      const analysis = await aiService.analyzeJournal(text, mood);
-
       const { data, error } = await supabase
         .from('financial_journal')
         .insert({
@@ -45,24 +41,14 @@ const journalController = {
           text,
           mood,
           entry_date: entry_date || new Date().toISOString().split('T')[0],
-          emotions: analysis.emotions,
-          analysis: analysis,
+          emotions: [],
+          analysis: { emotions: [], triggers: [], recommendations: [] },
           created_at: new Date()
         })
         .select()
         .single();
 
       if (error) throw error;
-
-      // Registrar na linha do tempo
-      await supabase
-        .from('financial_timeline')
-        .insert({
-          user_id: req.userId,
-          event_type: 'journal_entry',
-          title: 'Registro no Diário',
-          description: text.substring(0, 100) + (text.length > 100 ? '...' : '')
-        });
 
       res.status(201).json({ success: true, data });
     } catch (err) {
@@ -87,7 +73,16 @@ const journalController = {
         return res.status(404).json({ error: 'Registro não encontrado' });
       }
 
-      const analysis = await aiService.analyzeJournal(entry.text, entry.mood);
+      // Análise simples (pode ser substituída por IA)
+      const analysis = {
+        emotions: ['reflexão', 'planejamento'],
+        triggers: ['finanças', 'futuro'],
+        recommendations: [
+          'Continue registrando seus pensamentos financeiros',
+          'Revise seus gastos mensais',
+          'Crie um plano de economia'
+        ]
+      };
 
       const { data, error } = await supabase
         .from('financial_journal')

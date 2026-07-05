@@ -1,3 +1,4 @@
+// src/middleware/security.js
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const { body, validationResult } = require('express-validator');
@@ -68,16 +69,6 @@ const validate = (req, res, next) => {
   next();
 };
 
-// Log de acesso administrativo
-const adminAudit = async (req, res, next) => {
-  const start = Date.now();
-  res.on('finish', async () => {
-    const duration = Date.now() - start;
-    console.log(`[ADMIN] ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms - IP: ${req.ip}`);
-  });
-  next();
-};
-
 module.exports = {
   limiter,
   authLimiter,
@@ -85,6 +76,5 @@ module.exports = {
   validateBill,
   validateUser,
   validate,
-  sanitizeOutput,
-  adminAudit
+  sanitizeOutput
 };

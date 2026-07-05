@@ -1,3 +1,4 @@
+// src/db/supabase.js
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -9,7 +10,6 @@ console.log(`📡 URL: ${supabaseUrl}`);
 console.log(`🔑 KEY: ${supabaseKey ? supabaseKey.substring(0, 15) + '...' : '❌'}`);
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-// Cliente Supabase
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     autoRefreshToken: false,

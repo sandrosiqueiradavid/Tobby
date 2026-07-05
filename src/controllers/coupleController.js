@@ -1,3 +1,4 @@
+// src/controllers/coupleController.js
 const supabase = require('../db/supabase');
 
 const coupleController = {
@@ -10,7 +11,6 @@ const coupleController = {
         return res.status(400).json({ error: 'E-mail do parceiro é obrigatório' });
       }
 
-      // Verificar se o parceiro existe
       const { data: partner } = await supabase
         .from('users')
         .select('id, name, email')
@@ -21,7 +21,6 @@ const coupleController = {
         return res.status(404).json({ error: 'Usuário não encontrado' });
       }
 
-      // Criar casal
       const { data: couple, error } = await supabase
         .from('couples')
         .insert({ created_by: req.userId })
@@ -30,7 +29,6 @@ const coupleController = {
 
       if (error) throw error;
 
-      // Adicionar membros
       await supabase
         .from('couple_members')
         .insert([
@@ -73,17 +71,12 @@ const coupleController = {
         .select('*, users(name, email)')
         .eq('couple_id', members.couple_id);
 
-      const { data: goals } = await supabase
-        .from('couple_goals')
-        .select('*, financial_goals(*)')
-        .eq('couple_id', members.couple_id);
-
       res.json({
         success: true,
         data: {
           couple,
           members: allMembers || [],
-          goals: goals || []
+          goals: []
         }
       });
     } catch (err) {
@@ -101,7 +94,6 @@ const coupleController = {
         return res.status(400).json({ error: 'ID da meta é obrigatório' });
       }
 
-      // Buscar casal do usuário
       const { data: member } = await supabase
         .from('couple_members')
         .select('couple_id')
@@ -112,7 +104,6 @@ const coupleController = {
         return res.status(400).json({ error: 'Você não está em um casal' });
       }
 
-      // Compartilhar meta
       const { data, error } = await supabase
         .from('couple_goals')
         .insert({

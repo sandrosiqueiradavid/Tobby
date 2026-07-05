@@ -1,3 +1,4 @@
+// src/routes/wealth.js
 const express = require('express');
 const router = express.Router();
 const wealthController = require('../controllers/wealthController');

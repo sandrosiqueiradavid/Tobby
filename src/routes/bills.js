@@ -1,9 +1,11 @@
+// src/routes/bills.js
 const express = require('express');
 const router = express.Router();
 const billsController = require('../controllers/billsController');
 const authMiddleware = require('../middleware/auth');
 
 router.use(authMiddleware);
+
 router.get('/dashboard/summary', billsController.getDashboardSummary);
 router.get('/', billsController.getBills);
 router.get('/:id', billsController.getBill);

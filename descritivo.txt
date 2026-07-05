@@ -1,215 +1,302 @@
 🐶 TOBBY - DOCUMENTAÇÃO COMPLETA DO PROJETO
-Versão 8.0 - Copiloto Financeiro Pessoal
+Versão 9.0 - Companheiro Financeiro Inteligente
 
 📌 1. VISÃO GERAL DO PROJETO
 Tobby é um organizador financeiro pessoal com personalidade, projetado para ser um "companheiro financeiro". O nome é uma homenagem ao cachorro Tobby Maguire.
 
 Filosofia
-- Não é um app bancário (não faz transferências, pagamentos reais)
-- É um organizador e acompanhante financeiro
-- Foco em personalidade e conexão emocional com o usuário
-- IA que conversa de forma natural e personalizada
-- Privacidade em primeiro lugar (dados criptografados AES-256-GCM)
-- Gamificação e conquistas para engajamento
-- Análise financeira profunda com inteligência artificial
-- Categorias customizáveis pelo usuário
-- Radar Financeiro com alertas de mercado
-- Simulador de Sonhos para planejamento de metas
-- Saúde Financeira Familiar para compartilhar objetivos
-- Diário Financeiro com análise emocional
-- Linha do Tempo da Vida
-- Planejador de Aposentadoria
-- Missões Inteligentes com IA
-- Tobby Proativo (Briefing Matinal)
+✅ Não é um app bancário (não faz transferências, pagamentos reais)
+
+✅ É um organizador e acompanhante financeiro
+
+✅ Foco em personalidade e conexão emocional com o usuário
+
+✅ IA que conversa de forma natural e personalizada
+
+✅ Privacidade em primeiro lugar (dados criptografados AES-256-GCM)
+
+✅ Gamificação e conquistas para engajamento
+
+✅ Análise financeira profunda com inteligência artificial
+
+✅ Categorias customizáveis pelo usuário
+
+✅ Radar Financeiro com alertas de mercado
+
+✅ Simulador de Sonhos para planejamento de metas
+
+✅ Saúde Financeira Familiar para compartilhar objetivos
+
+✅ Diário Financeiro com análise emocional
+
+✅ Linha do Tempo da Vida
+
+✅ Planejador de Aposentadoria
+
+✅ Missões Inteligentes com IA
+
+✅ Tobby Proativo (Briefing Matinal)
 
 🏗️ 2. ARQUITETURA
 Stack Tecnológico
-Camada          | Tecnologia           | Descrição
-----------------|----------------------|================================
-Frontend        | HTML/CSS/JS Puro     | Aplicação PWA instalável
-Backend         | Node.js + Express    | API RESTful
-Banco de Dados  | Supabase (PostgreSQL)| Armazenamento principal
-Autenticação    | JWT + bcrypt         | Tokens com validade de 30 dias
-Criptografia    | AES-256-GCM          | Dados financeiros protegidos
-IA              | Groq API (Llama 3.3) | Assistente financeiro gratuito
-Hospedagem      | Render + GitHub Pages| Deploy contínuo
-
+Camada	Tecnologia	Descrição
+Frontend	HTML/CSS/JS Puro	Aplicação PWA instalável
+Backend	Node.js + Express	API RESTful
+Banco de Dados	Supabase (PostgreSQL)	Armazenamento principal
+Autenticação	JWT + bcrypt	Tokens com validade de 30 dias
+Criptografia	AES-256-GCM	Dados financeiros protegidos
+IA	Groq API (Llama 3.3)	Assistente financeiro gratuito
+Hospedagem	Render + GitHub Pages	Deploy contínuo
 URLs do Projeto
-- Frontend: https://sandrosiqueiradavid.github.io/Tobby
-- Backend API: https://tobby-api.onrender.com
-- Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/
-- Repositório: https://github.com/sandrosiqueiradavid/Tobby
+Frontend: https://sandrosiqueiradavid.github.io/Tobby
+
+Backend API: https://tobby-api.onrender.com
+
+Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/
+
+Repositório: https://github.com/sandrosiqueiradavid/Tobby
 
 📁 3. ESTRUTURA DE PASTAS COMPLETA
+text
 Tobby/
-├── src/
+├── src/                              # BACKEND
+│   ├── index.js                      # Servidor Express (✅ CORRIGIDO)
 │   ├── controllers/
-│   │   ├── authController.js      # Login, registro, recuperação de senha
-│   │   ├── userController.js      # Perfil, salário
-│   │   ├── billsController.js     # CRUD de contas com criptografia
-│   │   ├── hollerithController.js # Leitura de holerite
-│   │   ├── investmentController.js# Investimentos
-│   │   ├── bankController.js      # Importação de extrato
-│   │   ├── loanController.js      # Financiamentos
-│   │   ├── wealthController.js    # Patrimônio
-│   │   ├── adminController.js     # Dashboard administrativo
-│   │   ├── journalController.js   # Diário Financeiro (NOVO V8.0)
-│   │   ├── lifeEventsController.js # Linha do Tempo da Vida (NOVO V8.0)
-│   │   ├── behaviorController.js  # Detector de Comportamentos (NOVO V8.0)
-│   │   ├── retirementController.js # Planejador de Aposentadoria (NOVO V8.0)
-│   │   ├── coupleController.js    # Modo Casal (NOVO V8.0)
-│   │   ├── missionsController.js  # Missões Inteligentes (NOVO V8.0)
-│   │   └── briefingController.js  # Tobby Proativo (NOVO V8.0)
-│   ├── routes/
+│   │   ├── authController.js         # Login, registro, recuperação de senha
+│   │   ├── userController.js         # Perfil, salário
+│   │   ├── billsController.js        # CRUD de contas com criptografia
+│   │   ├── hollerithController.js    # Leitura de holerite
+│   │   ├── investmentController.js   # Investimentos
+│   │   ├── bankController.js         # Importação de extrato
+│   │   ├── loanController.js         # Financiamentos
+│   │   ├── wealthController.js       # Patrimônio
+│   │   ├── adminController.js        # Dashboard administrativo
+│   │   ├── journalController.js      # Diário Financeiro
+│   │   ├── lifeEventsController.js   # Linha do Tempo da Vida
+│   │   ├── behaviorController.js     # Detector de Comportamentos
+│   │   ├── retirementController.js   # Planejador de Aposentadoria
+│   │   ├── coupleController.js       # Modo Casal
+│   │   ├── missionsController.js     # Missões Inteligentes
+│   │   ├── briefingController.js     # Tobby Proativo
+│   │   ├── memoryController.js       # Memória Real do Tobby
+│   │   ├── mentorController.js       # Mentor Financeiro
+│   │   ├── riskController.js         # Previsão de Problemas
+│   │   └── executiveController.js    # Dashboard Executivo
+│   ├── routes/                       # TODAS AS ROTAS (✅ COMPLETAS)
 │   │   ├── auth.js
 │   │   ├── user.js
 │   │   ├── bills.js
-│   │   ├── categories.js          # Categorias customizáveis
-│   │   ├── financialGoals.js      # Metas financeiras
-│   │   ├── emergencyFund.js       # Reserva de emergência
-│   │   ├── financialScore.js      # Score financeiro
-│   │   ├── achievements.js        # Conquistas
-│   │   ├── ai.js                  # Chat, análise, revisão, insights
-│   │   ├── cashForecast.js        # Previsão de caixa
-│   │   ├── monthlyReport.js       # Relatório mensal
-│   │   ├── marketIndicators.js    # Indicadores econômicos
-│   │   ├── timeline.js            # Linha do tempo financeira
-│   │   ├── radar.js               # Radar Financeiro
-│   │   ├── dreamSimulator.js      # Simulador de Sonhos
-│   │   ├── family.js              # Saúde Financeira Familiar
-│   │   ├── journal.js             # Diário Financeiro (NOVO V8.0)
-│   │   ├── lifeEvents.js          # Linha do Tempo da Vida (NOVO V8.0)
-│   │   ├── behavior.js            # Detector de Comportamentos (NOVO V8.0)
-│   │   ├── retirement.js          # Planejador de Aposentadoria (NOVO V8.0)
-│   │   ├── couple.js              # Modo Casal (NOVO V8.0)
-│   │   ├── missions.js            # Missões Inteligentes (NOVO V8.0)
-│   │   └── briefing.js            # Tobby Proativo (NOVO V8.0)
+│   │   ├── categories.js
+│   │   ├── financialGoals.js
+│   │   ├── emergencyFund.js
+│   │   ├── financialScore.js
+│   │   ├── achievements.js
+│   │   ├── ai.js
+│   │   ├── cashForecast.js
+│   │   ├── monthlyReport.js
+│   │   ├── marketIndicators.js
+│   │   ├── timeline.js
+│   │   ├── radar.js
+│   │   ├── dreamSimulator.js
+│   │   ├── family.js
+│   │   ├── journal.js
+│   │   ├── lifeEvents.js
+│   │   ├── behavior.js
+│   │   ├── retirement.js
+│   │   ├── couple.js
+│   │   ├── missions.js
+│   │   ├── briefing.js
+│   │   ├── memory.js
+│   │   ├── mentor.js                 # ✅ NOVO
+│   │   ├── risks.js                  # ✅ NOVO
+│   │   └── executive.js              # ✅ NOVO
 │   ├── services/
-│   │   ├── encryptionService.js   # Serviço AES-256-GCM
-│   │   └── aiService.js           # Serviço IA unificado (NOVO V8.0)
+│   │   ├── encryptionService.js      # AES-256-GCM
+│   │   └── aiService.js              # Serviço IA unificado
 │   ├── middleware/
-│   │   └── auth.js                # Verificação JWT
+│   │   ├── auth.js                   # Verificação JWT (✅ CORRIGIDO)
+│   │   └── security.js               # Helmet + Rate Limiting
 │   ├── db/
-│   │   └── supabase.js            # Cliente Supabase
+│   │   └── supabase.js               # Cliente Supabase (✅ CORRIGIDO)
 │   ├── utils/
-│   │   └── crypto.js              # AES-256-GCM (compatibilidade)
-│   ├── jobs/
-│   │   └── weeklyReportJob.js     # Relatório semanal por e-mail
-│   └── index.js                   # Servidor Express
+│   │   └── crypto.js                 # AES-256-GCM (compatibilidade)
+│   └── jobs/
+│       ├── weeklyReportJob.js        # Relatório semanal
+│       ├── riskAnalyzerJob.js        # Análise de riscos
+│       └── achievementCheckerJob.js  # Verificador de conquistas
+│
+├── frontend/                         # FRONTEND (✅ ORGANIZADO)
+│   ├── index.html                    # Interface principal (11 abas) (✅ CORRIGIDO)
+│   ├── app.js                        # Frontend completo (✅ CORRIGIDO)
+│   ├── api.js                        # Cliente API (✅ CORRIGIDO)
+│   ├── styles.css                    # Estilos globais
+│   ├── manifest.json                 # PWA
+│   └── sw.js                         # Service Worker (✅ CORRIGIDO)
+│
 ├── admin/
-│   └── index.html                 # Painel administrativo
-├── api.js                         # Cliente frontend
-├── index.html                     # Interface principal com 11 abas
-├── manifest.json                  # PWA
-├── sw.js                          # Service Worker
-└── package.json                   # Dependências
-
+│   └── index.html                    # Painel administrativo
+├── package.json                      # Dependências (✅ ATUALIZADO)
+└── .env                              # Variáveis de ambiente
 🗄️ 4. BANCO DE DADOS (SUPABASE) - TABELAS COMPLETAS
 Tabelas Existentes:
-- users (usuários + criptografia AES-256-GCM)
-- bills (contas com value_encrypted + fallback value)
-- investments (investimentos criptografados)
-- loans (financiamentos criptografados)
-- assets (bens criptografados)
-- categories (categorias padrão + customizáveis)
-- audit_log (auditoria de alterações)
-- financial_goals (metas financeiras)
-- emergency_fund (reserva de emergência)
-- financial_score (cache do score)
-- achievements (conquistas disponíveis)
-- user_achievements (conquistas do usuário)
-- conversation_memory (memória da IA)
-- push_subscriptions (notificações push)
-- financial_timeline (linha do tempo)
-- cash_forecast (previsão de caixa)
-- monthly_reports (relatórios mensais)
+users - usuários + criptografia AES-256-GCM
 
-Tabelas Novas V8.0:
-- financial_journal (diário financeiro)
-  - id, user_id, entry_date, text, mood, emotions, analysis, created_at
-- life_events (linha do tempo da vida)
-  - id, user_id, event_date, title, description, category, created_at
-- user_preferences (preferências do usuário)
-  - id, user_id, enable_biblical_advisor, enable_daily_briefing, briefing_time
-- behavior_alerts (alertas de comportamento)
-  - id, user_id, alert_type, title, description, severity, is_read, created_at
-- retirement_plans (planejador de aposentadoria)
-  - id, user_id, current_age, retirement_age, current_savings, monthly_contribution, expected_return, simulation_result
-- couples (modo casal)
-  - id, created_by, created_at
-- couple_members (membros do casal)
-  - id, couple_id, user_id, role, invited_at, joined_at
-- couple_goals (metas compartilhadas)
-  - id, couple_id, goal_id, contribution_percentage, created_at
-- weekly_missions (missões inteligentes)
-  - id, user_id, week_start, title, description, goal_type, goal_value, progress, status, created_at
+bills - contas com value_encrypted + fallback value
+
+investments - investimentos criptografados
+
+loans - financiamentos criptografados
+
+assets - bens criptografados
+
+categories - categorias padrão + customizáveis
+
+audit_log - auditoria de alterações
+
+financial_goals - metas financeiras
+
+emergency_fund - reserva de emergência
+
+financial_score - cache do score
+
+achievements - conquistas disponíveis
+
+user_achievements - conquistas do usuário
+
+conversation_memory - memória da IA
+
+push_subscriptions - notificações push
+
+financial_timeline - linha do tempo
+
+cash_forecast - previsão de caixa
+
+monthly_reports - relatórios mensais
+
+Tabelas Versão 8.0 e 9.0:
+financial_journal - diário financeiro
+
+life_events - linha do tempo da vida
+
+behavior_alerts - alertas de comportamento
+
+retirement_plans - planejador de aposentadoria
+
+couples - modo casal
+
+couple_members - membros do casal
+
+couple_goals - metas compartilhadas
+
+weekly_missions - missões inteligentes
+
+tobby_memory - memória real do Tobby
+
+mentor_plans - planos do mentor
+
+risk_predictions - previsão de riscos
+
+achievement_levels - níveis de conquistas
+
+user_achievement_progress - progresso de conquistas
 
 🔐 5. CRIPTOGRAFIA
-- Algoritmo: AES-256-GCM (mais seguro que CBC)
-- Chave: 32 bytes (64 caracteres hex) via ENCRYPTION_KEY
-- IV: 12 bytes (recomendado para GCM)
-- Autenticação: GCM inclui auth tag para detectar adulteração
-- Fallback: Compatível com dados em texto plano
-- Service Layer: Centralizado em encryptionService.js
+Algoritmo: AES-256-GCM (mais seguro que CBC)
+
+Chave: 32 bytes (64 caracteres hex) via ENCRYPTION_KEY
+
+IV: 12 bytes (recomendado para GCM)
+
+Autenticação: GCM inclui auth tag para detectar adulteração
+
+Fallback: Compatível com dados em texto plano
+
+Service Layer: Centralizado em encryptionService.js
 
 Campos criptografados:
-- salary_encrypted (users)
-- value_encrypted (bills)
-- purchase_price_encrypted, current_price_encrypted (investments)
-- total_principal_encrypted, outstanding_balance_encrypted, monthly_payment_encrypted (loans)
-- estimated_value_encrypted, acquisition_value_encrypted (assets)
+salary_encrypted (users)
 
-Gerar chave: node -e "console.log(crypto.randomBytes(32).toString('hex'))"
+value_encrypted (bills)
 
+purchase_price_encrypted, current_price_encrypted (investments)
+
+total_principal_encrypted, outstanding_balance_encrypted, monthly_payment_encrypted (loans)
+
+estimated_value_encrypted, acquisition_value_encrypted (assets)
+
+Gerar chave:
+bash
+node -e "console.log(crypto.randomBytes(32).toString('hex'))"
 🔌 6. ENDPOINTS DA API COMPLETOS
 Rotas Públicas:
+text
 POST   /api/auth/register
 POST   /api/auth/login
 POST   /api/auth/forgot-password
 POST   /api/auth/reset-password
 GET    /health
 GET    /api/diagnose
-
 Rotas Protegidas (requer token JWT):
+Usuário:
+
+text
 GET    /api/user/profile
 PUT    /api/user/salary
+Contas:
+
+text
 GET    /api/bills
 POST   /api/bills
 PUT    /api/bills/:id
 DELETE /api/bills/:id
 PATCH  /api/bills/:id/status
 GET    /api/bills/dashboard/summary
+Investimentos:
+
+text
 GET    /api/investments
 POST   /api/investments
 DELETE /api/investments/:id
+Financiamentos:
+
+text
 GET    /api/loans
 POST   /api/loans
 DELETE /api/loans/:id
+Patrimônio:
+
+text
 GET    /api/wealth/summary
 GET    /api/wealth/assets
 POST   /api/wealth/assets
 DELETE /api/wealth/assets/:id
+Holerite e Extrato:
+
+text
 POST   /api/hollerith/process
 GET    /api/hollerith/report
 GET    /api/hollerith/ir-declaration
 POST   /api/bank/process
-
 IA e Análises:
-POST   /api/ai/chat              # Conversa com IA
+
+text
+POST   /api/ai/chat              # Conversa com IA (✅ CORRIGIDO - via backend)
 POST   /api/ai/analyze           # Análise financeira profunda
 POST   /api/ai/monthly-review    # Revisão mensal automática
 POST   /api/ai/daily-insights    # Insights diários
-
 Memória e Preferências:
+
+text
 GET    /api/memory
 POST   /api/memory
 DELETE /api/memory/:key
-GET    /api/categories           # Listar categorias
-POST   /api/categories           # Criar categoria personalizada
-PUT    /api/categories/:id       # Editar categoria
-DELETE /api/categories/:id       # Deletar categoria
-
+GET    /api/categories
+POST   /api/categories
+PUT    /api/categories/:id
+DELETE /api/categories/:id
 Finanças e Metas:
+
+text
 GET    /api/goals/goals
 POST   /api/goals/goals
 PUT    /api/goals/goals/:id
@@ -219,359 +306,470 @@ PUT    /api/emergency-fund
 GET    /api/score
 POST   /api/score/recalculate
 GET    /api/achievements
-GET    /api/cash-forecast        # Previsão de caixa
-GET    /api/monthly-report       # Relatório mensal
+GET    /api/cash-forecast
+GET    /api/monthly-report
 GET    /api/monthly-report/history
-GET    /api/market-indicators    # Selic, IPCA, Dólar, Bitcoin
-GET    /api/timeline             # Linha do tempo financeira
-
+GET    /api/market-indicators
+GET    /api/timeline
 Versão 7.0 - Funcionalidades:
-GET    /api/radar                # Radar Financeiro (alertas de mercado)
-PUT    /api/radar/:id/read       # Marcar alerta como lido
-GET    /api/dream-simulator      # Listar sonhos
-POST   /api/dream-simulator      # Criar sonho
-PUT    /api/dream-simulator/:id  # Atualizar sonho
-DELETE /api/dream-simulator/:id  # Deletar sonho
-GET    /api/family/members       # Listar membros da família
-POST   /api/family/members       # Adicionar membro
-DELETE /api/family/members/:id   # Remover membro
-GET    /api/family/goals         # Metas compartilhadas
-POST   /api/family/goals         # Compartilhar meta
-GET    /api/family/summary       # Resumo familiar
 
-Versão 8.0 - Novas Funcionalidades (Copiloto Financeiro):
-GET    /api/journal              # Listar registros do diário
-POST   /api/journal              # Criar registro no diário
-POST   /api/journal/:id/analyze  # Analisar registro com IA
-DELETE /api/journal/:id          # Deletar registro
-GET    /api/life-events          # Listar eventos da vida
-POST   /api/life-events          # Criar evento
-PUT    /api/life-events/:id      # Atualizar evento
-DELETE /api/life-events/:id      # Deletar evento
-GET    /api/behavior/alerts      # Listar alertas de comportamento
-PATCH  /api/behavior/alerts/:id/read # Marcar alerta como lido
-POST   /api/behavior/analyze     # Executar análise de comportamento
-GET    /api/retirement           # Obter plano de aposentadoria
-POST   /api/retirement           # Salvar/atualizar plano
-POST   /api/retirement/simulate  # Simular aposentadoria
-POST   /api/couple/create        # Criar casal
-GET    /api/couple               # Obter dados do casal
-POST   /api/couple/goals/share   # Compartilhar meta com parceiro
-GET    /api/missions             # Listar missões
-POST   /api/missions/generate    # Gerar missões com IA
-PATCH  /api/missions/:id/progress # Atualizar progresso
-POST   /api/missions/:id/complete # Completar missão
-GET    /api/briefing/morning     # Obter briefing matinal
+text
+GET    /api/radar
+PUT    /api/radar/:id/read
+GET    /api/dream-simulator
+POST   /api/dream-simulator
+PUT    /api/dream-simulator/:id
+DELETE /api/dream-simulator/:id
+GET    /api/family/members
+POST   /api/family/members
+DELETE /api/family/members/:id
+GET    /api/family/goals
+POST   /api/family/goals
+GET    /api/family/summary
+Versão 8.0 - Novas Funcionalidades:
 
+text
+GET    /api/journal
+POST   /api/journal
+POST   /api/journal/:id/analyze
+DELETE /api/journal/:id
+GET    /api/life-events
+POST   /api/life-events
+PUT    /api/life-events/:id
+DELETE /api/life-events/:id
+GET    /api/behavior/alerts
+PATCH  /api/behavior/alerts/:id/read
+POST   /api/behavior/analyze
+GET    /api/retirement
+POST   /api/retirement
+POST   /api/retirement/simulate
+POST   /api/couple/create
+GET    /api/couple
+POST   /api/couple/goals/share
+GET    /api/missions
+POST   /api/missions/generate
+PATCH  /api/missions/:id/progress
+POST   /api/missions/:id/complete
+GET    /api/briefing/morning
+Versão 9.0 - Funcionalidades:
+
+text
+GET    /api/tobby-memory/relevant     # Memórias relevantes
+POST   /api/tobby-memory/extract      # Extrair memória
+GET    /api/tobby-memory/history      # Histórico de memórias
+PATCH  /api/tobby-memory/:id/recall   # Recordar memória
+DELETE /api/tobby-memory/:id          # Deletar memória
+POST   /api/mentor/create-plan        # Criar plano do mentor
+GET    /api/mentor/current-plan       # Plano atual
+PATCH  /api/mentor/update-progress    # Atualizar progresso
+GET    /api/mentor/history            # Histórico de planos
+GET    /api/risks                     # Listar riscos
+POST   /api/risks/analyze             # Analisar riscos
+PATCH  /api/risks/:id/resolve         # Resolver risco
+GET    /api/executive                 # Dashboard executivo
 Admin (requer header x-admin-key):
+
+text
 GET /api/admin/health
 GET /api/admin/metrics
 GET /api/admin/logs
 GET /api/admin/dashboard
-
 🎨 7. FUNCIONALIDADES DO FRONTEND (11 ABAS)
 Telas (Tabs):
-1. 🏠 Início - Dashboard com briefing matinal, score, reserva, metas, saldo, gráficos
-2. 📋 Contas - CRUD de contas com filtros
-3. 📈 Investir - Acompanhamento de investimentos
-4. 💸 Dívidas - Controle de financiamentos
-5. 🏆 Patrimônio - Bens e ativos
-6. 🤖 IA - Assistente financeiro com IA
-7. 📝 Diário - Registro emocional e financeiro com análise IA (NOVO V8.0)
-8. 📅 Vida - Linha do tempo com eventos importantes (NOVO V8.0)
-9. 🏖️ Aposentar - Planejador de aposentadoria (NOVO V8.0)
-10. 🎯 Missões - Missões semanais geradas por IA (NOVO V8.0)
-11. 👤 Perfil - Configurações e ferramentas
+🏠 Início - Dashboard com briefing matinal, score, reserva, metas, saldo, gráficos
+
+📋 Contas - CRUD de contas com filtros
+
+📈 Investir - Acompanhamento de investimentos
+
+💸 Dívidas - Controle de financiamentos
+
+🏆 Patrimônio - Bens e ativos
+
+🤖 IA - Assistente financeiro com IA (✅ CORRIGIDO - sem CORS)
+
+📝 Diário - Registro emocional e financeiro com análise IA
+
+📅 Vida - Linha do tempo com eventos importantes
+
+🏖️ Aposentar - Planejador de aposentadoria
+
+🎯 Missões - Missões semanais geradas por IA
+
+👤 Perfil - Configurações e ferramentas
 
 Componentes Especiais:
-- Briefing Matinal: Mensagem personalizada do Tobby ao abrir o app
-- Score Financeiro: Pontuação 0-100 com emoji animado
-- Reserva de Emergência: Cálculo automático de meses de segurança
-- Metas Financeiras: Criação e acompanhamento de objetivos
-- Previsão de Caixa: Projeção de saldo para o fim do mês
-- Relatório Mensal: Carta personalizada do Tobby
-- Linha do Tempo: Evolução financeira do usuário
-- Categorias Customizáveis: Usuário pode criar suas próprias categorias
-- Radar Financeiro: Alertas automáticos sobre mudanças no mercado
-- Simulador de Sonhos: Planejamento de metas com aportes mensais
-- Saúde Financeira Familiar: Compartilhamento de objetivos com familiares
-- Diário Financeiro: Registro emocional com análise de IA
-- Linha do Tempo da Vida: Eventos importantes da vida do usuário
-- Planejador de Aposentadoria: Simulação completa com projeções
-- Missões Inteligentes: Geração automática com IA
-- Painel de Debug: Ferramenta de diagnóstico para administradores
-- TobyMood: Cachorro que muda de expressão
-- Missão da Semana: Gamificação leve
-- Tema Claro/Escuro: Alternância com persistência
-- Design Responsivo: Web e mobile
-- PWA: Instalável no celular
-- Chat com IA Groq: Assistente financeiro
-- IA Analista: Análise financeira profunda
-- Insights Diários: Dicas personalizadas diariamente
+✅ Briefing Matinal: Mensagem personalizada do Tobby ao abrir o app
+
+✅ Score Financeiro: Pontuação 0-100 com emoji animado
+
+✅ Reserva de Emergência: Cálculo automático de meses de segurança
+
+✅ Metas Financeiras: Criação e acompanhamento de objetivos
+
+✅ Previsão de Caixa: Projeção de saldo para o fim do mês
+
+✅ Relatório Mensal: Carta personalizada do Tobby
+
+✅ Linha do Tempo: Evolução financeira do usuário
+
+✅ Categorias Customizáveis: Usuário pode criar suas próprias categorias
+
+✅ Radar Financeiro: Alertas automáticos sobre mudanças no mercado
+
+✅ Simulador de Sonhos: Planejamento de metas com aportes mensais
+
+✅ Saúde Financeira Familiar: Compartilhamento de objetivos com familiares
+
+✅ Diário Financeiro: Registro emocional com análise de IA
+
+✅ Linha do Tempo da Vida: Eventos importantes da vida do usuário
+
+✅ Planejador de Aposentadoria: Simulação completa com projeções
+
+✅ Missões Inteligentes: Geração automática com IA
+
+✅ Painel de Debug: Ferramenta de diagnóstico para administradores
+
+✅ TobyMood: Cachorro que muda de expressão
+
+✅ Missão da Semana: Gamificação leve
+
+✅ Tema Claro/Escuro: Alternância com persistência
+
+✅ Design Responsivo: Web e mobile
+
+✅ PWA: Instalável no celular
+
+✅ Chat com IA Groq: Assistente financeiro (✅ SEM CORS)
+
+✅ IA Analista: Análise financeira profunda
+
+✅ Insights Diários: Dicas personalizadas diariamente
 
 🔧 8. VARIÁVEIS DE AMBIENTE (RENDER)
 Obrigatórias:
+env
 SUPABASE_URL = https://seu-projeto.supabase.co
 SUPABASE_SECRET_KEY = sua_service_role_key
 JWT_SECRET = sua_chave_jwt_segura
-ADMIN_KEY = 8fX#92Lm@Qz71P!kW  (gerar aleatoriamente)
-
+ADMIN_KEY = 8fX#92Lm@Qz71P!kW
 Recomendadas:
+env
 ENCRYPTION_KEY = 64_caracteres_hex_aqui
 GROQ_API_KEY = sua_chave_groq (grátis em console.groq.com)
-
 Opcionais:
+env
 FRONTEND_URL = https://sandrosiqueiradavid.github.io
 RESEND_API_KEY = chave_para_emails
-
 🚀 9. DEPLOY
 Backend (Render):
-- Build Command: npm install
-- Start Command: node src/index.js
-- Root Directory: (deixar vazio)
-- Variáveis de ambiente: configurar no dashboard
+Build Command: npm install
+
+Start Command: node src/index.js
+
+Root Directory: (deixar vazio)
+
+Variáveis de ambiente: configurar no dashboard
 
 Frontend (GitHub Pages):
-- Branch: main
-- Pasta: / (root)
+Branch: main
+
+Pasta: / (root) - NÃO usar /frontend/
+
+✅ IMPORTANTE: O index.html principal (app completo) DEVE estar na RAIZ do repositório, não na pasta frontend/.
 
 🔍 10. DIAGNÓSTICO E TESTES
-Verificar backend: curl https://tobby-api.onrender.com/health
-Verificar criptografia: curl https://tobby-api.onrender.com/ (deve mostrar "encryption": true)
-Verificar Groq: curl https://tobby-api.onrender.com/api/diagnose (groq_key_configured: true)
-Testar análise IA: POST para /api/ai/analyze
-Testar revisão mensal: POST para /api/ai/monthly-review
-Testar insights diários: POST para /api/ai/daily-insights
-Testar Radar Financeiro: GET /api/radar
-Testar Simulador de Sonhos: GET /api/dream-simulator
-Testar Família: GET /api/family/summary
-Testar Diário: GET /api/journal
-Testar Briefing: GET /api/briefing/morning
-Admin Dashboard: https://sandrosiqueiradavid.github.io/Tobby/admin/ (chave: 8fX#92Lm@Qz71P!kW)
-Painel de Debug: Disponível apenas para admin via botão 🐛
+bash
+# Verificar backend
+curl https://tobby-api.onrender.com/health
 
+# Verificar criptografia
+curl https://tobby-api.onrender.com/
+
+# Verificar Groq
+curl https://tobby-api.onrender.com/api/diagnose
+
+# Testar análise IA
+curl -X POST https://tobby-api.onrender.com/api/ai/analyze
+
+# Testar revisão mensal
+curl -X POST https://tobby-api.onrender.com/api/ai/monthly-review
+
+# Testar insights diários
+curl -X POST https://tobby-api.onrender.com/api/ai/daily-insights
+
+# Testar Radar Financeiro
+curl https://tobby-api.onrender.com/api/radar
+
+# Testar Simulador de Sonhos
+curl https://tobby-api.onrender.com/api/dream-simulator
+
+# Testar Família
+curl https://tobby-api.onrender.com/api/family/summary
+
+# Testar Diário
+curl https://tobby-api.onrender.com/api/journal
+
+# Testar Briefing
+curl https://tobby-api.onrender.com/api/briefing/morning
+
+# Admin Dashboard
+https://sandrosiqueiradavid.github.io/Tobby/admin/
+
+# Painel de Debug
+Disponível apenas para admin via botão 🐛
 🐛 11. PROBLEMAS CONHECIDOS E SOLUÇÕES
-- Supabase desconectado: Remover /rest/v1/ da URL
-- Erro PGRST125: Verificar nome da tabela (users, não tobby_users)
-- Timeout no Supabase: Projeto gratuito hiberna
-- Criptografia não funciona: Adicionar ENCRYPTION_KEY no Render
-- Erro 401 no admin: Usar ADMIN_KEY correta no header x-admin-key
-- IA não responde: Configurar GROQ_API_KEY no Render
-- Erro 500 ao criar conta: Verificar coluna value_encrypted na tabela bills
-
+Problema	Solução
+Supabase desconectado	Remover /rest/v1/ da URL
+Erro PGRST125	Verificar nome da tabela (users, não tobby_users)
+Timeout no Supabase	Projeto gratuito hiberna
+Criptografia não funciona	Adicionar ENCRYPTION_KEY no Render
+Erro 401 no admin	Usar ADMIN_KEY correta no header x-admin-key
+IA não responde	Configurar GROQ_API_KEY no Render
+Erro 500 ao criar conta	Verificar coluna value_encrypted na tabela bills
+window is not defined	✅ CORRIGIDO: frontend separado do backend
+CORS Anthropic/Groq	✅ CORRIGIDO: chat usa backend como proxy
+Service Worker 404	✅ CORRIGIDO: registrar em /Tobby/sw.js
 📦 12. DEPENDÊNCIAS (package.json)
-- @supabase/supabase-js: ^2.39.0
-- bcryptjs: ^2.4.3
-- cors: ^2.8.5
-- dotenv: ^16.3.1
-- express: ^4.18.2
-- jsonwebtoken: ^9.0.2
-- multer: ^1.4.5-lts.1
-- pdf-parse: ^1.1.1
-
+json
+{
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "groq-sdk": "^0.3.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "xss": "^1.0.14"
+  }
+}
 📝 13. FUNCIONALIDADES IMPLEMENTADAS (CHECKLIST)
 ✅ Concluído na Versão 7.0:
-- Autenticação JWT completa
-- CRUD de contas a pagar/receber com criptografia AES-256-GCM
-- Dashboard financeiro com saldo e percentuais
-- Investimentos com cotações
-- Financiamentos com simulação de amortização extra
-- Patrimônio líquido (ativos vs passivos)
-- Cadastro de bens (imóveis, veículos, reservas)
-- Leitura de nota fiscal via câmera
-- Leitura de holerite via texto
-- Importação de extrato bancário (CSV, OFX, texto)
-- Informe de rendimentos para IR
-- Chat com IA Groq (gratuito e rápido)
-- IA Analista Financeira (análise profunda)
-- Revisão Mensal Automática
-- Insights Diários
-- Radar Financeiro (alertas de mercado)
-- Simulador de Sonhos (planejamento de metas)
-- Saúde Financeira Familiar (compartilhamento de objetivos)
-- Tema claro/escuro com persistência
-- Design responsivo (web + mobile)
-- Tobby reativo (muda de expressão)
-- Missão da semana (gamificação)
-- Painel administrativo com métricas
-- PWA (instalável no celular)
-- Criptografia AES-256-GCM (mais segura)
-- Fallback para dados em texto plano
-- Auditoria completa (tabela audit_log)
-- Score Financeiro (0-100)
-- Metas Financeiras
-- Reserva de Emergência
-- Memória persistente da IA
-- Relatório semanal por e-mail
-- Previsão de Caixa
-- Relatório Mensal do Tobby
-- Linha do Tempo Financeira
-- Central de Indicadores (Selic, IPCA, Dólar, Bitcoin)
-- Categorias Customizáveis pelo usuário
-- Estrutura de Conquistas
+Autenticação JWT completa
 
-✅ Concluído na Versão 8.0 (Copiloto Financeiro):
-- Diário Financeiro com análise emocional por IA
-- Linha do Tempo da Vida (eventos importantes)
-- Detector de Comportamentos (alertas automáticos)
-- Planejador de Aposentadoria (simulador completo)
-- Modo Casal (compartilhamento de objetivos)
-- Missões Inteligentes (geração automática com IA)
-- Tobby Proativo (Briefing Matinal personalizado)
-- Serviço de IA unificado (aiService.js)
-- 4 novas telas no frontend
-- 7 novos controllers
-- 7 novas rotas
+CRUD de contas a pagar/receber com criptografia AES-256-GCM
 
-🚧 Em andamento / Pendentes para v8.1:
-- Interface completa de Conquistas no frontend
-- Gamificação avançada
-- Envio de notificações WhatsApp
-- Leitura de PDF com IA
-- Domínio personalizado
+Dashboard financeiro com saldo e percentuais
+
+Investimentos com cotações
+
+Financiamentos com simulação de amortização extra
+
+Patrimônio líquido (ativos vs passivos)
+
+Cadastro de bens (imóveis, veículos, reservas)
+
+Leitura de nota fiscal via câmera
+
+Leitura de holerite via texto
+
+Importação de extrato bancário (CSV, OFX, texto)
+
+Informe de rendimentos para IR
+
+Chat com IA Groq (gratuito e rápido)
+
+IA Analista Financeira (análise profunda)
+
+Revisão Mensal Automática
+
+Insights Diários
+
+Radar Financeiro (alertas de mercado)
+
+Simulador de Sonhos (planejamento de metas)
+
+Saúde Financeira Familiar (compartilhamento de objetivos)
+
+Tema claro/escuro com persistência
+
+Design responsivo (web + mobile)
+
+Tobby reativo (muda de expressão)
+
+Missão da semana (gamificação)
+
+Painel administrativo com métricas
+
+PWA (instalável no celular)
+
+Criptografia AES-256-GCM (mais segura)
+
+Fallback para dados em texto plano
+
+Auditoria completa (tabela audit_log)
+
+Score Financeiro (0-100)
+
+Metas Financeiras
+
+Reserva de Emergência
+
+Memória persistente da IA
+
+Relatório semanal por e-mail
+
+Previsão de Caixa
+
+Relatório Mensal do Tobby
+
+Linha do Tempo Financeira
+
+Central de Indicadores (Selic, IPCA, Dólar, Bitcoin)
+
+Categorias Customizáveis pelo usuário
+
+Estrutura de Conquistas
+
+✅ Concluído na Versão 8.0:
+Diário Financeiro com análise emocional por IA
+
+Linha do Tempo da Vida (eventos importantes)
+
+Detector de Comportamentos (alertas automáticos)
+
+Planejador de Aposentadoria (simulador completo)
+
+Modo Casal (compartilhamento de objetivos)
+
+Missões Inteligentes (geração automática com IA)
+
+Tobby Proativo (Briefing Matinal personalizado)
+
+Serviço de IA unificado (aiService.js)
+
+✅ Concluído na Versão 9.0:
+✅ Correção da estrutura do projeto (frontend/backend separados)
+
+✅ Correção do erro window is not defined
+
+✅ Correção do CORS (chat via backend)
+
+✅ Correção do Service Worker (caminho /Tobby/sw.js)
+
+✅ Arquivos de rota completos (mentor, risks, executive)
+
+✅ Memória Real do Tobby (tobby_memory)
+
+✅ Mentor Financeiro (planos personalizados)
+
+✅ Previsão de Problemas (detecção de riscos)
+
+✅ Dashboard Executivo (visão completa)
+
+✅ Conquistas Avançadas (níveis bronze, prata, ouro, diamante)
+
+🚧 Em andamento / Pendentes para v9.1:
+Interface completa de Conquistas no frontend
+
+Gamificação avançada
+
+Envio de notificações WhatsApp
+
+Leitura de PDF com IA
+
+Domínio personalizado
 
 🎯 14. SCORE FINANCEIRO (Cálculo)
-O Score Tobby é calculado com os seguintes pesos:
-
-| Fator | Peso | O que avalia |
-|-------|------|--------------|
-| Dívidas | 30% | Quanto da renda está comprometida |
-| Contas atrasadas | 20% | Percentual de contas em atraso |
-| Patrimônio | 20% | Ativos vs passivos |
-| Reserva de emergência | 15% | Meses de segurança |
-| Investimentos | 15% | Percentual da renda investido |
-
+Fator	Peso	O que avalia
+Dívidas	30%	Quanto da renda está comprometida
+Contas atrasadas	20%	Percentual de contas em atraso
+Patrimônio	20%	Ativos vs passivos
+Reserva de emergência	15%	Meses de segurança
+Investimentos	15%	Percentual da renda investido
 Classificações:
-- 90-100: Excelente! 🏆
-- 70-89: Bom! ✅
-- 50-69: Regular ⚠️
-- 30-49: Atenção 🔴
-- 0-29: Crítico ⚠️
+90-100: Excelente! 🏆
+
+70-89: Bom! ✅
+
+50-69: Regular ⚠️
+
+30-49: Atenção 🔴
+
+0-29: Crítico ⚠️
 
 📈 15. IA DO TOBBY (Endpoints)
-| Endpoint | Função |
-|----------|--------|
-| POST /api/ai/chat | Conversa normal com IA |
-| POST /api/ai/analyze | Análise financeira profunda |
-| POST /api/ai/monthly-review | Revisão mensal automática |
-| POST /api/ai/daily-insights | Insights diários personalizados |
-| POST /api/journal/:id/analyze | Análise de registro do diário |
-| POST /api/missions/generate | Geração de missões semanais |
-| GET /api/briefing/morning | Briefing matinal personalizado |
+Endpoint	Função
+POST /api/ai/chat	Conversa normal com IA (✅ SEM CORS)
+POST /api/ai/analyze	Análise financeira profunda
+POST /api/ai/monthly-review	Revisão mensal automática
+POST /api/ai/daily-insights	Insights diários personalizados
+POST /api/journal/:id/analyze	Análise de registro do diário
+POST /api/missions/generate	Geração de missões semanais
+GET /api/briefing/morning	Briefing matinal personalizado
+🔒 16. SEGURANÇA
+✅ AES-256-GCM para dados sensíveis
 
-🏆 16. CATEGORIAS
-Tipos de categorias:
-- Padrão: 11 categorias pré-definidas
-- Customizáveis: Usuário pode criar suas próprias categorias
+✅ JWT com bcrypt para senhas
 
-Categorias padrão:
-🍽️ Alimentação | 🚗 Transporte | 🏠 Moradia | 🏥 Saúde | 🎮 Lazer
-📚 Educação | 📈 Investimentos | ⚡ Serviços | 🛍️ Compras | 💰 Receita | 📦 Outros
+✅ Auditoria de todas as alterações
 
-📊 17. PREVISÃO DE CAIXA
-Funcionalidade que projeta o saldo final do mês baseado em:
-- Salário do usuário
-- Contas já pagas
-- Contas previstas para vencer
-- Status: crítico, alerta ou seguro
+✅ CORS configurado
 
-📅 18. RELATÓRIO MENSAL
-Todo mês o Tobby gera uma carta personalizada com:
-- Comparativo com mês anterior
-- Evolução do score
-- Progresso das metas
-- Análise de gastos por categoria
-- Dicas personalizadas
+✅ Headers de segurança (Helmet)
 
-🔄 19. RADAR FINANCEIRO (NOVO V7.0)
-Alertas automáticos sobre mudanças no mercado:
-- Selic: alerta sobre mudanças na taxa básica de juros
-- IPCA: monitora a inflação oficial
-- Dólar: acompanha variação cambial
-- Bitcoin: alerta sobre volatilidade das criptomoedas
+✅ Rate Limiting (proteção contra DDoS)
 
-🎯 20. SIMULADOR DE SONHOS (NOVO V7.0)
-Planejamento de metas com aportes mensais:
-- Defina um sonho (viagem, casa, carro)
-- Informe valor alvo e aporte mensal
-- Tobby calcula tempo necessário para alcançar
+✅ Painel de Debug restrito a administradores
 
-👨‍👩‍👧‍👦 21. SAÚDE FINANCEIRA FAMILIAR (NOVO V7.0)
-Compartilhamento de objetivos com familiares:
-- Adicione membros da família
-- Compartilhe metas financeiras
-- Defina porcentagem de contribuição
+✅ RLS (Row Level Security) no Supabase
 
-📝 22. DIÁRIO FINANCEIRO (NOVO V8.0)
-Registro emocional e financeiro com análise de IA:
-- Registre pensamentos e emoções sobre dinheiro
-- IA detecta padrões emocionais e financeiros
-- Gera recomendações personalizadas
-- Identifica gatilhos financeiros
+✅ XSS sanitization com xss package
 
-📅 23. LINHA DO TEMPO DA VIDA (NOVO V8.0)
-Registro de eventos importantes da vida:
-- Casamento, compra de casa, troca de emprego
-- Nascimento de filho, compra de carro
-- Agrupamento por ano
-- Visualização cronológica
-
-🏖️ 24. PLANEJADOR DE APOSENTADORIA (NOVO V8.0)
-Simulador completo de aposentadoria:
-- Idade atual e desejada
-- Patrimônio atual e aportes mensais
-- Rentabilidade estimada
-- Projeção de patrimônio futuro
-- Renda mensal estimada
-- Gráfico de evolução
-
-🎯 25. MISSÕES INTELIGENTES (NOVO V8.0)
-Missões semanais geradas por IA:
-- Baseadas nos gastos e metas do usuário
-- Acompanhamento de progresso
-- Status: pendente, em andamento, concluído
-- Geração automática semanal
-
-🐶 26. TOBBY PROATIVO (NOVO V8.0)
-Briefing matinal personalizado:
-- Resumo financeiro do dia
-- Contas a vencer na semana
-- Evolução do score
-- Progresso de metas
-- Alertas importantes
-- Dica do dia
-
-🔒 27. SEGURANÇA
-- AES-256-GCM para dados sensíveis
-- JWT com bcrypt para senhas
-- Auditoria de todas as alterações
-- CORS configurado
-- Headers de segurança
-- Painel de Debug restrito a administradores
-
-🎯 28. RESUMO PARA IA (INSTRUÇÕES PARA NOVA SESSÃO)
+🎯 17. RESUMO PARA IA (INSTRUÇÕES PARA NOVA SESSÃO)
 Tobby é um organizador financeiro pessoal com personalidade (mascote cachorro). Backend Node.js com Express e Supabase (PostgreSQL). Frontend PWA puro (HTML/CSS/JS) com 11 abas. Autenticação JWT. Criptografia AES-256-GCM para dados sensíveis com fallback para texto plano.
 
-Funcionalidades: controle de contas, investimentos, financiamentos, patrimônio, leitura de nota fiscal, holerite, extrato, informe de IR, chat com IA Groq, IA Analista Financeira, Score Financeiro (0-100), Metas Financeiras, Reserva de Emergência, Previsão de Caixa, Relatório Mensal, Linha do Tempo Financeira, Central de Indicadores, Categorias Customizáveis, Auditoria completa, Conquistas, Radar Financeiro (alertas de mercado), Simulador de Sonhos (planejamento de metas), Saúde Financeira Familiar (compartilhamento de objetivos), Diário Financeiro (análise emocional), Linha do Tempo da Vida (eventos importantes), Planejador de Aposentadoria (simulador), Missões Inteligentes (geradas por IA), Tobby Proativo (briefing matinal).
+Estrutura:
+Backend: src/ (index.js, routes/, controllers/, middleware/, db/, services/, jobs/)
 
-Design responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend). Variáveis obrigatórias: SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY. Opcionais: ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA), RESEND_API_KEY (e-mails).
+Frontend: frontend/ (index.html, app.js, api.js, styles.css, manifest.json, sw.js)
 
-ARQUIVOS PRINCIPAIS PARA MANUTENÇÃO:
-- Backend: src/index.js, src/controllers/*, src/routes/*, src/services/*
-- Frontend: index.html, app.js, api.js, styles.css
-- Banco: SQL completo no descritivo
+Frontend NA RAIZ: index.html (app completo) DEVE estar na raiz para GitHub Pages
 
-ESTRUTURA DO BANCO PARA RECRIAR:
-- Executar o script SQL completo na seção 4
-- Todas as tabelas têm RLS (Row Level Security) ativado
-- Usar service_role key para migrações
+Funcionalidades:
+Controle de contas, investimentos, financiamentos, patrimônio, leitura de nota fiscal, holerite, extrato, informe de IR, chat com IA Groq (via backend - SEM CORS), IA Analista Financeira, Score Financeiro (0-100), Metas Financeiras, Reserva de Emergência, Previsão de Caixa, Relatório Mensal, Linha do Tempo Financeira, Central de Indicadores, Categorias Customizáveis, Auditoria completa, Conquistas, Radar Financeiro, Simulador de Sonhos, Saúde Financeira Familiar, Diário Financeiro, Linha do Tempo da Vida, Planejador de Aposentadoria, Missões Inteligentes, Tobby Proativo, Memória Real do Tobby, Mentor Financeiro, Previsão de Problemas, Dashboard Executivo.
 
-DEPLOY:
-- Backend: git push → Render faz build automático
-- Frontend: git push → GitHub Pages atualiza
+Design:
+Responsivo com tema claro/escuro. Hospedado no Render (backend) e GitHub Pages (frontend).
 
-COMANDOS ÚTEIS:
-- npm start (produção)
-- npm run dev (desenvolvimento com nodemon)
+Variáveis Obrigatórias:
+SUPABASE_URL, SUPABASE_SECRET_KEY, JWT_SECRET, ADMIN_KEY
 
+Variáveis Opcionais:
+ENCRYPTION_KEY (criptografia), GROQ_API_KEY (IA), RESEND_API_KEY (e-mails)
+
+Correções Recentes (v9.0):
+✅ Frontend e backend separados
+
+✅ Erro window is not defined corrigido
+
+✅ CORS do chat corrigido (usa backend como proxy)
+
+✅ Service Worker registra em /Tobby/sw.js
+
+✅ Todos os arquivos de rota completos
+
+Arquivos Principais para Manutenção:
+Backend: src/index.js, src/controllers/*, src/routes/*, src/services/*
+
+Frontend: frontend/index.html, frontend/app.js, frontend/api.js, frontend/styles.css
+
+Banco: SQL completo na seção 4
+
+Deploy:
+Backend: git push → Render faz build automático
+
+Frontend: git push → GitHub Pages atualiza
+
+Comandos Úteis:
+bash
+npm start          # Produção
+npm run dev        # Desenvolvimento com nodemon
 Com este documento, qualquer IA pode entender exatamente o que foi construído, continuar o desenvolvimento e resolver problemas! 🐶📚

@@ -1,4 +1,4 @@
-// src/index.js - BACKEND COMPLETO E CORRETO
+// src/index.js - BACKEND COMPLETO
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -82,30 +82,15 @@ app.use('/api/life-events', authMiddleware, require('./routes/lifeEvents'));
 app.use('/api/retirement', authMiddleware, require('./routes/retirement'));
 app.use('/api/missions', authMiddleware, require('./routes/missions'));
 app.use('/api/briefing', authMiddleware, require('./routes/briefing'));
-app.use('/api/score', authMiddleware, require('./routes/financialScore'));
-app.use('/api/emergency-fund', authMiddleware, require('./routes/emergency-fund'));
-app.use('/api/goals', authMiddleware, require('./routes/financialGoals'));
-app.use('/api/categories', authMiddleware, require('./routes/categories'));
-app.use('/api/ai', authMiddleware, require('./routes/ai'));
-app.use('/api/achievements', authMiddleware, require('./routes/achievements'));
-app.use('/api/timeline', authMiddleware, require('./routes/timeline'));
-app.use('/api/radar', authMiddleware, require('./routes/radar'));
 app.use('/api/behavior', authMiddleware, require('./routes/behavior'));
 app.use('/api/couple', authMiddleware, require('./routes/couple'));
+app.use('/api/hollerith', authMiddleware, require('./routes/hollerith'));
+app.use('/api/bank', authMiddleware, require('./routes/bank'));
+app.use('/api/admin', authMiddleware, require('./routes/admin'));
 app.use('/api/memory', authMiddleware, require('./routes/memory'));
 app.use('/api/mentor', authMiddleware, require('./routes/mentor'));
 app.use('/api/risks', authMiddleware, require('./routes/risks'));
 app.use('/api/executive', authMiddleware, require('./routes/executive'));
-app.use('/api/hollerith', authMiddleware, require('./routes/hollerith'));
-app.use('/api/bank', authMiddleware, require('./routes/bank'));
-app.use('/api/admin', authMiddleware, require('./routes/admin'));
-app.use('/api/simulator', authMiddleware, require('./routes/simulator'));
-app.use('/api/cash-forecast', authMiddleware, require('./routes/cashForecast'));
-app.use('/api/monthly-report', authMiddleware, require('./routes/monthlyReport'));
-app.use('/api/market-indicators', authMiddleware, require('./routes/marketIndicators'));
-app.use('/api/dream-simulator', authMiddleware, require('./routes/dreamSimulator'));
-app.use('/api/family', authMiddleware, require('./routes/family'));
-app.use('/api/ai-document', authMiddleware, require('./routes/aiDocument'));
 
 // ============================================
 // ROTA 404

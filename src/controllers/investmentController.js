@@ -1,7 +1,9 @@
+// src/controllers/investmentController.js
 const supabase = require('../db/supabase');
-const { encryptNumber, decryptNumber } = require('../utils/crypto');
+const { encryptNumber, decryptNumber } = require('../services/encryptionService');
 
 const investmentController = {
+  // ===== LISTAR INVESTIMENTOS =====
   getInvestments: async (req, res) => {
     try {
       const { data: investments, error } = await supabase
@@ -35,6 +37,7 @@ const investmentController = {
     }
   },
 
+  // ===== CRIAR INVESTIMENTO =====
   createInvestment: async (req, res) => {
     try {
       const { symbol, quantity, purchasePrice, purchaseDate, assetType, broker } = req.body;
@@ -61,37 +64,64 @@ const investmentController = {
 
       if (error) throw error;
 
-      res.status(201).json({ ...data, purchase_price: purchasePrice, purchase_price_encrypted: undefined });
+      res.status(201).json({ 
+        ...data, 
+        purchase_price: purchasePrice, 
+        purchase_price_encrypted: undefined 
+      });
     } catch (err) {
       console.error('Create investment error:', err);
       res.status(500).json({ error: 'Erro ao cadastrar investimento' });
     }
   },
 
+  // ===== ATUALIZAR PREÇO DO INVESTIMENTO =====
   updateInvestmentPrice: async (req, res) => {
     try {
       const { id } = req.params;
       const { currentPrice } = req.body;
 
-      const encryptedPrice = encryptNumber(currentPrice);
+      if (currentPrice === undefined || currentPrice === null) {
+        return res.status(400).json({ error: 'Preço atual é obrigatório' });
+      }
+
+      const numPrice = parseFloat(currentPrice);
+      if (isNaN(numPrice) || numPrice <= 0) {
+        return res.status(400).json({ error: 'Preço deve ser um número positivo' });
+      }
+
+      const encryptedPrice = encryptNumber(numPrice);
 
       const { data, error } = await supabase
         .from('investments')
-        .update({ current_price_encrypted: encryptedPrice, updated_at: new Date() })
+        .update({ 
+          current_price_encrypted: encryptedPrice, 
+          updated_at: new Date() 
+        })
         .eq('id', id)
         .eq('user_id', req.userId)
         .select()
         .single();
 
-      if (error) return res.status(404).json({ error: 'Investimento não encontrado' });
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return res.status(404).json({ error: 'Investimento não encontrado' });
+        }
+        throw error;
+      }
 
-      res.json({ ...data, current_price: currentPrice, current_price_encrypted: undefined });
+      res.json({ 
+        ...data, 
+        current_price: numPrice, 
+        current_price_encrypted: undefined 
+      });
     } catch (err) {
       console.error('Update investment price error:', err);
       res.status(500).json({ error: 'Erro ao atualizar preço' });
     }
   },
 
+  // ===== DELETAR INVESTIMENTO =====
   deleteInvestment: async (req, res) => {
     try {
       const { id } = req.params;

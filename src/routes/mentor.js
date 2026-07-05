@@ -23,4 +23,10 @@ router.patch('/update-progress', mentorController.updateProgress);
 // GET /api/mentor/history - Histórico de planos do mentor
 router.get('/history', mentorController.getPlanHistory);
 
+// DELETE /api/mentor/:id - Deletar um plano
+router.delete('/:id', mentorController.deletePlan);
+
+// GET /api/mentor/stats - Estatísticas do mentor
+router.get('/stats', mentorController.getStats);
+
 module.exports = router;

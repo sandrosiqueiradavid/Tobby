@@ -1,5 +1,6 @@
+// src/controllers/loanController.js
 const supabase = require('../db/supabase');
-const { encryptNumber, decryptNumber } = require('../utils/crypto');
+const { encryptNumber, decryptNumber } = require('../services/encryptionService');
 
 const loanController = {
   getLoans: async (req, res) => {
@@ -63,10 +64,7 @@ const loanController = {
         ...data,
         total_principal: totalPrincipal,
         outstanding_balance: outstandingBalance,
-        monthly_payment: monthlyPayment,
-        total_principal_encrypted: undefined,
-        outstanding_balance_encrypted: undefined,
-        monthly_payment_encrypted: undefined
+        monthly_payment: monthlyPayment
       });
     } catch (err) {
       console.error('Create loan error:', err);

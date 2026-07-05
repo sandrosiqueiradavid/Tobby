@@ -1,5 +1,6 @@
+// src/controllers/userController.js
 const supabase = require('../db/supabase');
-const { encryptNumber, decryptNumber } = require('../utils/crypto');
+const { encryptNumber, decryptNumber } = require('../services/encryptionService');
 
 const userController = {
   getProfile: async (req, res) => {
@@ -15,7 +16,6 @@ const userController = {
         return res.status(404).json({ error: 'Usuário não encontrado' });
       }
 
-      // Descriptografar salário se existir
       let salary = user.salary || 0;
       if (user.salary_encrypted) {
         const decrypted = decryptNumber(user.salary_encrypted);
@@ -47,7 +47,7 @@ const userController = {
         .from('users')
         .update({ 
           salary_encrypted: encryptedSalary, 
-          salary: salary, // campo original (pode ser removido depois)
+          salary: salary,
           updated_at: new Date() 
         })
         .eq('id', req.userId)

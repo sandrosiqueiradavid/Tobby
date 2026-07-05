@@ -1,5 +1,6 @@
+// src/controllers/behaviorController.js
 const supabase = require('../db/supabase');
-const { decryptNumber } = require('../utils/crypto');
+const { decryptNumber } = require('../services/encryptionService');
 
 const behaviorController = {
   // ===== LISTAR ALERTAS =====
@@ -45,12 +46,11 @@ const behaviorController = {
     }
   },
 
-  // ===== ANALISAR COMPORTAMENTO (JOB) =====
+  // ===== ANALISAR COMPORTAMENTO =====
   async analyzeBehavior(req, res) {
     try {
       const userId = req.userId || req.query.userId;
       
-      // Buscar contas dos últimos 30 dias
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -64,7 +64,6 @@ const behaviorController = {
         return res.json({ success: true, message: 'Sem dados suficientes para análise' });
       }
 
-      // Analisar categorias
       const categorySpending = {};
       bills.forEach(bill => {
         const value = decryptNumber(bill.value_encrypted) || 0;
@@ -72,11 +71,9 @@ const behaviorController = {
         categorySpending[cat] = (categorySpending[cat] || 0) + value;
       });
 
-      // Identificar maiores gastos
       const sorted = Object.entries(categorySpending).sort((a, b) => b[1] - a[1]);
       const alerts = [];
 
-      // Gerar alertas
       if (sorted.length > 0 && sorted[0][1] > 500) {
         alerts.push({
           user_id: userId,
@@ -87,7 +84,6 @@ const behaviorController = {
         });
       }
 
-      // Salvar alertas
       if (alerts.length > 0) {
         await supabase.from('behavior_alerts').insert(alerts);
       }

@@ -1,5 +1,6 @@
+// src/controllers/hollerithController.js
 const supabase = require('../db/supabase');
-const { encryptNumber, decryptNumber } = require('../utils/crypto');
+const { encryptNumber, decryptNumber } = require('../services/encryptionService');
 
 // ===== FUNÇÕES AUXILIARES =====
 
@@ -15,7 +16,13 @@ function parseHollerith(text) {
     { regex: /PLANO.*SAÚDE.*R\$\s*([\d.,]+)/i, name: 'Plano de Saúde', category: 'saude', due_day: 5 },
     { regex: /INSS.*R\$\s*([\d.,]+)/i, name: 'INSS', category: 'impostos', due_day: 20 },
     { regex: /IRRF.*R\$\s*([\d.,]+)/i, name: 'IRRF', category: 'impostos', due_day: 20 },
-    { regex: /FGTS.*R\$\s*([\d.,]+)/i, name: 'FGTS', category: 'impostos', due_day: 20 }
+    { regex: /FGTS.*R\$\s*([\d.,]+)/i, name: 'FGTS', category: 'impostos', due_day: 20 },
+    // Padrões adicionais
+    { regex: /SAL.*LIQUIDO.*R\$\s*([\d.,]+)/i, name: 'Salário Líquido', category: 'receita', due_day: 5 },
+    { regex: /BÔNUS.*R\$\s*([\d.,]+)/i, name: 'Bônus', category: 'receita', due_day: 5 },
+    { regex: /COMISSÃO.*R\$\s*([\d.,]+)/i, name: 'Comissão', category: 'receita', due_day: 5 },
+    { regex: /HORA.*EXTRA.*R\$\s*([\d.,]+)/i, name: 'Hora Extra', category: 'receita', due_day: 5 },
+    { regex: /DESCONTO.*R\$\s*([\d.,]+)/i, name: 'Desconto', category: 'outros', due_day: 20 }
   ];
 
   for (const line of lines) {
@@ -64,20 +71,41 @@ function calculateIRRF(salary) {
 }
 
 const hollerithController = {
+  // ===== PROCESSAR HOLERITE =====
   async processHollerith(req, res) {
     try {
       const { hollerithText } = req.body;
+      
       if (!hollerithText) {
         return res.status(400).json({ error: 'Texto do holerite é obrigatório' });
       }
 
+      console.log('[HOLLERITH] 📄 Processando holerite para usuário:', req.userId);
+
       const parsedData = parseHollerith(hollerithText);
+      
       if (!parsedData.success) {
         return res.status(400).json({ error: parsedData.error });
       }
 
       const bills = [];
+      let totalSaved = 0;
+
       for (const item of parsedData.bills) {
+        // Verificar se já existe uma conta similar para evitar duplicatas
+        const { data: existing } = await supabase
+          .from('bills')
+          .select('id')
+          .eq('user_id', req.userId)
+          .eq('name', item.name)
+          .eq('status', 'pending')
+          .maybeSingle();
+
+        if (existing) {
+          console.log(`[HOLLERITH] ⏭️ Conta "${item.name}" já existe, pulando...`);
+          continue;
+        }
+
         const encryptedValue = encryptNumber(item.value);
         
         const { data: bill, error } = await supabase
@@ -86,6 +114,7 @@ const hollerithController = {
             user_id: req.userId,
             name: item.name,
             value_encrypted: encryptedValue,
+            value: item.value,
             due_day: item.due_day,
             category: item.category,
             status: 'pending'
@@ -95,25 +124,60 @@ const hollerithController = {
         
         if (!error && bill) {
           bills.push({ ...bill, value: item.value });
+          totalSaved += item.value;
         }
       }
+
+      // Atualizar salário do usuário se encontrado
+      if (parsedData.summary.totalGross > 0) {
+        const encryptedSalary = encryptNumber(parsedData.summary.totalGross);
+        await supabase
+          .from('users')
+          .update({ 
+            salary_encrypted: encryptedSalary,
+            salary: parsedData.summary.totalGross,
+            updated_at: new Date()
+          })
+          .eq('id', req.userId);
+      }
+
+      // Registrar no audit_log
+      await supabase
+        .from('audit_log')
+        .insert({
+          user_id: req.userId,
+          action: 'HOLLERITH_PROCESSED',
+          table_name: 'bills',
+          new_value: { 
+            bills_added: bills.length,
+            total_value: totalSaved,
+            gross_salary: parsedData.summary.totalGross,
+            net_salary: parsedData.summary.totalNet
+          }
+        });
+
+      console.log(`[HOLLERITH] ✅ ${bills.length} contas adicionadas, total R$ ${totalSaved.toFixed(2)}`);
 
       res.json({
         success: true,
         message: `${bills.length} contas identificadas e cadastradas`,
         bills: bills,
-        summary: parsedData.summary
+        summary: parsedData.summary,
+        salary_updated: parsedData.summary.totalGross > 0
       });
     } catch (err) {
-      console.error('Hollerith error:', err);
+      console.error('[HOLLERITH] ❌ Erro:', err);
       res.status(500).json({ error: 'Erro ao processar holerite: ' + err.message });
     }
   },
 
+  // ===== GERAR INFORME DE RENDIMENTOS =====
   async generateIncomeReport(req, res) {
     try {
       const { year } = req.query;
       const currentYear = year || new Date().getFullYear();
+
+      console.log('[HOLLERITH] 📊 Gerando informe de rendimentos para:', req.userId);
 
       const { data: user } = await supabase
         .from('users')
@@ -136,28 +200,39 @@ const hollerithController = {
       const annualIRRF = irrf * 12;
       const netIncome = (monthlyIncome - inss - irrf) * 12;
 
+      // Calcular percentual de dedução
+      const deductionPercent = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
+
       res.json({
-        user: user?.name || 'Usuário',
-        year: currentYear,
-        monthlyIncome,
-        totalIncome,
-        totalExpenses,
-        annualINSS,
-        annualIRRF,
-        netIncome,
-        taxSavings: totalExpenses > 0 ? Math.min(totalExpenses * 0.3, annualIRRF) : 0,
-        deductibleExpenses: totalExpenses
+        success: true,
+        data: {
+          user: user?.name || 'Usuário',
+          year: currentYear,
+          monthlyIncome,
+          totalIncome,
+          totalExpenses,
+          annualINSS,
+          annualIRRF,
+          netIncome,
+          taxSavings: totalExpenses > 0 ? Math.min(totalExpenses * 0.3, annualIRRF) : 0,
+          deductibleExpenses: totalExpenses,
+          deductionPercent: deductionPercent.toFixed(1),
+          status: deductionPercent > 30 ? 'Ótimo! Você tem muitas despesas dedutíveis' : 'Considere aumentar suas despesas dedutíveis'
+        }
       });
     } catch (err) {
-      console.error('Income report error:', err);
-      res.status(500).json({ error: 'Erro ao gerar informe' });
+      console.error('[HOLLERITH] ❌ Erro no informe:', err);
+      res.status(500).json({ error: 'Erro ao gerar informe: ' + err.message });
     }
   },
 
+  // ===== GERAR DECLARAÇÃO DE IR =====
   async generateIRDeclaration(req, res) {
     try {
       const { year } = req.query;
       const currentYear = year || new Date().getFullYear();
+
+      console.log('[HOLLERITH] 📄 Gerando declaração de IR para:', req.userId);
 
       const { data: user } = await supabase
         .from('users')
@@ -190,22 +265,145 @@ const hollerithController = {
         else taxDue = taxBase * 0.275 - 10432.32;
       }
 
+      const taxDueFinal = Math.max(0, taxDue);
+      const refund = Math.max(0, annualIRRF - taxDueFinal);
+      const payment = Math.max(0, taxDueFinal - annualIRRF);
+
+      // Classificação da situação
+      let situation = 'Regular';
+      let recommendation = 'Mantenha suas despesas organizadas.';
+      
+      if (refund > 0 && refund > annualIRRF * 0.3) {
+        situation = 'Com restituição significativa';
+        recommendation = 'Ótimo! Você tem direito a uma boa restituição. Verifique se todas as despesas estão declaradas.';
+      } else if (refund > 0) {
+        situation = 'Com restituição';
+        recommendation = 'Você tem direito a restituição. Mantenha seus comprovantes organizados.';
+      } else if (payment > 0 && payment < annualIRRF * 0.2) {
+        situation = 'Saldo a pagar (baixo)';
+        recommendation = 'Você tem um pequeno saldo a pagar. Planeje-se para quitar no prazo.';
+      } else if (payment > 0) {
+        situation = 'Saldo a pagar (significativo)';
+        recommendation = 'Considere aumentar suas despesas dedutíveis para reduzir o imposto devido.';
+      }
+
       res.json({
-        year: currentYear,
-        taxpayer: { name: user?.name || 'Usuário', email: user?.email || '' },
-        annualIncome,
-        annualINSS,
-        annualIRRF,
-        deductibleExpenses,
-        taxBase,
-        taxDue: Math.max(0, taxDue),
-        status: taxDue <= annualIRRF ? 'Com restituição' : 'Saldo a pagar',
-        estimatedRefund: Math.max(0, annualIRRF - taxDue),
-        estimatedPayment: Math.max(0, taxDue - annualIRRF)
+        success: true,
+        data: {
+          year: currentYear,
+          taxpayer: { 
+            name: user?.name || 'Usuário', 
+            email: user?.email || '' 
+          },
+          annualIncome,
+          annualINSS,
+          annualIRRF,
+          deductibleExpenses,
+          taxBase: Math.max(0, taxBase),
+          taxDue: taxDueFinal,
+          situation,
+          recommendation,
+          estimatedRefund: refund,
+          estimatedPayment: payment,
+          status: taxDueFinal <= annualIRRF ? 'Com restituição' : 'Saldo a pagar'
+        }
       });
     } catch (err) {
-      console.error('IR declaration error:', err);
-      res.status(500).json({ error: 'Erro ao gerar declaração' });
+      console.error('[HOLLERITH] ❌ Erro na declaração IR:', err);
+      res.status(500).json({ error: 'Erro ao gerar declaração: ' + err.message });
+    }
+  },
+
+  // ===== RESUMO DO HOLERITE (OPCIONAL) =====
+  async getSummary(req, res) {
+    try {
+      console.log('[HOLLERITH] 📋 Resumo do holerite para:', req.userId);
+
+      const { data: user } = await supabase
+        .from('users')
+        .select('salary_encrypted')
+        .eq('id', req.userId)
+        .single();
+
+      const salary = decryptNumber(user?.salary_encrypted) || 0;
+
+      const { data: bills } = await supabase
+        .from('bills')
+        .select('value_encrypted, status, category')
+        .eq('user_id', req.userId);
+
+      const billsWithValues = (bills || []).map(b => ({
+        ...b,
+        value: decryptNumber(b.value_encrypted) || 0
+      }));
+
+      const totalBills = billsWithValues.reduce((s, b) => s + b.value, 0);
+      const paidBills = billsWithValues.filter(b => b.status === 'paid').reduce((s, b) => s + b.value, 0);
+
+      res.json({
+        success: true,
+        data: {
+          salary,
+          totalBills,
+          paidBills,
+          pendingBills: totalBills - paidBills,
+          freeBalance: salary - paidBills,
+          commitmentPercent: salary > 0 ? ((totalBills / salary) * 100).toFixed(1) : 0
+        }
+      });
+    } catch (err) {
+      console.error('[HOLLERITH] ❌ Erro no resumo:', err);
+      res.status(500).json({ error: 'Erro ao gerar resumo: ' + err.message });
+    }
+  },
+
+  // ===== PROCESSAMENTO AUTOMÁTICO COM IA (OPCIONAL) =====
+  async autoProcess(req, res) {
+    try {
+      const { hollerithText } = req.body;
+      
+      if (!hollerithText) {
+        return res.status(400).json({ error: 'Texto do holerite é obrigatório' });
+      }
+
+      // Usar a IA para extrair informações do holerite
+      const aiService = require('../services/aiService');
+      const analysis = await aiService.analyzeDocument(hollerithText, 'holerite');
+
+      if (!analysis.success) {
+        return res.status(400).json({ error: analysis.error || 'Erro na análise da IA' });
+      }
+
+      // Processar os dados extraídos pela IA
+      const bills = [];
+      for (const item of analysis.data.bills || []) {
+        const encryptedValue = encryptNumber(item.value);
+        const { data: bill } = await supabase
+          .from('bills')
+          .insert({
+            user_id: req.userId,
+            name: item.name,
+            value_encrypted: encryptedValue,
+            value: item.value,
+            due_day: item.due_day || 5,
+            category: item.category || 'outros',
+            status: 'pending'
+          })
+          .select()
+          .single();
+
+        if (bill) bills.push(bill);
+      }
+
+      res.json({
+        success: true,
+        message: `${bills.length} contas identificadas pela IA`,
+        bills,
+        analysis: analysis.summary
+      });
+    } catch (err) {
+      console.error('[HOLLERITH] ❌ Erro no auto-processamento:', err);
+      res.status(500).json({ error: 'Erro no processamento automático: ' + err.message });
     }
   }
 };

@@ -1,3 +1,4 @@
+// src/routes/behavior.js
 const express = require('express');
 const router = express.Router();
 const behaviorController = require('../controllers/behaviorController');
