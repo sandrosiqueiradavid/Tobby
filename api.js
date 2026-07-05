@@ -1,4 +1,4 @@
-// Tobby API Client v7.0
+// api.js - Tobby API Client v9.0
 const API_BASE = 'https://tobby-api.onrender.com/api';
 
 class TobbyAPI {
@@ -58,7 +58,9 @@ class TobbyAPI {
     }
   }
 
-  // ===== AUTH =====
+  // ============================================
+  // AUTH
+  // ============================================
   async register(name, email, password, salary) {
     const data = await this.request('/auth/register', {
       method: 'POST',
@@ -91,7 +93,9 @@ class TobbyAPI {
     });
   }
 
-  // ===== USER =====
+  // ============================================
+  // USER
+  // ============================================
   async getProfile() {
     return this.request('/user/profile');
   }
@@ -103,7 +107,9 @@ class TobbyAPI {
     });
   }
 
-  // ===== BILLS =====
+  // ============================================
+  // BILLS - CORRIGIDO
+  // ============================================
   async getBills(status = null) {
     const url = status ? `/bills?status=${status}` : '/bills';
     const data = await this.request(url);
@@ -135,12 +141,14 @@ class TobbyAPI {
     });
   }
 
+  // CORRIGIDO: /bills/dashboard-summary (com hífen)
   async getDashboard() {
-    // CORRIGIDO: dashboard-summary (com hífen)
     return this.request('/bills/dashboard-summary');
   }
 
-  // ===== INVESTMENTS =====
+  // ============================================
+  // INVESTMENTS
+  // ============================================
   async getInvestments() {
     return this.request('/investments');
   }
@@ -156,7 +164,9 @@ class TobbyAPI {
     return this.request(`/investments/${id}`, { method: 'DELETE' });
   }
 
-  // ===== LOANS =====
+  // ============================================
+  // LOANS
+  // ============================================
   async getLoans() {
     return this.request('/loans');
   }
@@ -172,7 +182,9 @@ class TobbyAPI {
     return this.request(`/loans/${id}`, { method: 'DELETE' });
   }
 
-  // ===== WEALTH =====
+  // ============================================
+  // WEALTH
+  // ============================================
   async getWealthSummary() {
     return this.request('/wealth/summary');
   }
@@ -192,7 +204,9 @@ class TobbyAPI {
     return this.request(`/wealth/assets/${id}`, { method: 'DELETE' });
   }
 
-  // ===== HOLLERITH =====
+  // ============================================
+  // HOLLERITH
+  // ============================================
   async processHollerith(hollerithText) {
     return this.request('/hollerith/process', {
       method: 'POST',
@@ -200,7 +214,9 @@ class TobbyAPI {
     });
   }
 
-  // ===== BANK =====
+  // ============================================
+  // BANK
+  // ============================================
   async processBankExtract(extractText, format) {
     return this.request('/bank/process', {
       method: 'POST',
@@ -208,7 +224,9 @@ class TobbyAPI {
     });
   }
 
-  // ===== CATEGORIES =====
+  // ============================================
+  // CATEGORIES
+  // ============================================
   async getCategories() {
     return this.request('/categories');
   }
@@ -231,9 +249,10 @@ class TobbyAPI {
     return this.request(`/categories/${id}`, { method: 'DELETE' });
   }
 
-  // ===== GOALS =====
+  // ============================================
+  // GOALS - CORRIGIDO
+  // ============================================
   async getGoals() {
-    // CORRIGIDO: /financial-goals (em vez de /goals/goals)
     return this.request('/financial-goals');
   }
 
@@ -255,7 +274,9 @@ class TobbyAPI {
     return this.request(`/financial-goals/${id}`, { method: 'DELETE' });
   }
 
-  // ===== EMERGENCY FUND =====
+  // ============================================
+  // EMERGENCY FUND - CORRIGIDO
+  // ============================================
   async getEmergencyFund() {
     return this.request('/emergency-fund');
   }
@@ -267,12 +288,16 @@ class TobbyAPI {
     });
   }
 
-  // ===== SCORE =====
+  // ============================================
+  // SCORE - CORRIGIDO
+  // ============================================
   async getScore() {
     return this.request('/score');
   }
 
-  // ===== AI =====
+  // ============================================
+  // AI
+  // ============================================
   async sendMessage(message, context) {
     return this.request('/ai/chat', {
       method: 'POST',
@@ -280,17 +305,20 @@ class TobbyAPI {
     });
   }
 
-  // ===== DAILY INSIGHTS =====
   async getDailyInsights() {
     return this.request('/ai/daily-insights', { method: 'POST' });
   }
 
-  // ===== MORNING BRIEFING =====
+  // ============================================
+  // BRIEFING
+  // ============================================
   async getMorningBriefing() {
     return this.request('/briefing/morning');
   }
 
-  // ===== MISSIONS =====
+  // ============================================
+  // MISSIONS
+  // ============================================
   async getMissions() {
     return this.request('/missions');
   }
@@ -310,7 +338,9 @@ class TobbyAPI {
     return this.request(`/missions/${id}/complete`, { method: 'POST' });
   }
 
-  // ===== JOURNAL =====
+  // ============================================
+  // JOURNAL
+  // ============================================
   async getJournal() {
     return this.request('/journal');
   }
@@ -330,7 +360,9 @@ class TobbyAPI {
     return this.request(`/journal/${id}`, { method: 'DELETE' });
   }
 
-  // ===== LIFE EVENTS =====
+  // ============================================
+  // LIFE EVENTS
+  // ============================================
   async getLifeEvents() {
     return this.request('/life-events');
   }
@@ -346,7 +378,9 @@ class TobbyAPI {
     return this.request(`/life-events/${id}`, { method: 'DELETE' });
   }
 
-  // ===== RETIREMENT =====
+  // ============================================
+  // RETIREMENT
+  // ============================================
   async getRetirement() {
     return this.request('/retirement');
   }
@@ -358,7 +392,9 @@ class TobbyAPI {
     });
   }
 
-  // ===== COUPLE =====
+  // ============================================
+  // COUPLE
+  // ============================================
   async getCouple() {
     return this.request('/couple');
   }
@@ -370,7 +406,9 @@ class TobbyAPI {
     });
   }
 
-  // ===== BEHAVIOR =====
+  // ============================================
+  // BEHAVIOR
+  // ============================================
   async getAlerts() {
     return this.request('/behavior/alerts');
   }
@@ -381,12 +419,16 @@ class TobbyAPI {
     });
   }
 
-  // ===== EXECUTIVE =====
+  // ============================================
+  // EXECUTIVE
+  // ============================================
   async getExecutiveDashboard() {
     return this.request('/executive');
   }
 
-  // ===== RISKS =====
+  // ============================================
+  // RISKS
+  // ============================================
   async getRisks() {
     return this.request('/risks');
   }
@@ -401,7 +443,9 @@ class TobbyAPI {
     });
   }
 
-  // ===== TOBBY MEMORY =====
+  // ============================================
+  // TOBBY MEMORY
+  // ============================================
   async getRelevantMemories() {
     return this.request('/tobby-memory/relevant');
   }
@@ -411,6 +455,42 @@ class TobbyAPI {
       method: 'POST',
       body: JSON.stringify(data)
     });
+  }
+
+  // ============================================
+  // MENTOR
+  // ============================================
+  async createMentorPlan(data) {
+    return this.request('/mentor/create-plan', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getMentorPlan() {
+    return this.request('/mentor/current-plan');
+  }
+
+  async updateMentorProgress(data) {
+    return this.request('/mentor/update-progress', {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getMentorHistory() {
+    return this.request('/mentor/history');
+  }
+
+  // ============================================
+  // ACHIEVEMENTS
+  // ============================================
+  async getAchievements() {
+    return this.request('/achievements');
+  }
+
+  async getUserProgress() {
+    return this.request('/achievements/progress');
   }
 }
 

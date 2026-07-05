@@ -1,7 +1,8 @@
+// src/routes/financialScore.js
 const express = require('express');
 const router = express.Router();
 const supabase = require('../db/supabase');
-const { decryptNumber } = require('../utils/crypto');
+const { decryptNumber } = require('../services/encryptionService');
 const authMiddleware = require('../middleware/auth');
 
 router.use(authMiddleware);
@@ -25,12 +26,11 @@ async function calculateFinancialScore(userId) {
     
     const billsWithValues = (bills || []).map(b => ({
       ...b,
-      value: decryptNumber(b.value_encrypted)
+      value: decryptNumber(b.value_encrypted) || 0
     }));
     
     const totalDebt = billsWithValues.reduce((sum, b) => sum + b.value, 0);
     const lateBills = billsWithValues.filter(b => b.status === 'late').length;
-    const paidBills = billsWithValues.filter(b => b.status === 'paid').length;
     const totalBills = billsWithValues.length;
     
     // Buscar investimentos
@@ -87,8 +87,8 @@ async function calculateFinancialScore(userId) {
     factors.wealth = { value: netWorth, score: wealthScore.toFixed(1), weight: 20 };
     
     // 4. Reserva de emergência (15% do score)
-    const monthlyExpenses = totalDebt; // Simplificação
-    const safetyMonths = monthlyExpenses > 0 ? emergencyAmount / monthlyExpenses : 0;
+    const monthlyExpenses = totalDebt > 0 ? totalDebt : 1;
+    const safetyMonths = emergencyAmount / monthlyExpenses;
     let emergencyScore = 0;
     if (safetyMonths >= 12) emergencyScore = 100;
     else if (safetyMonths >= 6) emergencyScore = 80;
@@ -112,14 +112,6 @@ async function calculateFinancialScore(userId) {
     // Score final (0-100)
     const finalScore = Math.min(100, Math.max(0, Math.round(score)));
     
-    // Determinar classificação
-    let classification;
-    if (finalScore >= 90) classification = { level: 'excellent', name: 'Excelente! 🏆', message: 'Sua saúde financeira é invejável!' };
-    else if (finalScore >= 70) classification = { level: 'good', name: 'Bom! ✅', message: 'Você está no caminho certo!' };
-    else if (finalScore >= 50) classification = { level: 'fair', name: 'Regular ⚠️', message: 'Há espaço para melhorias' };
-    else if (finalScore >= 30) classification = { level: 'poor', name: 'Atenção 🔴', message: 'É hora de rever suas finanças' };
-    else classification = { level: 'critical', name: 'Crítico ⚠️', message: 'Precisa de ação imediata!' };
-    
     // Atualizar score no banco
     await supabase
       .from('financial_score')
@@ -130,14 +122,14 @@ async function calculateFinancialScore(userId) {
         updated_at: new Date()
       }, { onConflict: 'user_id' });
     
-    return { score: finalScore, classification, factors };
+    return { score: finalScore, factors };
   } catch (err) {
     console.error('Calculate score error:', err);
-    return { score: 50, classification: { level: 'fair', name: 'Regular', message: 'Cadastre mais dados para avaliação precisa' }, factors: {} };
+    return { score: 50, factors: {} };
   }
 }
 
-// Obter score do usuário
+// GET /api/score - Obter score do usuário
 router.get('/', async (req, res) => {
   try {
     const result = await calculateFinancialScore(req.userId);
@@ -148,7 +140,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Forçar recálculo
+// POST /api/score/recalculate - Forçar recálculo
 router.post('/recalculate', async (req, res) => {
   try {
     const result = await calculateFinancialScore(req.userId);

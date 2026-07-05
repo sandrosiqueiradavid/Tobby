@@ -1,4 +1,4 @@
-// frontend/app.js - TOBBY APP PRINCIPAL V9.0
+// app.js - TOBBY APP PRINCIPAL V9.0
 // COPILOTO FINANCEIRO PESSOAL
 
 var CATS = {
@@ -399,7 +399,7 @@ async function loadHomeBills() {
 }
 
 // ============================================
-// SCORE - MANTIDO
+// SCORE - CORRIGIDO
 // ============================================
 
 async function loadFinancialScore() {
@@ -429,6 +429,10 @@ async function loadFinancialScore() {
     console.error('Erro ao carregar score:', e);
   }
 }
+
+// ============================================
+// RESERVA DE EMERGÊNCIA - CORRIGIDO
+// ============================================
 
 async function loadEmergencyFund() {
   try {

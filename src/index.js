@@ -93,16 +93,32 @@ app.use('/api/risks', authMiddleware, require('./routes/risks'));
 app.use('/api/executive', authMiddleware, require('./routes/executive'));
 
 // ============================================
-// NOVAS ROTAS ADICIONADAS
+// ROTAS ADICIONAIS - CORRIGIDAS
 // ============================================
+
+// SCORE - Duas rotas para compatibilidade
+app.use('/api/score', authMiddleware, require('./routes/financialScore'));
 app.use('/api/financial-score', authMiddleware, require('./routes/financialScore'));
-app.use('/api/score', authMiddleware, require('./routes/financialScore'));  // ✅ ADICIONADO
+
+// METAS FINANCEIRAS - Rota sem duplicação
 app.use('/api/financial-goals', authMiddleware, require('./routes/financialGoals'));
+
+// RESERVA DE EMERGÊNCIA
 app.use('/api/emergency-fund', authMiddleware, require('./routes/emergencyFund'));
+
+// CATEGORIAS
 app.use('/api/categories', authMiddleware, require('./routes/categories'));
+
+// IA
 app.use('/api/ai', authMiddleware, require('./routes/ai'));
+
+// CONQUISTAS
 app.use('/api/achievements', authMiddleware, require('./routes/achievements'));
+
+// TIMELINE
 app.use('/api/timeline', authMiddleware, require('./routes/timeline'));
+
+// RADAR
 app.use('/api/radar', authMiddleware, require('./routes/radar'));
 
 // ============================================
