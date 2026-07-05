@@ -136,7 +136,8 @@ class TobbyAPI {
   }
 
   async getDashboard() {
-    return this.request('/bills/dashboard/summary');
+    // CORRIGIDO: dashboard-summary (com hífen)
+    return this.request('/bills/dashboard-summary');
   }
 
   // ===== INVESTMENTS =====
@@ -212,27 +213,46 @@ class TobbyAPI {
     return this.request('/categories');
   }
 
+  async createCategory(data) {
+    return this.request('/categories', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateCategory(id, data) {
+    return this.request(`/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteCategory(id) {
+    return this.request(`/categories/${id}`, { method: 'DELETE' });
+  }
+
   // ===== GOALS =====
   async getGoals() {
-    return this.request('/goals/goals');
+    // CORRIGIDO: /financial-goals (em vez de /goals/goals)
+    return this.request('/financial-goals');
   }
 
   async createGoal(data) {
-    return this.request('/goals/goals', {
+    return this.request('/financial-goals', {
       method: 'POST',
       body: JSON.stringify(data)
     });
   }
 
   async updateGoal(id, data) {
-    return this.request(`/goals/goals/${id}`, {
+    return this.request(`/financial-goals/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     });
   }
 
   async deleteGoal(id) {
-    return this.request(`/goals/goals/${id}`, { method: 'DELETE' });
+    return this.request(`/financial-goals/${id}`, { method: 'DELETE' });
   }
 
   // ===== EMERGENCY FUND =====
@@ -257,6 +277,139 @@ class TobbyAPI {
     return this.request('/ai/chat', {
       method: 'POST',
       body: JSON.stringify({ message, context })
+    });
+  }
+
+  // ===== DAILY INSIGHTS =====
+  async getDailyInsights() {
+    return this.request('/ai/daily-insights', { method: 'POST' });
+  }
+
+  // ===== MORNING BRIEFING =====
+  async getMorningBriefing() {
+    return this.request('/briefing/morning');
+  }
+
+  // ===== MISSIONS =====
+  async getMissions() {
+    return this.request('/missions');
+  }
+
+  async generateMissions() {
+    return this.request('/missions/generate', { method: 'POST' });
+  }
+
+  async updateMissionProgress(id, progress) {
+    return this.request(`/missions/${id}/progress`, {
+      method: 'PATCH',
+      body: JSON.stringify({ progress })
+    });
+  }
+
+  async completeMission(id) {
+    return this.request(`/missions/${id}/complete`, { method: 'POST' });
+  }
+
+  // ===== JOURNAL =====
+  async getJournal() {
+    return this.request('/journal');
+  }
+
+  async createJournal(data) {
+    return this.request('/journal', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async analyzeJournal(id) {
+    return this.request(`/journal/${id}/analyze`, { method: 'POST' });
+  }
+
+  async deleteJournal(id) {
+    return this.request(`/journal/${id}`, { method: 'DELETE' });
+  }
+
+  // ===== LIFE EVENTS =====
+  async getLifeEvents() {
+    return this.request('/life-events');
+  }
+
+  async createLifeEvent(data) {
+    return this.request('/life-events', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async deleteLifeEvent(id) {
+    return this.request(`/life-events/${id}`, { method: 'DELETE' });
+  }
+
+  // ===== RETIREMENT =====
+  async getRetirement() {
+    return this.request('/retirement');
+  }
+
+  async saveRetirement(data) {
+    return this.request('/retirement', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  // ===== COUPLE =====
+  async getCouple() {
+    return this.request('/couple');
+  }
+
+  async createCouple(data) {
+    return this.request('/couple/create', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  // ===== BEHAVIOR =====
+  async getAlerts() {
+    return this.request('/behavior/alerts');
+  }
+
+  async markAlertRead(id) {
+    return this.request(`/behavior/alerts/${id}/read`, {
+      method: 'PATCH'
+    });
+  }
+
+  // ===== EXECUTIVE =====
+  async getExecutiveDashboard() {
+    return this.request('/executive');
+  }
+
+  // ===== RISKS =====
+  async getRisks() {
+    return this.request('/risks');
+  }
+
+  async analyzeRisks() {
+    return this.request('/risks/analyze', { method: 'POST' });
+  }
+
+  async resolveRisk(id) {
+    return this.request(`/risks/${id}/resolve`, {
+      method: 'PATCH'
+    });
+  }
+
+  // ===== TOBBY MEMORY =====
+  async getRelevantMemories() {
+    return this.request('/tobby-memory/relevant');
+  }
+
+  async extractMemory(data) {
+    return this.request('/tobby-memory/extract', {
+      method: 'POST',
+      body: JSON.stringify(data)
     });
   }
 }

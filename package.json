@@ -1,13 +1,11 @@
 {
   "name": "tobby-backend",
   "version": "9.0.0",
-  "description": "Tobby Financial App - Ecossistema Financeiro Completo",
+  "description": "Tobby Financial App - Backend API",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "migrate": "node scripts/migrate-db.js",
-    "migrate-gcm": "node scripts/migrate-to-gcm.js"
+    "dev": "nodemon src/index.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

@@ -6,7 +6,13 @@ const authMiddleware = require('../middleware/auth');
 
 router.use(authMiddleware);
 
-router.get('/dashboard/summary', billsController.getDashboardSummary);
+// ============================================
+// ROTAS DE CONTAS - CORRIGIDAS
+// ============================================
+
+// CORRIGIDO: dashboard-summary (com hífen, não barra)
+router.get('/dashboard-summary', billsController.getDashboardSummary);
+
 router.get('/', billsController.getBills);
 router.get('/:id', billsController.getBill);
 router.post('/', billsController.createBill);

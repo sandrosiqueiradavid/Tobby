@@ -90,7 +90,7 @@ function updateThemeIcon(theme) {
 }
 
 // ============================================
-// SERVICE WORKER (CORRIGIDO)
+// SERVICE WORKER
 // ============================================
 
 async function registerServiceWorker() {
@@ -100,11 +100,9 @@ async function registerServiceWorker() {
   }
   
   try {
-    // CORRIGIDO: caminho absoluto para o sw.js na raiz do projeto
     const registration = await navigator.serviceWorker.register('/Tobby/sw.js');
     console.log('✅ Service Worker registrado com sucesso!', registration);
     
-    // Verificar se há atualizações
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
       console.log('🔄 Novo Service Worker encontrado:', newWorker);
@@ -116,7 +114,6 @@ async function registerServiceWorker() {
       });
     });
     
-    // Notificações pendentes
     const stored = localStorage.getItem('tobby_notifications');
     if (stored) {
       try {
@@ -299,8 +296,6 @@ async function enterApp() {
   updateUserUI();
   navTo('home');
   loadMorningBriefing();
-  
-  // Registrar Service Worker em background
   setTimeout(registerServiceWorker, 2000);
 }
 
@@ -338,12 +333,12 @@ function navTo(tab) {
 }
 
 // ============================================
-// HOME
+// HOME - CORRIGIDO
 // ============================================
 
 async function loadHome() {
   try {
-    var summary = await api.request('/bills/dashboard/summary');
+    var summary = await api.request('/bills/dashboard-summary');
     var salario = currentUser?.salary || 0;
     var total = summary.total || 0;
     var pending = summary.pending || 0;
@@ -364,7 +359,6 @@ async function loadHome() {
     
     document.getElementById('bal-date').textContent = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
     
-    // Carregar próximas contas
     loadHomeBills();
   } catch (e) {
     console.error('Erro ao carregar home:', e);
@@ -404,6 +398,10 @@ async function loadHomeBills() {
   }
 }
 
+// ============================================
+// SCORE - MANTIDO
+// ============================================
+
 async function loadFinancialScore() {
   try {
     var response = await api.request('/score');
@@ -442,7 +440,6 @@ async function loadEmergencyFund() {
     document.getElementById('emergency-amount').textContent = fmt(current);
     document.getElementById('emergency-months').textContent = '🛡️ ' + targetMonths + ' meses';
     
-    // Calcular recomendado baseado no salário
     var salary = currentUser?.salary || 0;
     var recommended = salary * targetMonths;
     document.getElementById('emergency-recommended').textContent = 'Recomendado: ' + fmt(recommended);
@@ -454,9 +451,13 @@ async function loadEmergencyFund() {
   }
 }
 
+// ============================================
+// METAS - CORRIGIDO
+// ============================================
+
 async function loadGoals() {
   try {
-    var response = await api.request('/goals/goals');
+    var response = await api.request('/financial-goals');
     var goals = response.goals || [];
     var container = document.getElementById('goals-list');
     if (!container) return;
@@ -1502,7 +1503,7 @@ async function saveGoal() {
   if (!name || !target_amount || !deadline) { showToast('Preencha todos os campos'); return; }
   
   try {
-    await api.request('/goals/goals', {
+    await api.request('/financial-goals', {
       method: 'POST',
       body: JSON.stringify({ name, target_amount, current_amount, deadline })
     });
@@ -1520,7 +1521,7 @@ async function updateGoalProgress(id) {
   var amount = parseFloat(newAmount);
   if (isNaN(amount) || amount < 0) { showToast('Valor inválido'); return; }
   try {
-    await api.request('/goals/goals/' + id, {
+    await api.request('/financial-goals/' + id, {
       method: 'PUT',
       body: JSON.stringify({ current_amount: amount })
     });
@@ -1534,7 +1535,7 @@ async function updateGoalProgress(id) {
 async function deleteGoal(id) {
   if (!confirm('Remover esta meta?')) return;
   try {
-    await api.request('/goals/goals/' + id, { method: 'DELETE' });
+    await api.request('/financial-goals/' + id, { method: 'DELETE' });
     showToast('Meta removida');
     loadGoals();
   } catch (e) {
@@ -1600,7 +1601,7 @@ function openReceiptScanner() {
 
 async function loadGoalsList() {
   try {
-    var response = await api.request('/goals/goals');
+    var response = await api.request('/financial-goals');
     var goals = response.goals || [];
     var container = document.getElementById('goals-list-full');
     if (!container) {

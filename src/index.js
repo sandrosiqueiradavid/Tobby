@@ -1,4 +1,4 @@
-// src/index.js - BACKEND COMPLETO
+// src/index.js - BACKEND COMPLETO E CORRIGIDO
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -91,6 +91,19 @@ app.use('/api/memory', authMiddleware, require('./routes/memory'));
 app.use('/api/mentor', authMiddleware, require('./routes/mentor'));
 app.use('/api/risks', authMiddleware, require('./routes/risks'));
 app.use('/api/executive', authMiddleware, require('./routes/executive'));
+
+// ============================================
+// NOVAS ROTAS ADICIONADAS
+// ============================================
+app.use('/api/financial-score', authMiddleware, require('./routes/financialScore'));
+app.use('/api/score', authMiddleware, require('./routes/financialScore'));  // ✅ ADICIONADO
+app.use('/api/financial-goals', authMiddleware, require('./routes/financialGoals'));
+app.use('/api/emergency-fund', authMiddleware, require('./routes/emergencyFund'));
+app.use('/api/categories', authMiddleware, require('./routes/categories'));
+app.use('/api/ai', authMiddleware, require('./routes/ai'));
+app.use('/api/achievements', authMiddleware, require('./routes/achievements'));
+app.use('/api/timeline', authMiddleware, require('./routes/timeline'));
+app.use('/api/radar', authMiddleware, require('./routes/radar'));
 
 // ============================================
 // ROTA 404
