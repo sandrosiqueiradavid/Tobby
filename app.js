@@ -1478,7 +1478,7 @@ async function editSalary() {
 }
 
 // ============================================
-// METAS FINANCEIRAS (Stubs - complementares)
+// METAS FINANCEIRAS (Stubs - complementares) - CORRIGIDO
 // ============================================
 
 function openGoalModal() {
@@ -1600,7 +1600,7 @@ function openReceiptScanner() {
 }
 
 // ============================================
-// FUNÇÕES DE METAS (complementares)
+// FUNÇÕES DE METAS (complementares) - CORRIGIDO
 // ============================================
 
 async function loadGoalsList() {

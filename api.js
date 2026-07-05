@@ -275,7 +275,7 @@ class TobbyAPI {
   }
 
   // ============================================
-  // EMERGENCY FUND - CORRIGIDO
+  // EMERGENCY FUND
   // ============================================
   async getEmergencyFund() {
     return this.request('/emergency-fund');
@@ -289,7 +289,7 @@ class TobbyAPI {
   }
 
   // ============================================
-  // SCORE - CORRIGIDO
+  // SCORE
   // ============================================
   async getScore() {
     return this.request('/score');
