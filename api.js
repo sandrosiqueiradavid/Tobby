@@ -141,6 +141,7 @@ class TobbyAPI {
     });
   }
 
+  // ✅ CORRIGIDO: /bills/dashboard-summary (com hífen)
   async getDashboard() {
     return this.request('/bills/dashboard-summary');
   }
@@ -252,6 +253,7 @@ class TobbyAPI {
   // GOALS - CORRIGIDO
   // ============================================
   async getGoals() {
+    // ✅ CORRIGIDO: /financial-goals (NÃO /goals/goals)
     return this.request('/financial-goals');
   }
 

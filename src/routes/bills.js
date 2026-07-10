@@ -7,12 +7,16 @@ const authMiddleware = require('../middleware/auth');
 router.use(authMiddleware);
 
 // ============================================
-// ROTAS DE CONTAS - CORRIGIDAS
+// ROTAS DE CONTAS - COMPATIBILIDADE TOTAL
 // ============================================
 
-// CORRIGIDO: dashboard-summary (com hífen, não barra)
+// ✅ ROTA CORRETA (com hífen - recomendada)
 router.get('/dashboard-summary', billsController.getDashboardSummary);
 
+// 🔄 ROTA DE FALLBACK (com barra - para compatibilidade com versões antigas)
+router.get('/dashboard/summary', billsController.getDashboardSummary);
+
+// CRUD de contas
 router.get('/', billsController.getBills);
 router.get('/:id', billsController.getBill);
 router.post('/', billsController.createBill);
