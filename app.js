@@ -1,4 +1,4 @@
-// app.js - TOBBY APP PRINCIPAL V9.0 - CORRIGIDO
+// app.js - TOBBY APP PRINCIPAL V9.0
 // COPILOTO FINANCEIRO PESSOAL
 
 var CATS = {
@@ -288,6 +288,58 @@ function updateUserUI() {
 }
 
 // ============================================
+// TOBY CARD - CORRIGIDO (SEM "Analisando suas finanças...")
+// ============================================
+
+function updateTobyCard() {
+  var avatar = document.getElementById('toby-avatar');
+  var message = document.getElementById('toby-message');
+  var badge = document.getElementById('toby-badge');
+  
+  if (!avatar || !message || !badge) return;
+  
+  // Saudação baseada no horário
+  var hour = new Date().getHours();
+  var greeting = '';
+  var emoji = '';
+  
+  if (hour >= 6 && hour < 12) {
+    greeting = 'Bom dia';
+    emoji = '🌅';
+  } else if (hour >= 12 && hour < 18) {
+    greeting = 'Boa tarde';
+    emoji = '☀️';
+  } else if (hour >= 18 && hour < 24) {
+    greeting = 'Boa noite';
+    emoji = '🌙';
+  } else {
+    greeting = 'Boa madrugada';
+    emoji = '🌃';
+  }
+  
+  // Mensagens amigáveis e motivacionais
+  var messages = [
+    `${greeting}! Como posso ajudar você hoje? ${emoji}`,
+    `${greeting}! Estou aqui para te ajudar com suas finanças! 🐶`,
+    `${greeting}! Vamos organizar suas finanças juntos! 📊`,
+    `${greeting}! Como estão seus gastos hoje? 💰`,
+    `${greeting}! Que tal revisarmos suas metas? 🎯`,
+    `${greeting}! Estou pronto para te ajudar! 🐾`,
+    `${greeting}! Vamos cuidar do seu dinheiro juntos! 💪`
+  ];
+  
+  // Escolher mensagem aleatória
+  var randomMessage = messages[Math.floor(Math.random() * messages.length)];
+  
+  // Atualizar o card
+  avatar.textContent = '🐶';
+  message.textContent = randomMessage;
+  badge.textContent = '🐶';
+  
+  console.log('[TOBY] Card atualizado com mensagem:', randomMessage);
+}
+
+// ============================================
 // ENTRADA NO APP
 // ============================================
 
@@ -297,6 +349,9 @@ async function enterApp() {
   navTo('home');
   loadMorningBriefing();
   setTimeout(registerServiceWorker, 2000);
+  
+  // Atualizar o card do Tobby
+  updateTobyCard();
 }
 
 var TABS = ['home', 'bills', 'investments', 'loans', 'wealth', 'ai', 'profile', 'journal', 'timeline', 'retirement', 'missions'];
@@ -314,6 +369,7 @@ function navTo(tab) {
     loadEmergencyFund();
     loadGoals();
     loadMorningBriefing();
+    updateTobyCard(); // Atualizar o card ao voltar para home
   }
   if (tab === 'bills') loadBills();
   if (tab === 'investments') loadInvestments();
@@ -360,6 +416,9 @@ async function loadHome() {
     document.getElementById('bal-date').textContent = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
     
     loadHomeBills();
+    
+    // Atualizar o card do Tobby após carregar os dados
+    updateTobyCard();
   } catch (e) {
     console.error('Erro ao carregar home:', e);
   }

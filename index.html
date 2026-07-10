@@ -6,147 +6,366 @@
 <meta name="theme-color" content="#10B981">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Tobby">
-<link rel="manifest" href="/Tobby/manifest.json">
-<link rel="apple-touch-icon" href="/Tobby/icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>Tobby 🐶 — Copiloto Financeiro v9.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<link rel="stylesheet" href="/Tobby/styles.css">
+<link rel="stylesheet" href="styles.css">
 <style>
   /* ============================================ */
-  /* ESTILOS COMPLETOS DO APP                    */
+  /* OTIMIZAÇÕES PARA DISPOSITIVOS MÓVEIS        */
   /* ============================================ */
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  :root{--bg-primary:#0A0E1A;--bg-secondary:#111827;--bg-card:#1F2937;--bg-card-hover:#374151;--text-primary:#F9FAFB;--text-secondary:#9CA3AF;--text-muted:#6B7280;--border:#374151;--border-light:#4B5563;--green:#10B981;--green-dark:#059669;--green-light:#34D399;--green-bg:rgba(16,185,129,0.1);--blue:#3B82F6;--blue-bg:rgba(59,130,246,0.1);--amber:#F59E0B;--amber-bg:rgba(245,158,11,0.1);--red:#EF4444;--red-bg:rgba(239,68,68,0.1);--purple:#8B5CF6;--purple-bg:rgba(139,92,246,0.1);--pink:#EC4899;--pink-bg:rgba(236,72,153,0.1);--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 1px 2px rgba(0,0,0,0.05);--shadow-md:0 4px 6px -1px rgba(0,0,0,0.1);--shadow-lg:0 10px 15px -3px rgba(0,0,0,0.1);--transition:all 0.2s cubic-bezier(0.4,0,0.2,1)}
-  body.light-theme{--bg-primary:#F3F4F6;--bg-secondary:#FFFFFF;--bg-card:#FFFFFF;--bg-card-hover:#F9FAFB;--text-primary:#111827;--text-secondary:#4B5563;--text-muted:#9CA3AF;--border:#E5E7EB;--border-light:#D1D5DB}
-  body{font-family:'Inter',sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;overflow-x:hidden;transition:background 0.3s ease,color 0.3s ease}
-  .app-container{max-width:1200px;margin:0 auto;position:relative;min-height:100vh}
-  .content{padding:1.25rem;overflow-y:auto;padding-bottom:80px}
-  @media (min-width:768px){.stats-grid{grid-template-columns:repeat(4,1fr) !important}}
-  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg-secondary);border-top:1px solid var(--border);display:flex;justify-content:center;padding:0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom));z-index:100;backdrop-filter:blur(10px)}
-  .bottom-nav .nav-container{display:flex;gap:0.5rem;max-width:600px;width:100%;margin:0 auto}
-  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0.5rem;border-radius:12px;cursor:pointer;transition:var(--transition);color:var(--text-muted);max-width:80px}
-  .nav-item.active{color:var(--green);background:var(--green-bg)}
-  .nav-item:active{transform:scale(0.95)}
-  .nav-icon{font-size:20px;transition:transform 0.2s ease}
-  .nav-item.active .nav-icon{transform:translateY(-2px)}
-  .nav-label{font-size:10px;font-weight:600}
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn 0.2s ease}
-  .modal{background:var(--bg-secondary);border-radius:24px 24px 0 0;padding:1.5rem;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;animation:slideUp 0.3s ease}
-  @media (min-width:768px){.modal-overlay{align-items:center}.modal{border-radius:24px;margin:1rem}}
-  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg-card);border:1px solid var(--border);border-radius:30px;padding:0.65rem 1.1rem;font-size:13px;z-index:300;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow-lg)}
-  @media (max-width:640px){.toast{white-space:normal;max-width:90vw;text-align:center}}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .hidden{display:none !important}
-  .screen{display:none;min-height:100vh;animation:fadeInUp 0.4s ease}
-  .screen.active{display:block}
-  @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @keyframes pulse{0%,100%{opacity:0.6}50%{opacity:1}}
-  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-  .spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
-  #loading{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;background:var(--bg-primary);z-index:1000}
-  .topbar{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;background:var(--bg-secondary);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
-  .topbar-left{display:flex;align-items:center;gap:10px}
-  .topbar-logo{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:18px}
-  .topbar-name{font-family:'Inter',sans-serif;font-size:20px;font-weight:700;background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .topbar-right{display:flex;align-items:center;gap:12px}
-  .icon-btn{width:36px;height:36px;border-radius:10px;background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);color:var(--text-secondary)}
-  .icon-btn:active{transform:scale(0.95);background:var(--bg-card-hover)}
-  .avatar-btn{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;transition:var(--transition);color:white}
-  .avatar-btn:active{transform:scale(0.95)}
-  .balance-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border-radius:var(--radius-xl);padding:1.5rem;margin-bottom:1rem;border:1px solid var(--border);position:relative;overflow:hidden;transition:var(--transition)}
-  .balance-card::before{content:'';position:absolute;top:-50px;right:-50px;width:150px;height:150px;border-radius:50%;background:var(--green-bg);opacity:0.3}
-  .balance-label{font-size:11px;color:var(--text-secondary);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:600}
-  .balance-value{font-size:40px;font-weight:800;margin-bottom:1rem;line-height:1;background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .balance-date{font-size:12px;color:var(--text-muted);margin-bottom:0.5rem}
-  .balance-details{display:flex;gap:1.5rem;flex-wrap:wrap}
-  .balance-detail{flex:1;min-width:80px}
-  .balance-detail-label{font-size:10px;color:var(--text-secondary);margin-bottom:2px}
-  .balance-detail-value{font-size:14px;font-weight:700}
-  .balance-detail-value.positive{color:var(--green)}
-  .balance-detail-value.negative{color:var(--red)}
-  .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0.75rem;margin-bottom:1.5rem}
-  .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;transition:var(--transition)}
-  .stat-card:active{transform:scale(0.98)}
-  .stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:18px}
-  .stat-label{font-size:10px;color:var(--text-secondary);margin-bottom:2px}
-  .stat-value{font-size:20px;font-weight:800}
-  .stat-sub{font-size:10px;color:var(--text-muted);margin-top:4px}
-  .section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:0.75rem}
-  .section-header h3{font-size:14px;font-weight:700}
-  .section-header a{font-size:11px;color:var(--green);cursor:pointer;font-weight:600}
-  .transaction-item{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0.875rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.75rem;transition:var(--transition)}
-  .transaction-item:active{transform:scale(0.99);background:var(--bg-card-hover)}
-  .transaction-item.paid{opacity:0.7;border-left:3px solid var(--green)}
-  .transaction-item.late{border-left:3px solid var(--red)}
-  .transaction-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-  .transaction-info{flex:1}
-  .transaction-name{font-size:14px;font-weight:600;margin-bottom:2px}
-  .transaction-meta{font-size:10px;color:var(--text-secondary)}
-  .transaction-amount{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-  .transaction-value{font-size:14px;font-weight:700}
-  .transaction-actions{display:flex;gap:4px}
-  .chip{padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;cursor:pointer;transition:var(--transition);background:var(--bg-card-hover);border:1px solid var(--border);color:var(--text-secondary)}
-  .chip:active{transform:scale(0.95)}
-  .chip.active{background:var(--green-bg);color:var(--green);border-color:var(--green)}
-  .btn-primary{width:100%;padding:14px;background:linear-gradient(135deg,var(--green),var(--green-dark));border:none;border-radius:var(--radius-md);color:white;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;transition:var(--transition)}
-  .btn-primary:active{transform:scale(0.98)}
-  .btn-secondary{width:100%;padding:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text-primary);font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:var(--transition)}
-  .btn-secondary:active{transform:scale(0.98)}
-  .btn-danger{width:100%;padding:14px;background:var(--red-bg);border:1px solid var(--border);border-radius:var(--radius-md);color:var(--red);font-weight:700;cursor:pointer;transition:var(--transition)}
-  .btn-danger:active{transform:scale(0.98)}
-  .field{margin-bottom:1rem}
-  .field label{display:block;font-size:11px;color:var(--text-secondary);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
-  .field input,.field select,textarea{width:100%;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;color:var(--text-primary);font-family:inherit;font-size:14px;transition:var(--transition)}
-  .field input:focus,.field select:focus,textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-bg)}
-  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem}
-  .error-msg{font-size:12px;color:var(--red);padding:8px;background:var(--red-bg);border-radius:8px;margin-bottom:1rem}
-  .auth-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:2rem;width:100%;max-width:450px;margin:0 auto;box-shadow:var(--shadow-lg)}
-  .auth-logo{text-align:center;margin-bottom:2rem}
-  .logo-mark{width:72px;height:72px;border-radius:24px;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 1rem;animation:bounce 2s ease infinite}
-  .logo-title{font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .auth-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}
-  .chat-msgs{display:flex;flex-direction:column;gap:0.75rem;margin-bottom:0.85rem;max-height:400px;overflow-y:auto}
-  .msg{max-width:86%;padding:0.8rem 0.95rem;border-radius:18px;font-size:13px;line-height:1.5;animation:fadeInUp 0.3s ease}
-  .msg-ai{background:var(--bg-card);border:1px solid var(--border);align-self:flex-start;border-radius:4px 18px 18px 18px}
-  .msg-ai-label{color:var(--green);display:block;margin-bottom:4px;font-size:11px;font-weight:700}
-  .msg-user{background:var(--green-bg);border:1px solid var(--border);align-self:flex-end;border-radius:18px 18px 4px 18px}
-  .msg-user-label{color:var(--text-secondary);display:block;margin-bottom:4px;font-size:10px;font-weight:600}
-  .chat-bar{display:flex;gap:0.6rem;background:var(--bg-card);border:1px solid var(--border);border-radius:30px;padding:0.5rem 0.75rem}
-  .chat-input{flex:1;background:transparent;border:none;outline:none;font-family:inherit;font-size:13px;color:var(--text-primary)}
-  .chat-input::placeholder{color:var(--text-muted)}
-  .chat-send{background:var(--green);border:none;border-radius:30px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);color:white}
-  .chat-send:active{transform:scale(0.95)}
-  .typing-ind{font-size:12px;color:var(--text-secondary);padding:0.4rem 0;font-style:italic;display:none}
-  .score-card{background:linear-gradient(135deg,var(--purple),var(--pink));border-radius:var(--radius-xl);padding:1.25rem;margin-bottom:1rem;color:white}
-  .score-card .stat-label{color:rgba(255,255,255,0.8)}
-  .briefing-card{background:linear-gradient(135deg,var(--purple),var(--blue));border-radius:var(--radius-xl);padding:1rem;margin-bottom:1rem;color:white}
-  .briefing-card .briefing-text{font-size:13px;line-height:1.5}
-  .briefing-card .briefing-label{font-size:10px;opacity:0.7}
-  .toby-card{background:linear-gradient(135deg,var(--bg-card),var(--bg-secondary));border-radius:var(--radius-xl);padding:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px;border:1px solid var(--border)}
-  .toby-avatar{font-size:48px;background:var(--bg-primary);border-radius:50%;width:60px;height:60px;display:flex;align-items:center;justify-content:center}
-  .toby-message{flex:1}
-  .toby-message p{font-size:13px;font-weight:500;margin-bottom:4px}
-  .toby-message small{font-size:10px;color:var(--text-secondary)}
-  .toby-badge{background:var(--green-bg);padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;color:var(--green)}
-  .filter-chip{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;transition:var(--transition);background:var(--bg-card);border:1px solid var(--border);color:var(--text-secondary)}
-  .filter-chip.active{background:var(--green-bg);color:var(--green);border-color:var(--green)}
-  .filters{display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap}
-  .modal-handle{width:40px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 1rem}
-  ::-webkit-scrollbar{width:6px;height:6px}
-  ::-webkit-scrollbar-track{background:var(--border);border-radius:4px}
-  ::-webkit-scrollbar-thumb{background:var(--green);border-radius:4px}
-  .insight-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:0.7rem}
-  .insight-head{display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:0.5rem}
-  .insight-emoji{font-size:20px;flex-shrink:0}
-  .insight-title{font-size:13px;font-weight:700}
-  .insight-body{font-size:12px;color:var(--text-secondary);line-height:1.5}
-  .insight-action{font-size:12px;color:var(--green);font-weight:600;margin-top:0.4rem;cursor:pointer;display:inline-block}
-  .prof-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:white;margin:0 auto 0.75rem}
+
+  /* Ajustes gerais para telas pequenas */
+  @media (max-width: 480px) {
+    .topbar {
+      padding: 0.6rem 0.8rem;
+    }
+    .topbar-logo {
+      width: 32px;
+      height: 32px;
+      font-size: 16px;
+    }
+    .topbar-name {
+      font-size: 16px;
+    }
+    .avatar-btn {
+      width: 30px;
+      height: 30px;
+      font-size: 10px;
+    }
+    .balance-card {
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .balance-value {
+      font-size: 28px;
+    }
+    .balance-details {
+      gap: 0.5rem;
+    }
+    .balance-detail-value {
+      font-size: 12px;
+    }
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    .stat-card {
+      padding: 0.75rem;
+    }
+    .stat-value {
+      font-size: 18px;
+    }
+    .score-card {
+      padding: 0.75rem;
+    }
+    .score-card > div > div > div:first-child {
+      font-size: 24px;
+    }
+    .score-emoji {
+      font-size: 36px !important;
+    }
+    .transaction-item {
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.35rem;
+      gap: 0.5rem;
+    }
+    .transaction-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+    }
+    .transaction-name {
+      font-size: 12px;
+    }
+    .transaction-meta {
+      font-size: 9px;
+    }
+    .transaction-value {
+      font-size: 12px;
+    }
+    .transaction-actions {
+      gap: 4px;
+    }
+    .transaction-action {
+      font-size: 14px;
+      padding: 2px;
+    }
+    .filters {
+      gap: 0.3rem;
+    }
+    .filter-chip {
+      padding: 4px 10px;
+      font-size: 10px;
+    }
+    .btn-primary, .btn-secondary, .btn-danger {
+      padding: 12px;
+      font-size: 13px;
+    }
+    .modal {
+      padding: 1rem;
+      border-radius: 16px 16px 0 0;
+    }
+    .modal h3 {
+      font-size: 16px;
+    }
+    .field input, .field select {
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    .toby-card {
+      padding: 0.75rem;
+      gap: 0.75rem;
+    }
+    .toby-avatar {
+      width: 48px;
+      height: 48px;
+      font-size: 36px;
+    }
+    .toby-message p {
+      font-size: 12px;
+    }
+    .toby-message small {
+      font-size: 9px;
+    }
+    .bottom-nav {
+      padding: 0.3rem 0.5rem calc(0.3rem + env(safe-area-inset-bottom));
+    }
+    .nav-item {
+      padding: 0.3rem;
+      max-width: 55px;
+    }
+    .nav-icon {
+      font-size: 16px;
+    }
+    .nav-label {
+      font-size: 7px;
+    }
+    .donut {
+      width: 80px;
+      height: 80px;
+    }
+    .chart-container {
+      gap: 0.5rem;
+    }
+    .indicators {
+      gap: 0.5rem;
+    }
+    .indicator-card {
+      padding: 0.5rem;
+    }
+    .indicator-value {
+      font-size: 14px;
+    }
+    .msg {
+      max-width: 90%;
+      padding: 0.6rem 0.8rem;
+      font-size: 12px;
+    }
+    .chat-bar {
+      padding: 0.3rem 0.5rem;
+    }
+    .chat-input {
+      font-size: 12px;
+    }
+    .chat-send {
+      width: 28px;
+      height: 28px;
+      font-size: 12px;
+    }
+    .category-badge {
+      padding: 2px 8px;
+      font-size: 10px;
+    }
+    .auth-card {
+      padding: 1.5rem;
+    }
+    .auth-logo .logo-mark {
+      width: 48px;
+      height: 48px;
+      font-size: 24px;
+    }
+    .auth-logo .logo-title {
+      font-size: 22px;
+    }
+    .toast {
+      bottom: 70px;
+      padding: 0.5rem 1rem;
+      font-size: 11px;
+      max-width: 90vw;
+      white-space: normal;
+    }
+    .modal-handle {
+      width: 30px;
+      height: 3px;
+    }
+    #emergency-amount {
+      font-size: 20px !important;
+    }
+    .briefing-card {
+      padding: 0.6rem !important;
+    }
+    .briefing-card .briefing-text {
+      font-size: 11px !important;
+    }
+    .briefing-card .briefing-emoji {
+      font-size: 28px !important;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .balance-value {
+      font-size: 22px;
+    }
+    .stat-value {
+      font-size: 16px;
+    }
+    .transaction-item {
+      padding: 0.5rem;
+    }
+    .transaction-icon {
+      width: 30px;
+      height: 30px;
+      font-size: 14px;
+    }
+    .transaction-name {
+      font-size: 11px;
+    }
+    .nav-item {
+      max-width: 45px;
+    }
+    .nav-icon {
+      font-size: 14px;
+    }
+    .nav-label {
+      font-size: 6px;
+    }
+    .topbar-name {
+      font-size: 14px;
+    }
+    .score-card > div > div > div:first-child {
+      font-size: 20px;
+    }
+  }
+
+  @media (min-width: 481px) and (max-width: 768px) {
+    .balance-value {
+      font-size: 32px;
+    }
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .transaction-item {
+      padding: 0.75rem 1rem;
+    }
+    .bottom-nav .nav-item {
+      max-width: 70px;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .btn-primary, .btn-secondary, .btn-danger {
+      min-height: 48px;
+    }
+    .nav-item {
+      min-height: 44px;
+    }
+    .transaction-action {
+      min-width: 30px;
+      min-height: 30px;
+    }
+    input, select, textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+
+  .content {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Briefing matinal */
+  .briefing-card {
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    border-radius: var(--radius-xl);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: white;
+    border: none;
+  }
+  .briefing-card .briefing-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .briefing-card .briefing-emoji {
+    font-size: 36px;
+  }
+  .briefing-card .briefing-text {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .briefing-card .briefing-label {
+    font-size: 10px;
+    opacity: 0.7;
+  }
+
+  /* Toby Card - versão corrigida */
+  .toby-card {
+    background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+    border-radius: var(--radius-xl);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border);
+    animation: glow 3s ease infinite;
+  }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px var(--green-bg); }
+    50% { box-shadow: 0 0 15px var(--green-bg); }
+  }
+  .toby-avatar {
+    font-size: 48px;
+    background: var(--bg-primary);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+  .toby-avatar:hover {
+    transform: scale(1.05);
+  }
+  .toby-message {
+    flex: 1;
+  }
+  .toby-message p {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .toby-badge {
+    background: var(--green-bg);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--green);
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -154,9 +373,9 @@
 <div class="app-container">
   <!-- LOADING -->
   <div id="loading" class="screen active">
-    <div style="text-align:center">
-      <div class="spinner" style="margin:0 auto"></div>
-      <div style="margin-top:1rem;font-size:13px;color:var(--text-secondary)">Carregando Tobby...</div>
+    <div style="text-align: center">
+      <div class="spinner" style="margin: 0 auto"></div>
+      <div style="margin-top: 1rem; font-size: 13px; color: var(--text-secondary)">Carregando Tobby...</div>
     </div>
   </div>
 
@@ -167,7 +386,7 @@
         <div class="auth-logo">
           <div class="logo-mark">🐶</div>
           <div class="logo-title">Tobby</div>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Organizador Financeiro Completo</div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px">Organizador Financeiro Completo</div>
         </div>
         
         <div id="login-card">
@@ -245,9 +464,10 @@
 
     <!-- HOME -->
     <div id="tab-home" class="content">
+      <!-- Briefing Matinal -->
       <div class="briefing-card" id="morning-briefing">
-        <div class="briefing-header" style="display:flex;align-items:center;gap:12px">
-          <div style="font-size:36px">🐶</div>
+        <div class="briefing-header">
+          <div class="briefing-emoji">🐶</div>
           <div>
             <div class="briefing-label">BOM DIA!</div>
             <div class="briefing-text" id="briefing-text">Carregando briefing matinal...</div>
@@ -255,50 +475,54 @@
         </div>
       </div>
 
+      <!-- TOBY CARD - SEM "Analisando suas finanças..." -->
       <div class="toby-card">
         <div class="toby-avatar" id="toby-avatar">🐶</div>
         <div class="toby-message">
           <p id="toby-message">Carregando...</p>
-          <small id="toby-small">Analisando suas finanças...</small>
+          <!-- REMOVIDO: <small id="toby-small">Analisando suas finanças...</small> -->
         </div>
         <div class="toby-badge" id="toby-badge">🐶</div>
       </div>
 
+      <!-- SCORE FINANCEIRO -->
       <div class="score-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <div class="stat-label">SEU SCORE TOBBY</div>
-            <div style="font-size:28px;font-weight:800;" id="score-value">--</div>
-            <div style="font-size:11px;" id="score-label">Carregando...</div>
+            <div style="font-size: 11px; opacity: 0.8;">SEU SCORE TOBBY</div>
+            <div style="font-size: 28px; font-weight: 800;" id="score-value">--</div>
+            <div style="font-size: 11px;" id="score-label">Carregando...</div>
           </div>
-          <div style="font-size:48px;" id="score-emoji">🐶</div>
+          <div style="font-size: 48px;" id="score-emoji">🐶</div>
         </div>
-        <div style="margin-top:8px;height:6px;background:rgba(255,255,255,0.2);border-radius:3px;overflow:hidden;">
-          <div id="score-bar" style="width:0%;height:100%;background:white;border-radius:3px;transition:width 0.5s;"></div>
+        <div style="margin-top: 8px; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden;">
+          <div id="score-bar" style="width: 0%; height: 100%; background: white; border-radius: 3px; transition: width 0.5s;"></div>
         </div>
       </div>
 
-      <div class="balance-card">
+      <!-- RESERVA DE EMERGÊNCIA -->
+      <div class="balance-card" style="margin-bottom: 1rem;">
         <div class="balance-label">🏦 RESERVA DE EMERGÊNCIA</div>
-        <div style="display:flex;justify-content:space-between;align-items:baseline;">
-          <div class="balance-value" id="emergency-amount" style="font-size:24px;">R$ 0</div>
-          <div style="font-size:12px;" id="emergency-months">0 meses</div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <div class="balance-value" id="emergency-amount" style="font-size: 24px;">R$ 0</div>
+          <div style="font-size: 12px;" id="emergency-months">0 meses</div>
         </div>
-        <div style="margin-top:8px;height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
-          <div id="emergency-progress" style="width:0%;height:100%;background:var(--green);border-radius:3px;"></div>
+        <div style="margin-top: 8px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+          <div id="emergency-progress" style="width: 0%; height: 100%; background: var(--green); border-radius: 3px;"></div>
         </div>
-        <div style="display:flex;justify-content:space-between;margin-top:8px;">
-          <div style="font-size:10px;color:var(--text-muted);">Meta: 6 meses</div>
-          <div style="font-size:10px;color:var(--text-muted);" id="emergency-recommended">Recomendado: R$ 0</div>
+        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+          <div style="font-size: 10px; color: var(--text-muted);">Meta: 6 meses</div>
+          <div style="font-size: 10px; color: var(--text-muted);" id="emergency-recommended">Recomendado: R$ 0</div>
         </div>
       </div>
 
+      <!-- METAS FINANCEIRAS -->
       <div class="section-header">
         <h3><i class="fas fa-flag-checkered"></i> Minhas Metas</h3>
         <a onclick="openGoalModal()">+ Nova meta</a>
       </div>
-      <div id="goals-list" style="margin-bottom:1rem;">
-        <div style="text-align:center;padding:1rem;color:var(--text-secondary);">Carregando metas...</div>
+      <div id="goals-list" style="margin-bottom: 1rem;">
+        <div style="text-align: center; padding: 1rem; color: var(--text-secondary);">Carregando metas...</div>
       </div>
 
       <div class="balance-card">
@@ -323,24 +547,24 @@
 
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon" style="background:var(--green-bg)"><i class="fas fa-check-circle" style="color:var(--green)"></i></div>
+          <div class="stat-icon" style="background: rgba(16,185,129,0.1)"><i class="fas fa-check-circle" style="color: var(--green)"></i></div>
           <div class="stat-label">Pagas</div>
-          <div class="stat-value" id="stat-paid" style="color:var(--green)">0</div>
+          <div class="stat-value" id="stat-paid" style="color: var(--green)">0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon" style="background:var(--amber-bg)"><i class="fas fa-clock" style="color:var(--amber)"></i></div>
+          <div class="stat-icon" style="background: rgba(245,158,11,0.1)"><i class="fas fa-clock" style="color: var(--orange)"></i></div>
           <div class="stat-label">Pendentes</div>
-          <div class="stat-value" id="stat-pend" style="color:var(--amber)">0</div>
+          <div class="stat-value" id="stat-pend" style="color: var(--orange)">0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon" style="background:var(--red-bg)"><i class="fas fa-exclamation-triangle" style="color:var(--red)"></i></div>
+          <div class="stat-icon" style="background: rgba(239,68,68,0.1)"><i class="fas fa-exclamation-triangle" style="color: var(--red)"></i></div>
           <div class="stat-label">Atrasadas</div>
-          <div class="stat-value" id="stat-late" style="color:var(--red)">0</div>
+          <div class="stat-value" id="stat-late" style="color: var(--red)">0</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon" style="background:var(--blue-bg)"><i class="fas fa-receipt" style="color:var(--blue)"></i></div>
+          <div class="stat-icon" style="background: rgba(59,130,246,0.1)"><i class="fas fa-receipt" style="color: var(--blue)"></i></div>
           <div class="stat-label">Total</div>
-          <div class="stat-value" id="stat-total" style="color:var(--blue)">0</div>
+          <div class="stat-value" id="stat-total" style="color: var(--blue)">0</div>
         </div>
       </div>
 
@@ -352,7 +576,7 @@
     </div>
 
     <!-- BILLS -->
-    <div id="tab-bills" class="content" style="display:none">
+    <div id="tab-bills" class="content" style="display: none">
       <div class="section-header"><h3>Transações</h3></div>
       <div class="filters" id="bills-filters">
         <button class="filter-chip active" onclick="window.filterBills(this,'all')">Todas</button>
@@ -361,65 +585,65 @@
         <button class="filter-chip" onclick="window.filterBills(this,'late')">Atrasadas</button>
       </div>
       <div id="bills-list-main"></div>
-      <button class="btn-primary" style="margin-top:0.75rem" onclick="window.openBillModal()"><i class="fas fa-plus"></i> Adicionar conta</button>
+      <button class="btn-primary" style="margin-top: 0.75rem" onclick="window.openBillModal()"><i class="fas fa-plus"></i> Adicionar conta</button>
     </div>
 
     <!-- INVESTMENTS -->
-    <div id="tab-investments" class="content" style="display:none">
+    <div id="tab-investments" class="content" style="display: none">
       <div class="section-header"><h3>Investimentos</h3></div>
-      <div class="stats-grid" style="margin-bottom:1rem">
+      <div class="stats-grid" style="margin-bottom: 1rem">
         <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total Investido</div><div class="stat-value" id="total-invested">R$ 0</div></div>
         <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-label">Valor Atual</div><div class="stat-value" id="current-value">R$ 0</div></div>
       </div>
-      <button class="btn-primary" onclick="window.showAddInvestmentModal()" style="margin-bottom:1rem"><i class="fas fa-plus"></i> Adicionar Investimento</button>
+      <button class="btn-primary" onclick="window.showAddInvestmentModal()" style="margin-bottom: 1rem"><i class="fas fa-plus"></i> Adicionar Investimento</button>
       <div id="investments-list-container"></div>
     </div>
 
     <!-- LOANS -->
-    <div id="tab-loans" class="content" style="display:none">
+    <div id="tab-loans" class="content" style="display: none">
       <div class="section-header"><h3>Financiamentos</h3></div>
-      <div class="stats-grid" style="margin-bottom:1rem">
+      <div class="stats-grid" style="margin-bottom: 1rem">
         <div class="stat-card"><div class="stat-icon">💸</div><div class="stat-label">Total de Dívidas</div><div class="stat-value" id="total-debt">R$ 0</div></div>
         <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Prestação Mensal</div><div class="stat-value" id="total-monthly">R$ 0</div></div>
       </div>
-      <button class="btn-primary" onclick="window.showAddLoanModal()" style="margin-bottom:1rem"><i class="fas fa-plus"></i> Adicionar Financiamento</button>
+      <button class="btn-primary" onclick="window.showAddLoanModal()" style="margin-bottom: 1rem"><i class="fas fa-plus"></i> Adicionar Financiamento</button>
       <div id="loans-list-container"></div>
     </div>
 
     <!-- WEALTH -->
-    <div id="tab-wealth" class="content" style="display:none">
-      <div class="balance-card" style="text-align:center">
+    <div id="tab-wealth" class="content" style="display: none">
+      <div class="balance-card" style="text-align: center">
         <div class="balance-label">PATRIMÔNIO LÍQUIDO</div>
-        <div class="balance-value" id="net-worth" style="font-size:32px">R$ 0</div>
+        <div class="balance-value" id="net-worth" style="font-size: 32px">R$ 0</div>
         <div class="balance-details">
           <div class="balance-detail"><div class="balance-detail-label">Ativos</div><div class="balance-detail-value positive" id="total-assets">R$ 0</div></div>
           <div class="balance-detail"><div class="balance-detail-label">Passivos</div><div class="balance-detail-value negative" id="total-liabilities">R$ 0</div></div>
         </div>
       </div>
       <div class="section-header"><h3>Seus Bens</h3></div>
-      <button class="btn-primary" onclick="window.showAddAssetModal()" style="margin-bottom:0.5rem"><i class="fas fa-plus"></i> Adicionar Bem</button>
+      <button class="btn-primary" onclick="window.showAddAssetModal()" style="margin-bottom: 0.5rem"><i class="fas fa-plus"></i> Adicionar Bem</button>
       <div id="assets-list-container"></div>
     </div>
 
     <!-- AI -->
-    <div id="tab-ai" class="content" style="display:none">
-      <div style="text-align:center;margin-bottom:1rem">
-        <div style="width:60px;height:60px;margin:0 auto 0.5rem;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;font-size:28px">🤖</div>
-        <div style="font-size:18px;font-weight:700">Assistente Tobby IA</div>
-        <div style="font-size:12px;color:var(--text-secondary)">Análise inteligente das suas finanças</div>
+    <div id="tab-ai" class="content" style="display: none">
+      <div style="text-align: center; margin-bottom: 1rem">
+        <div style="width: 60px; height: 60px; margin: 0 auto 0.5rem; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); display: flex; align-items: center; justify-content: center; font-size: 28px">🤖</div>
+        <div style="font-size: 18px; font-weight: 700">Assistente Tobby IA</div>
+        <div style="font-size: 12px; color: var(--text-secondary)">Análise inteligente das suas finanças</div>
       </div>
       <div class="section-header"><h3>Insights</h3></div>
       <div id="insights-list"></div>
-      <div class="section-header" style="margin-top:1rem">
+      <div class="section-header" style="margin-top: 1rem">
         <h3>Conversar</h3>
-        <button onclick="window.clearChat()" style="background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;">
+        <button onclick="window.clearChat()" style="background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer;">
           <i class="fas fa-trash-alt"></i> Limpar
         </button>
       </div>
       <div class="chat-msgs" id="chat-msgs">
         <div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Como posso te ajudar?</div>
       </div>
-      <div class="typing-ind" id="typing-ind" style="display:none;font-size:12px;color:var(--text-secondary);padding:0.4rem 0">Tobby está digitando...</div>
+      <div class="typing-ind" id="typing-ind" style="display: none; font-size: 12px; color: var(--text-secondary); padding: 0.4rem 0">Tobby está digitando...</div>
       <div class="chat-bar">
         <input class="chat-input" id="chat-input" placeholder="Pergunte sobre suas finanças..." onkeydown="if(event.key==='Enter')window.sendMsg()">
         <button class="chat-send" onclick="window.sendMsg()"><i class="fas fa-paper-plane"></i></button>
@@ -427,55 +651,101 @@
     </div>
 
     <!-- PROFILE -->
-    <div id="tab-profile" class="content" style="display:none">
-      <div style="text-align:center;margin-bottom:1.5rem">
+    <div id="tab-profile" class="content" style="display: none">
+      <div style="text-align: center; margin-bottom: 1.5rem">
         <div class="prof-avatar" id="prof-av">--</div>
-        <div style="font-size:18px;font-weight:700" id="prof-name">--</div>
-        <div style="font-size:12px;color:var(--text-secondary)" id="prof-email">--</div>
+        <div style="font-size: 18px; font-weight: 700" id="prof-name">--</div>
+        <div style="font-size: 12px; color: var(--text-secondary)" id="prof-email">--</div>
       </div>
-      <div class="balance-card" style="padding:1rem">
+      <div class="balance-card" style="padding: 1rem">
         <div class="balance-label">SALÁRIO MENSAL</div>
-        <div class="balance-value" style="font-size:24px" id="prof-salary">R$ 0,00</div>
-        <div style="text-align:right;margin-top:0.5rem">
-          <span style="font-size:12px;color:var(--green);cursor:pointer" onclick="window.editSalary()">✏️ Editar</span>
+        <div class="balance-value" style="font-size: 24px" id="prof-salary">R$ 0,00</div>
+        <div style="text-align: right; margin-top: 0.5rem">
+          <span style="font-size: 12px; color: var(--green); cursor: pointer" onclick="window.editSalary()">✏️ Editar</span>
         </div>
       </div>
 
-      <div class="section-header" style="margin-top:1rem;">
+      <div class="section-header" style="margin-top: 1rem;">
         <h3><i class="fas fa-tags"></i> Minhas Categorias</h3>
         <a onclick="openCategoryModal()">+ Nova categoria</a>
       </div>
-      <div id="categories-list" style="margin-bottom:1rem;">
-        <div style="text-align:center;padding:1rem;color:var(--text-secondary);">Carregando categorias...</div>
+      <div id="categories-list" style="margin-bottom: 1rem;">
+        <div style="text-align: center; padding: 1rem; color: var(--text-secondary);">Carregando categorias...</div>
       </div>
 
       <div class="section-header"><h3>Ferramentas</h3></div>
-      <div style="display:flex;flex-direction:column;gap:0.5rem">
-        <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="window.openReceiptScanner()">
-          <div class="stat-icon" style="background:var(--green-bg)">📸</div>
-          <div style="flex:1"><div class="stat-label">Ler Nota Fiscal</div><div class="stat-sub">Tire uma foto da nota</div></div>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem">
+        <div class="stat-card" style="display: flex; align-items: center; gap: 1rem; cursor: pointer" onclick="window.openReceiptScanner()">
+          <div class="stat-icon" style="background: rgba(16,185,129,0.1)">📸</div>
+          <div style="flex: 1"><div class="stat-label">Ler Nota Fiscal</div><div class="stat-sub">Tire uma foto da nota</div></div>
           <i class="fas fa-chevron-right"></i>
         </div>
-        <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="window.showHollerithModal()">
-          <div class="stat-icon" style="background:var(--purple-bg)">📄</div>
-          <div style="flex:1"><div class="stat-label">Ler Holerite</div><div class="stat-sub">Cole o texto do holerite</div></div>
+        <div class="stat-card" style="display: flex; align-items: center; gap: 1rem; cursor: pointer" onclick="window.showHollerithModal()">
+          <div class="stat-icon" style="background: rgba(139,92,246,0.1)">📄</div>
+          <div style="flex: 1"><div class="stat-label">Ler Holerite</div><div class="stat-sub">Cole o texto do holerite</div></div>
           <i class="fas fa-chevron-right"></i>
         </div>
-        <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="window.showBankExtractModal()">
-          <div class="stat-icon" style="background:var(--blue-bg)">🏦</div>
-          <div style="flex:1"><div class="stat-label">Importar Extrato</div><div class="stat-sub">CSV, OFX ou texto</div></div>
+        <div class="stat-card" style="display: flex; align-items: center; gap: 1rem; cursor: pointer" onclick="window.showBankExtractModal()">
+          <div class="stat-icon" style="background: rgba(59,130,246,0.1)">🏦</div>
+          <div style="flex: 1"><div class="stat-label">Importar Extrato</div><div class="stat-sub">CSV, OFX ou texto</div></div>
           <i class="fas fa-chevron-right"></i>
         </div>
-        <div class="stat-card" style="display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="window.showIncomeReport()">
-          <div class="stat-icon" style="background:var(--green-bg)">📊</div>
-          <div style="flex:1"><div class="stat-label">Informe de Rendimentos</div><div class="stat-sub">Anual para IR</div></div>
+        <div class="stat-card" style="display: flex; align-items: center; gap: 1rem; cursor: pointer" onclick="window.showIncomeReport()">
+          <div class="stat-icon" style="background: rgba(16,185,129,0.1)">📊</div>
+          <div style="flex: 1"><div class="stat-label">Informe de Rendimentos</div><div class="stat-sub">Anual para IR</div></div>
           <i class="fas fa-chevron-right"></i>
         </div>
       </div>
-      <button class="btn-danger" onclick="window.doLogout()" style="margin-top:1rem">Sair da conta</button>
+      <button class="btn-danger" onclick="window.doLogout()" style="margin-top: 1rem">Sair da conta</button>
     </div>
 
-    <!-- BOTTOM NAVIGATION -->
+    <!-- ===== NOVAS TELAS V8.0 ===== -->
+    
+    <!-- DIÁRIO FINANCEIRO -->
+    <div id="tab-journal" class="content" style="display: none">
+      <div class="section-header">
+        <h3>📝 Diário Financeiro</h3>
+        <a onclick="openJournalModal()">+ Novo registro</a>
+      </div>
+      <div id="journal-list" style="margin-bottom: 1rem;">
+        <div style="text-align: center; padding: 1rem; color: var(--text-secondary);">Carregando registros...</div>
+      </div>
+    </div>
+
+    <!-- LINHA DO TEMPO DA VIDA -->
+    <div id="tab-timeline" class="content" style="display: none">
+      <div class="section-header">
+        <h3>📅 Minha História</h3>
+        <a onclick="openLifeEventModal()">+ Novo evento</a>
+      </div>
+      <div id="timeline-list" style="margin-bottom: 1rem;">
+        <div style="text-align: center; padding: 1rem; color: var(--text-secondary);">Carregando eventos...</div>
+      </div>
+    </div>
+
+    <!-- APOSENTADORIA -->
+    <div id="tab-retirement" class="content" style="display: none">
+      <div class="section-header">
+        <h3>🏖️ Aposentadoria</h3>
+        <a onclick="openRetirementModal()">✏️ Editar</a>
+      </div>
+      <div id="retirement-container" style="margin-bottom: 1rem;">
+        <div style="text-align: center; padding: 1rem; color: var(--text-secondary);">Carregando plano...</div>
+      </div>
+    </div>
+
+    <!-- MISSÕES -->
+    <div id="tab-missions" class="content" style="display: none">
+      <div class="section-header">
+        <h3>🎯 Missões da Semana</h3>
+        <a onclick="generateMissions()">🔄 Gerar com IA</a>
+      </div>
+      <div id="missions-list" style="margin-bottom: 1rem;">
+        <div style="text-align: center; padding: 1rem; color: var(--text-secondary);">Carregando missões...</div>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION V8.0 -->
     <nav class="bottom-nav">
       <div class="nav-container">
         <div class="nav-item active" id="nav-home" onclick="window.navTo('home')">
@@ -502,6 +772,22 @@
           <div class="nav-icon"><i class="fas fa-robot"></i></div>
           <div class="nav-label">IA</div>
         </div>
+        <div class="nav-item" id="nav-journal" onclick="window.navTo('journal')">
+          <div class="nav-icon"><i class="fas fa-book"></i></div>
+          <div class="nav-label">Diário</div>
+        </div>
+        <div class="nav-item" id="nav-timeline" onclick="window.navTo('timeline')">
+          <div class="nav-icon"><i class="fas fa-timeline"></i></div>
+          <div class="nav-label">Vida</div>
+        </div>
+        <div class="nav-item" id="nav-retirement" onclick="window.navTo('retirement')">
+          <div class="nav-icon"><i class="fas fa-umbrella-beach"></i></div>
+          <div class="nav-label">Aposentar</div>
+        </div>
+        <div class="nav-item" id="nav-missions" onclick="window.navTo('missions')">
+          <div class="nav-icon"><i class="fas fa-tasks"></i></div>
+          <div class="nav-label">Missões</div>
+        </div>
         <div class="nav-item" id="nav-profile" onclick="window.navTo('profile')">
           <div class="nav-icon"><i class="fas fa-user"></i></div>
           <div class="nav-label">Perfil</div>
@@ -512,7 +798,7 @@
 </div>
 
 <!-- MODAL -->
-<div id="modal" style="display:none">
+<div id="modal" style="display: none">
   <div class="modal-overlay" onclick="if(event.target===this)window.closeModal()">
     <div class="modal">
       <div class="modal-handle"></div>
@@ -527,9 +813,9 @@
         <div class="field"><label>Status</label><select id="f-status"><option value="pending">Pendente</option><option value="paid">Pago</option><option value="late">Atrasado</option></select></div>
       </div>
       <input type="hidden" id="f-id">
-      <div style="display:flex;gap:0.5rem;margin-top:1rem">
-        <button class="btn-primary" style="flex:1" onclick="window.saveBill()">Salvar conta</button>
-        <button class="btn-secondary" style="flex:1" onclick="window.closeModal()">Cancelar</button>
+      <div style="display: flex; gap: 0.5rem; margin-top: 1rem">
+        <button class="btn-primary" style="flex: 1" onclick="window.saveBill()">Salvar conta</button>
+        <button class="btn-secondary" style="flex: 1" onclick="window.closeModal()">Cancelar</button>
       </div>
     </div>
   </div>
@@ -538,135 +824,173 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- ========================================== -->
-<!-- SCRIPTS                                    -->
-<!-- ========================================== -->
-<script src="/Tobby/api.js"></script>
-<script src="/Tobby/app.js"></script>
+<script src="api.js"></script>
+<script src="app.js"></script>
 
-<!-- ========================================== -->
-<!-- FUNÇÕES CORRIGIDAS (SOBRESCREVEM AS DO app.js) -->
-<!-- ========================================== -->
+<!-- ============================================ -->
+<!-- PAINEL DE DEBUG (APENAS PARA ADMIN)          -->
+<!-- ============================================ -->
+<div id="debug-container" style="display: none;">
+  <div id="debug-panel" style="position: fixed; bottom: 80px; left: 10px; right: 10px; background: var(--bg-card); border: 2px solid var(--green); border-radius: 12px; padding: 12px; z-index: 9999; max-height: 350px; overflow-y: auto; display: none; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <span style="font-weight: 700; color: var(--green);">🐛 DEBUG TOBBY</span>
+      <div>
+        <button onclick="toggleDebugPanel()" style="background: var(--red); border: none; color: white; padding: 2px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;">✕ Fechar</button>
+      </div>
+    </div>
+    <div id="debug-output" style="font-size: 12px; font-family: monospace; color: var(--text-secondary); white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; background: var(--bg-primary); padding: 8px; border-radius: 8px; min-height: 60px;">
+      Aguardando ações...
+    </div>
+    <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+      <button onclick="debugTestToken()" style="background: var(--green); border: none; color: white; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px;">🔑 Token</button>
+      <button onclick="debugTestBills()" style="background: var(--blue); border: none; color: white; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px;">📋 GET Bills</button>
+      <button onclick="debugCreateBill()" style="background: var(--orange); border: none; color: white; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px;">➕ Criar Conta</button>
+      <button onclick="debugTestLogin()" style="background: var(--purple); border: none; color: white; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px;">🔓 Login</button>
+      <button onclick="debugClearLogs()" style="background: var(--text-muted); border: none; color: white; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 11px;">🗑️ Limpar</button>
+    </div>
+  </div>
+
+  <!-- Botão flutuante para abrir o debug -->
+  <button onclick="toggleDebugPanel()" class="debug-floating-btn" style="position: fixed; bottom: 140px; right: 16px; background: var(--green); border: none; border-radius: 50%; width: 48px; height: 48px; color: white; font-size: 20px; cursor: pointer; z-index: 9998; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;">
+    🐛
+  </button>
+</div>
+
 <script>
 // ============================================
-// FUNÇÕES DE ESCAPE (para segurança)
+// FUNÇÕES DE DEBUG (APENAS PARA ADMIN)
 // ============================================
-function escapeHtml(text) {
-  if (!text) return '';
-  var div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+
+// ===== VERIFICAR SE É ADMIN =====
+function isAdminUser() {
+  var userEmail = currentUser?.email || '';
+  return userEmail === 'sandrosiqueiradavid@gmail.com';
 }
 
-// ============================================
-// SERVICE WORKER CORRIGIDO
-// ============================================
-async function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) {
-    console.log('❌ Service Worker não suportado');
-    return;
-  }
-  try {
-    // CAMINHO CORRIGIDO: /Tobby/sw.js (NÃO na raiz)
-    const registration = await navigator.serviceWorker.register('/Tobby/sw.js');
-    console.log('✅ Service Worker registrado com sucesso!', registration);
-    
-    registration.addEventListener('updatefound', () => {
-      const newWorker = registration.installing;
-      console.log('🔄 Novo Service Worker:', newWorker);
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'activated') {
-          console.log('✅ Novo Service Worker ativado!');
-        }
-      });
-    });
-    
-    return registration;
-  } catch (error) {
-    console.warn('❌ Erro ao registrar SW:', error);
-    console.warn('💡 Verifique se /Tobby/sw.js existe');
+// ===== MOSTRAR/OCULTAR PAINEL DE DEBUG =====
+function toggleDebugPanel() {
+  var panel = document.getElementById('debug-panel');
+  if (panel) {
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
   }
 }
 
-// ============================================
-// CHAT CORRIGIDO (USA BACKEND COMO PROXY - SEM CORS)
-// ============================================
-async function sendMsg() {
-  const input = document.getElementById('chat-input');
-  const msg = input.value.trim();
-  if (!msg) return;
-  
-  const chat = document.getElementById('chat-msgs');
-  if (!chat) return;
-  
-  chat.innerHTML += '<div class="msg msg-user"><span class="msg-user-label">VOCÊ</span>' + escapeHtml(msg) + '</div>';
-  input.value = '';
-  chat.scrollTop = chat.scrollHeight;
-  
-  const typing = document.getElementById('typing-ind');
-  if (typing) typing.style.display = 'block';
-  
+function debugLog(msg, type) {
+  var output = document.getElementById('debug-output');
+  if (!output) return;
+  var timestamp = new Date().toLocaleTimeString();
+  var emoji = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : '📝';
+  output.innerHTML = '[' + timestamp + '] ' + emoji + ' ' + msg + '\n' + output.innerHTML;
+  if (output.innerHTML.length > 5000) {
+    output.innerHTML = output.innerHTML.substring(0, 4000) + '...(truncado)';
+  }
+}
+
+function debugClearLogs() {
+  var output = document.getElementById('debug-output');
+  if (output) output.innerHTML = 'Logs limpos ✅';
+}
+
+async function debugTestToken() {
+  debugLog('🔍 Verificando token...', 'info');
+  var token = localStorage.getItem('token');
+  if (token) {
+    debugLog('✅ Token encontrado: ' + token.substring(0, 30) + '...', 'success');
+    try {
+      var payload = JSON.parse(atob(token.split('.')[1]));
+      debugLog('👤 Usuário ID: ' + payload.userId, 'info');
+      debugLog('📅 Expira em: ' + new Date(payload.exp * 1000).toLocaleString(), 'info');
+    } catch (e) {
+      debugLog('⚠️ Não foi possível decodificar o token', 'warning');
+    }
+  } else {
+    debugLog('❌ Nenhum token encontrado! Faça login.', 'error');
+  }
+}
+
+async function debugTestBills() {
+  debugLog('📋 Buscando contas...', 'info');
   try {
-    // ✅ CHAMADA VIA BACKEND (PROXY) - SEM CORS
-    const response = await api.request('/ai/chat', {
-      method: 'POST',
-      body: JSON.stringify({ 
-        message: msg,
-        context: { 
-          salary: currentUser?.salary || 0,
-          billsCount: allBills ? allBills.length : 0,
-          pendingBills: allBills ? allBills.filter(function(b) { return b.status === 'pending'; }).length : 0,
-          lateBills: allBills ? allBills.filter(function(b) { return b.status === 'late'; }).length : 0
-        }
-      })
-    });
-    
-    if (typing) typing.style.display = 'none';
-    const reply = response.reply || 'Não entendi, pode repetir?';
-    chat.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>' + escapeHtml(reply) + '</div>';
-    chat.scrollTop = chat.scrollHeight;
+    var data = await api.getBills();
+    debugLog('✅ ' + data.length + ' contas encontradas', 'success');
+    if (data.length > 0) {
+      debugLog('📋 Primeira conta: ' + JSON.stringify(data[0]).substring(0, 100), 'info');
+    }
   } catch (e) {
-    console.error('Erro no chat:', e);
-    if (typing) typing.style.display = 'none';
-    chat.innerHTML += '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>⚠️ Erro de conexão. Tente novamente.</div>';
-    chat.scrollTop = chat.scrollHeight;
+    debugLog('❌ Erro ao buscar contas: ' + e.message, 'error');
   }
 }
 
-// ============================================
-// LIMPAR CHAT
-// ============================================
-function clearChat() {
-  const chat = document.getElementById('chat-msgs');
-  if (chat) {
-    chat.innerHTML = '<div class="msg msg-ai"><span class="msg-ai-label">✦ TOBBY IA</span>Olá! Sou o assistente financeiro do Tobby 🐶. Como posso te ajudar?</div>';
+async function debugCreateBill() {
+  debugLog('➕ Criando conta de teste...', 'info');
+  try {
+    var data = await api.createBill('Debug Teste', 99.90, 20, 'moradia', 'pending');
+    debugLog('✅ Conta criada com sucesso! ID: ' + data.id, 'success');
+    debugLog('📋 Nome: ' + data.name + ' | Valor: R$ ' + data.value, 'info');
+  } catch (e) {
+    debugLog('❌ Erro ao criar conta: ' + e.message, 'error');
   }
 }
 
-// ============================================
-// INICIALIZAR SW DEPOIS DO LOGIN
-// ============================================
-// Sobrescrever enterApp para registrar SW
+async function debugTestLogin() {
+  debugLog('🔓 Abrindo formulário de login...', 'info');
+  showLogin();
+  debugLog('⚠️ Faça login manualmente e depois teste novamente', 'warning');
+}
+
+// ===== CONTROLE DE VISIBILIDADE DO DEBUG =====
+function updateDebugVisibility() {
+  var container = document.getElementById('debug-container');
+  if (!container) return;
+  
+  if (isAdminUser()) {
+    container.style.display = 'block';
+    debugLog('🐛 Painel de debug disponível para administrador', 'info');
+    debugLog('📌 Comandos: debug.testToken(), debug.testBills(), debug.createBill()', 'info');
+  } else {
+    container.style.display = 'none';
+  }
+}
+
+// ===== SOBRESCREVER O MÉTODO request PARA LOG (APENAS ADMIN) =====
+if (isAdminUser()) {
+  var originalRequest = api.request;
+  api.request = async function(endpoint, options) {
+    debugLog('📡 ' + (options?.method || 'GET') + ' ' + endpoint, 'info');
+    try {
+      var result = await originalRequest.call(this, endpoint, options);
+      debugLog('✅ Resposta OK para ' + endpoint, 'success');
+      return result;
+    } catch (e) {
+      debugLog('❌ Erro em ' + endpoint + ': ' + e.message, 'error');
+      throw e;
+    }
+  };
+}
+
+// ===== EXPORTAÇÕES PARA CONSOLE =====
+window.debug = {
+  log: debugLog,
+  testToken: debugTestToken,
+  testBills: debugTestBills,
+  createBill: debugCreateBill,
+  clear: debugClearLogs
+};
+
+// ===== INICIALIZAR =====
+// Verificar se é admin após login
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(updateDebugVisibility, 1000);
+});
+
+// Atualizar quando o usuário mudar
 var originalEnterApp = window.enterApp;
 if (originalEnterApp) {
   window.enterApp = function() {
     originalEnterApp();
-    setTimeout(registerServiceWorker, 3000);
+    setTimeout(updateDebugVisibility, 500);
   };
 }
-
-// ============================================
-// EXPORTAÇÕES PARA O ESCOPO GLOBAL
-// ============================================
-window.sendMsg = sendMsg;
-window.clearChat = clearChat;
-window.registerServiceWorker = registerServiceWorker;
-window.escapeHtml = escapeHtml;
-
-console.log('🐶 Tobby - Scripts corrigidos carregados!');
-console.log('✅ Service Worker caminho: /Tobby/sw.js');
-console.log('✅ Chat usando backend como proxy (sem CORS)');
-console.log('✅ Formulários de autenticação com <form> (sem warnings)');
 </script>
 
 </body>
