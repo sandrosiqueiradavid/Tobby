@@ -321,7 +321,6 @@ function updateTobyCard() {
     `${greeting}! Estou aqui para te ajudar com suas finanças! 🐶`,
     `${greeting}! Vamos organizar suas finanças juntos! 📊`,
     `${greeting}! Como estão seus gastos hoje? 💰`,
-    `${greeting}! Que tal revisarmos suas metas? 🎯`,
     `${greeting}! Estou pronto para te ajudar! 🐾`,
     `${greeting}! Vamos cuidar do seu dinheiro juntos! 💪`
   ];
@@ -341,7 +340,6 @@ async function enterApp() {
   showScreen('app');
   updateUserUI();
   navTo('home');
-  loadMorningBriefing();
   setTimeout(registerServiceWorker, 2000);
   updateTobyCard();
 }
@@ -359,7 +357,6 @@ function navTo(tab) {
     loadHome();
     loadFinancialScore();
     loadEmergencyFund();
-    loadMorningBriefing();
     updateTobyCard();
   }
   if (tab === 'bills') loadBills();
@@ -367,7 +364,6 @@ function navTo(tab) {
   if (tab === 'loans') loadLoans();
   if (tab === 'wealth') loadWealth();
   if (tab === 'ai') {
-    loadInsights();
     showPrivacyMessage();
   }
   if (tab === 'profile') {
@@ -500,22 +496,6 @@ async function loadEmergencyFund() {
     document.getElementById('emergency-progress').style.width = progress + '%';
   } catch (e) {
     console.error('Erro ao carregar reserva:', e);
-  }
-}
-
-// ============================================
-// BRIEFING MATINAL
-// ============================================
-
-async function loadMorningBriefing() {
-  try {
-    var response = await api.request('/briefing/morning');
-    var briefingText = document.getElementById('briefing-text');
-    if (briefingText && response.success && response.data) {
-      briefingText.innerHTML = response.data.briefing.replace(/\n/g, '<br>');
-    }
-  } catch (e) {
-    console.error('Erro ao carregar briefing:', e);
   }
 }
 
@@ -938,23 +918,10 @@ async function deleteAsset(id) {
 }
 
 // ============================================
-// IA - ASSISTENTE
+// IA - ASSISTENTE (Chat apenas, sem insights)
 // ============================================
 
 var chatHistory = [];
-
-async function loadInsights() {
-  try {
-    var response = await api.request('/ai/daily-insights', { method: 'POST' });
-    var container = document.getElementById('insights-list');
-    if (container && response.insight) {
-      container.innerHTML = '<div style="padding:0.75rem;background:var(--bg-secondary);border-radius:8px;">' + 
-        response.insight.replace(/\n/g, '<br>') + '</div>';
-    }
-  } catch (e) {
-    console.error('Erro ao carregar insights:', e);
-  }
-}
 
 function showPrivacyMessage() {
   // Não usado no HTML atual
@@ -1585,5 +1552,7 @@ window.showBankExtractModal = showBankExtractModal;
 window.showIncomeReport = showIncomeReport;
 window.openReceiptScanner = openReceiptScanner;
 window.registerServiceWorker = registerServiceWorker;
+window.sendMsg = sendMsg;
+window.clearChat = clearChat;
 
 console.log('🐶 Tobby Frontend v9.0 - Todas as funções carregadas!');
