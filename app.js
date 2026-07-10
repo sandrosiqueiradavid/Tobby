@@ -333,12 +333,11 @@ function navTo(tab) {
 }
 
 // ============================================
-// HOME - CORRIGIDO
+// HOME - CORRIGIDO (ROTA CORRETA: dashboard-summary)
 // ============================================
 
 async function loadHome() {
   try {
-    // CORRIGIDO: /bills/dashboard-summary (com hífen, NÃO barra)
     var summary = await api.request('/bills/dashboard-summary');
     var salario = currentUser?.salary || 0;
     var total = summary.total || 0;
@@ -432,7 +431,7 @@ async function loadFinancialScore() {
 }
 
 // ============================================
-// RESERVA DE EMERGÊNCIA - CORRIGIDO
+// RESERVA DE EMERGÊNCIA
 // ============================================
 
 async function loadEmergencyFund() {
@@ -457,12 +456,11 @@ async function loadEmergencyFund() {
 }
 
 // ============================================
-// METAS - CORRIGIDO
+// METAS - CORRIGIDO (ROTA CORRETA: financial-goals)
 // ============================================
 
 async function loadGoals() {
   try {
-    // CORRIGIDO: /financial-goals (NÃO /goals/goals)
     var response = await api.request('/financial-goals');
     var goals = response.goals || [];
     var container = document.getElementById('goals-list');

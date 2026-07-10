@@ -215,7 +215,7 @@ const briefingController = {
   }
 };
 
-// ===== FUNÇÃO AUXILIAR: GERAR BRIEFING =====
+// ===== FUNÇÃO AUXILIAR: GERAR BRIEFING COM SAUDAÇÃO POR HORÁRIO =====
 async function generateBriefing(user, data) {
   const { 
     salary, 
@@ -233,8 +233,31 @@ async function generateBriefing(user, data) {
   
   const name = user?.name || 'Usuário';
 
-  // Gerar mensagem personalizada
-  let message = `🐶 Bom dia, ${name}!`;
+  // ============================================
+  // SAUDAÇÃO BASEADA NO HORÁRIO
+  // ============================================
+  const hour = new Date().getHours();
+  let greeting = '';
+  let emoji = '';
+  
+  if (hour >= 6 && hour < 12) {
+    greeting = 'Bom dia';
+    emoji = '🌅';
+  } else if (hour >= 12 && hour < 18) {
+    greeting = 'Boa tarde';
+    emoji = '☀️';
+  } else if (hour >= 18 && hour < 24) {
+    greeting = 'Boa noite';
+    emoji = '🌙';
+  } else {
+    greeting = 'Boa madrugada';
+    emoji = '🌃';
+  }
+
+  // ============================================
+  // MENSAGEM PRINCIPAL COM SAUDAÇÃO CORRETA
+  // ============================================
+  let message = `🐶 ${greeting}, ${name}! ${emoji}`;
 
   // Contas a vencer
   if (dueBills > 0) {
@@ -304,7 +327,21 @@ async function generateBriefing(user, data) {
   let tip = getPersonalizedTip(salary, dueBills, lateBills, score, goals);
   message += `\n\n💡 ${tip}`;
 
-  message += `\n\n🐶 Tenha um ótimo dia! Estou aqui para ajudar.`;
+  // ============================================
+  // DESPEDIDA ADAPTADA AO HORÁRIO
+  // ============================================
+  let farewell = '';
+  if (hour >= 6 && hour < 12) {
+    farewell = 'Tenha um ótimo dia!';
+  } else if (hour >= 12 && hour < 18) {
+    farewell = 'Tenha uma ótima tarde!';
+  } else if (hour >= 18 && hour < 24) {
+    farewell = 'Tenha uma ótima noite!';
+  } else {
+    farewell = 'Tenha uma boa madrugada!';
+  }
+  
+  message += `\n\n🐶 ${farewell} Estou aqui para ajudar.`;
 
   return message;
 }
