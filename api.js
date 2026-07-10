@@ -141,7 +141,6 @@ class TobbyAPI {
     });
   }
 
-  // CORRIGIDO: dashboard-summary (com hífen)
   async getDashboard() {
     return this.request('/bills/dashboard-summary');
   }

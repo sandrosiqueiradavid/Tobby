@@ -1,4 +1,4 @@
-// app.js - TOBBY APP PRINCIPAL V9.0
+// app.js - TOBBY APP PRINCIPAL V9.0 - CORRIGIDO
 // COPILOTO FINANCEIRO PESSOAL
 
 var CATS = {
@@ -333,7 +333,7 @@ function navTo(tab) {
 }
 
 // ============================================
-// HOME - CORRIGIDO (ROTA CORRETA: dashboard-summary)
+// HOME - CORRIGIDO
 // ============================================
 
 async function loadHome() {
@@ -399,7 +399,7 @@ async function loadHomeBills() {
 }
 
 // ============================================
-// SCORE - CORRIGIDO
+// SCORE
 // ============================================
 
 async function loadFinancialScore() {
@@ -456,7 +456,7 @@ async function loadEmergencyFund() {
 }
 
 // ============================================
-// METAS - CORRIGIDO (ROTA CORRETA: financial-goals)
+// METAS - CORRIGIDO
 // ============================================
 
 async function loadGoals() {
